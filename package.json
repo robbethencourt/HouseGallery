@@ -1,0 +1,20 @@
+{
+  "name": "HouseGallery",
+  "version": "0.0.0",
+  "description": "keep track of your artwork online",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/robbethencourt/HouseGallery.git"
+  },
+  "author": "Robert Bethencourt",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/robbethencourt/HouseGallery/issues"
+  },
+  "homepage": "https://github.com/robbethencourt/HouseGallery"
+}
