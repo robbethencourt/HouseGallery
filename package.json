@@ -1,11 +1,10 @@
 {
   "name": "HouseGallery",
   "version": "0.0.0",
-  "description": "keep track of your artwork online",
-  "main": "server.js",
+  "description": "Log artwork in an easy to retrieve web application",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "start": "webpack-dev-server --hot --inline --content-base src/",
+    "build": "rimraf dist && webpack"
   },
   "repository": {
     "type": "git",
@@ -16,5 +15,26 @@
   "bugs": {
     "url": "https://github.com/robbethencourt/HouseGallery/issues"
   },
-  "homepage": "https://github.com/robbethencourt/HouseGallery"
+  "homepage": "https://github.com/robbethencourt/HouseGallery",
+  "devDependencies": {
+    "autoprefixer": "~6.5.3",
+    "elm-hot-loader": "~0.4.2",
+    "bootstrap-sass": "~3.3.7",
+    "css-loader": "~0.25.0",
+    "elm-webpack-loader": "~3.0.6",
+    "copy-webpack-plugin": "~4.0.1",
+    "elm": "~0.18.0",
+    "file-loader": "~0.9.0",
+    "html-webpack-plugin": "~2.24.1",
+    "webpack": "~1.13.3",
+    "extract-text-webpack-plugin": "~1.0.1",
+    "node-sass": "~3.13.0",
+    "url-loader": "~0.5.7",
+    "style-loader": "~0.13.1",
+    "rimraf": "~2.5.4",
+    "webpack-merge": "~0.17.0",
+    "postcss-loader": "~1.1.1",
+    "webpack-dev-server": "~1.16.2",
+    "sass-loader": "~4.0.2"
+  }
 }
