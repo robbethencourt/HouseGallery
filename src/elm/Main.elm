@@ -7,12 +7,48 @@ import Html exposing (..)
 
 
 type alias Model =
-    { content : String }
+    { user : UserModel
+    , usersGallery : Gallery
+    , galleryFeed : List GalleryItem
+    }
+
+
+type alias UserModel =
+    { isAuthed : Bool
+    , error : String
+    , userId : User
+    }
+
+
+type alias User =
+    { username : String
+    , userEmail : String
+    , password : String
+    }
+
+
+type alias Gallery =
+    { error : String
+    , galleries : List GalleryItem
+    }
+
+
+type alias GalleryItem =
+    { artist : String
+    , title : String
+    , year : Int
+    , medium : String
+    , status : String
+    , price : Int
+    }
 
 
 initialModel : Model
 initialModel =
-    { content = "" }
+    { user = { isAuthed = False, error = "", userId = { username = "", userEmail = "", password = "" } }
+    , usersGallery = { error = "", galleries = [] }
+    , galleryFeed = []
+    }
 
 
 
@@ -37,7 +73,10 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    div [] [ p [] [ text "hello world" ] ]
+    div []
+        [ p [] [ text "hello world" ]
+        , p [] [ text (toString model) ]
+        ]
 
 
 
