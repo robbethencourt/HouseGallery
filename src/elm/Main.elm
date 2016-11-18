@@ -1,6 +1,23 @@
 module Main exposing (..)
 
 import Html exposing (..)
+import Html.Attributes exposing (..)
+import Html.Events exposing (..)
+import Navigation
+import String
+
+
+-- main
+
+
+main : Program Never Model Msg
+main =
+    Html.beginnerProgram
+        { model = initialModel
+        , view = view
+        , update = update
+        }
+
 
 
 -- model
@@ -74,19 +91,8 @@ update msg model =
 view : Model -> Html Msg
 view model =
     div []
-        [ p [] [ text "hello world" ]
+        [ input [ type_ "text" ] []
+        , input [ type_ "text" ] []
+        , input [ type_ "button", value "Login" ] []
         , p [] [ text (toString model) ]
         ]
-
-
-
--- app
-
-
-main : Program Never Model Msg
-main =
-    Html.beginnerProgram
-        { model = initialModel
-        , view = view
-        , update = update
-        }
