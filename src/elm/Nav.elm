@@ -44,7 +44,9 @@ view : Model -> Html Msg
 view model =
     if model.isAuthed then
         div []
-            [ input [ type_ "button", value "Logout", onClick Logout ] [] ]
+            [ input [ type_ "button", value "Logout", onClick Logout ] []
+            , a [ href "#/feed" ] [ text "Feed" ]
+            ]
     else
         div []
             [ input [ type_ "button", value "Login", onClick Login ] [] ]
