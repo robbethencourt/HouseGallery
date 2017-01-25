@@ -6,6 +6,7 @@ var autoprefixer = require('autoprefixer')
 var ExtractTextPlugin = require('extract-text-webpack-plugin')
 var CopyWebpackPlugin = require('copy-webpack-plugin')
 
+// npm start
 console.log('WEBPACK GO!')
 
 // detemine build env

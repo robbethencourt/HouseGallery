@@ -167,6 +167,7 @@ pageHeader model =
                 [ a [ onClick (Navigate LoginPage) ] [ text "Login" ]
                 ]
             ]
+        , p [] [ text (toString model) ]
         ]
 
 
