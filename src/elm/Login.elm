@@ -46,7 +46,7 @@ type Msg
 
 url : String
 url =
-    "http://localhost:5000/authenticate"
+    "http://localhost:3000/authenticate"
 
 
 update : Msg -> Model -> ( Model, Cmd Msg, Maybe String )
@@ -112,6 +112,7 @@ view model =
     div [ class "main" ]
         [ errorPanel model.error
         , loginForm model
+        , p [] [ text (toString model) ]
         ]
 
 
