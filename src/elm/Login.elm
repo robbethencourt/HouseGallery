@@ -13,9 +13,9 @@ import Html.Attributes exposing (..)
 
 
 type alias Model =
-    { error : Maybe String
-    , username : String
+    { username : String
     , password : String
+    , error : Maybe String
     }
 
 

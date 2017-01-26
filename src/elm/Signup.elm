@@ -13,10 +13,11 @@ import Navigation
 
 
 type alias Model =
-    { error : Maybe String
-    , username : String
+    { username : String
     , email : String
     , password : String
+    , error : Maybe String
+    , key : String
     }
 
 
@@ -26,6 +27,7 @@ initModel =
     , password = ""
     , email = ""
     , error = Nothing
+    , key = ""
     }
 
 
@@ -78,7 +80,14 @@ update msg model =
             ( { model | error = Just error }, Cmd.none )
 
         UserSaved key ->
-            ( initModel, Navigation.newUrl "#/addArtwork" )
+            ( { model
+                | username = ""
+                , email = ""
+                , password = ""
+                , key = key
+              }
+            , Navigation.newUrl "#/gallery"
+            )
 
 
 view : Model -> Html Msg

@@ -9,6 +9,7 @@ console.log(app)
 // Initialize Firebase
 var fbApp = firebase.initializeApp(config)
 var database = fbApp.database()
+console.log(database)
 
 app.ports.sendUser.subscribe(function (elmUserRecord) {
   console.log(elmUserRecord)
@@ -19,7 +20,7 @@ app.ports.sendUser.subscribe(function (elmUserRecord) {
     password: jsonParsedElmRecord.password,
     gallery: []
   }
-  addName(userToSave)
+  addUser(userToSave)
     .then(function (fbResponse) {
       console.log('saved')
       app.ports.userSaved.send(fbResponse.key)
@@ -28,9 +29,9 @@ app.ports.sendUser.subscribe(function (elmUserRecord) {
     })
 })
 
-function addName (nameToAdd) {
+function addUser (userToAdd) {
   var promise = database
     .ref('users')
-    .push(nameToAdd)
+    .push(userToAdd)
   return promise
 }
