@@ -131,17 +131,79 @@ view model =
 
 addArtwork : Model -> Html Msg
 addArtwork model =
-    div []
-        [ Html.form [ onSubmit Submit ]
-            [ ul []
-                [ li [] [ input [ type_ "text", value model.artist, onInput ArtistInput, placeholder "Artist" ] [] ]
-                , li [] [ input [ type_ "text", value model.title, onInput TitleInput, placeholder "Title" ] [] ]
-                , li [] [ input [ type_ "text", value model.medium, onInput MediumInput, placeholder "Medium" ] [] ]
-                , li [] [ input [ type_ "text", value model.year, onInput YearInput, placeholder "Year" ] [] ]
-                , li [] [ input [ type_ "text", value model.price, onInput PriceInput, placeholder "Price" ] [] ]
-                , li [] [ input [ type_ "text", value model.artworkImage, onInput ArtworkImageInput, placeholder "Artwork Image File" ] [] ]
+    div [ class "row" ]
+        [ div [ class "col-md-6 col-md-offset-3" ]
+            [ h2 [] [ text "Add Artwork" ]
+            , Html.form [ class "signup-login", onSubmit Submit ]
+                [ label [] [ text "Artist" ]
+                , div [ class "form-group" ]
+                    [ input
+                        [ type_ "text"
+                        , class "form-control"
+                        , value model.artist
+                        , onInput ArtistInput
+                        ]
+                        []
+                    ]
+                , label [] [ text "Title" ]
+                , div [ class "form-group" ]
+                    [ input
+                        [ type_ "password"
+                        , class "form-control"
+                        , value model.title
+                        , onInput TitleInput
+                        ]
+                        []
+                    ]
+                , label [] [ text "Medium" ]
+                , div [ class "form-group" ]
+                    [ input
+                        [ type_ "password"
+                        , class "form-control"
+                        , value model.medium
+                        , onInput MediumInput
+                        ]
+                        []
+                    ]
+                , label [] [ text "Year" ]
+                , div [ class "form-group" ]
+                    [ input
+                        [ type_ "password"
+                        , class "form-control"
+                        , value model.year
+                        , onInput YearInput
+                        ]
+                        []
+                    ]
+                , label [] [ text "Price" ]
+                , div [ class "form-group" ]
+                    [ input
+                        [ type_ "password"
+                        , class "form-control"
+                        , value model.price
+                        , onInput PriceInput
+                        ]
+                        []
+                    ]
+                , label [] [ text "Artwork Image File" ]
+                , div [ class "form-group" ]
+                    [ input
+                        [ type_ "password"
+                        , class "form-control"
+                        , value model.artworkImage
+                        , onInput ArtworkImageInput
+                        ]
+                        []
+                    ]
+                , div [ class "form-group" ]
+                    [ label [] []
+                    , button
+                        [ type_ "submit"
+                        , class "btn btn-default"
+                        ]
+                        [ text "Save Artwork" ]
+                    ]
                 ]
-            , div [] [ button [ type_ "submit" ] [ text "Save Artwork" ] ]
             ]
         ]
 

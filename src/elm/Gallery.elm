@@ -82,7 +82,7 @@ gallery { gallery } =
         |> List.map painting
         |> tbody []
         |> (\g -> galleryHeader :: [ g ])
-        |> table []
+        |> table [ class "table table-striped" ]
 
 
 painting : GalleryItem -> Html Msg

@@ -4,9 +4,11 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Navigation
+import Signup
 import Gallery
 import Login
 import AddArtwork
+import Artwork
 
 
 -- model
@@ -14,9 +16,11 @@ import AddArtwork
 
 type alias Model =
     { page : Page
+    , signup : Signup.Model
     , gallery : Gallery.Model
     , login : Login.Model
     , addArtwork : AddArtwork.Model
+    , artwork : Artwork.Model
     , token : Maybe String
     , loggedIn : Bool
     }
@@ -24,9 +28,11 @@ type alias Model =
 
 type Page
     = NotFound
+    | SignupPage
     | GalleryPage
     | LoginPage
     | AddArtworkPage
+    | ArtworkPage
 
 
 init : Navigation.Location -> ( Model, Cmd Msg )
@@ -34,6 +40,9 @@ init location =
     let
         page =
             hashToPage location.hash
+
+        ( signupInitModel, signupCmd ) =
+            Signup.init
 
         ( galleryInitModel, galleryCmd ) =
             Gallery.init
@@ -44,20 +53,27 @@ init location =
         ( addArtworkInitModel, addArtworkCmd ) =
             AddArtwork.init
 
+        ( artworkInitModel, artworkCmd ) =
+            Artwork.init
+
         initModel =
             { page = page
+            , signup = signupInitModel
             , gallery = galleryInitModel
             , login = loginInitModel
             , addArtwork = addArtworkInitModel
+            , artwork = artworkInitModel
             , token = Nothing
             , loggedIn = False
             }
 
         cmds =
             Cmd.batch
-                [ Cmd.map GalleryMsg galleryCmd
+                [ Cmd.map SignupMsg signupCmd
+                , Cmd.map GalleryMsg galleryCmd
                 , Cmd.map LoginMsg loginCmd
                 , Cmd.map AddArtworkMsg addArtworkCmd
+                , Cmd.map ArtworkMsg artworkCmd
                 ]
     in
         ( initModel, cmds )
@@ -70,9 +86,11 @@ init location =
 type Msg
     = Navigate Page
     | ChangePage Page
+    | SignupMsg Signup.Msg
     | GalleryMsg Gallery.Msg
     | LoginMsg Login.Msg
     | AddArtworkMsg AddArtwork.Msg
+    | ArtworkMsg Artwork.Msg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -83,6 +101,15 @@ update msg model =
 
         ChangePage page ->
             ( { model | page = page }, Cmd.none )
+
+        SignupMsg msg ->
+            let
+                ( signupModel, cmd ) =
+                    Signup.update msg model.signup
+            in
+                ( { model | signup = signupModel }
+                , Cmd.map SignupMsg cmd
+                )
 
         GalleryMsg msg ->
             let
@@ -95,16 +122,17 @@ update msg model =
 
         LoginMsg msg ->
             let
-                ( loginModel, cmd, token ) =
+                ( loginModel, cmd ) =
                     Login.update msg model.login
 
-                loggedIn =
-                    token /= Nothing
+                -- loggedIn =
+                --     token /= Nothing
             in
                 ( { model
-                    | login = loginModel
-                    , token = token
-                    , loggedIn = loggedIn
+                    | login =
+                        loginModel
+                        -- , token = token
+                        -- , loggedIn = loggedIn
                   }
                 , Cmd.map LoginMsg cmd
                 )
@@ -118,6 +146,15 @@ update msg model =
                 , Cmd.map AddArtworkMsg cmd
                 )
 
+        ArtworkMsg msg ->
+            let
+                ( artworkModel, cmd ) =
+                    Artwork.update msg model.artwork
+            in
+                ( { model | artwork = artworkModel }
+                , Cmd.map ArtworkMsg cmd
+                )
+
 
 
 -- view
@@ -128,6 +165,10 @@ view model =
     let
         page =
             case model.page of
+                SignupPage ->
+                    Html.map SignupMsg
+                        (Signup.view model.signup)
+
                 GalleryPage ->
                     Html.map GalleryMsg
                         (Gallery.view model.gallery)
@@ -140,13 +181,17 @@ view model =
                     Html.map AddArtworkMsg
                         (AddArtwork.view model.addArtwork)
 
+                ArtworkPage ->
+                    Html.map ArtworkMsg
+                        (Artwork.view model.artwork)
+
                 NotFound ->
                     div [ class "main" ]
                         [ h1 []
                             [ text "Page Not Found!" ]
                         ]
     in
-        div []
+        div [ class "container-fluid" ]
             [ pageHeader model
             , page
             ]
@@ -155,19 +200,22 @@ view model =
 pageHeader : Model -> Html Msg
 pageHeader model =
     header []
-        [ a [ href "#/" ] [ text "Home" ]
-        , ul []
-            [ li []
-                [ a [ onClick (Navigate GalleryPage) ] [ text "Gallery" ] ]
-            , li []
-                [ a [ onClick (Navigate AddArtworkPage) ] [ text "Add Artwork" ] ]
-            ]
-        , ul []
-            [ li []
-                [ a [ onClick (Navigate LoginPage) ] [ text "Login" ]
+        [ nav [ class "navbar" ]
+            [ ul [ class "nav navbar-nav navbar-left" ]
+                [ li []
+                    [ a [ href "#/" ] [ text "Home" ] ]
+                , li []
+                    [ a [ onClick (Navigate GalleryPage) ] [ text "Gallery" ] ]
+                , li []
+                    [ a [ onClick (Navigate AddArtworkPage) ] [ text "Add Artwork" ] ]
+                ]
+            , ul [ class "nav navbar-nav navbar-right" ]
+                [ li []
+                    [ a [ onClick (Navigate LoginPage) ] [ text "Login" ] ]
+                , li []
+                    [ a [ onClick (Navigate SignupPage) ] [ text "Signup" ] ]
                 ]
             ]
-        , p [] [ text (toString model) ]
         ]
 
 
@@ -178,6 +226,9 @@ pageHeader model =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     let
+        signupSub =
+            Signup.subscriptions model.signup
+
         gallerySub =
             Gallery.subscriptions model.gallery
 
@@ -186,11 +237,16 @@ subscriptions model =
 
         addArtworkSub =
             AddArtwork.subscriptions model.addArtwork
+
+        artworkSub =
+            Artwork.subscriptions model.artwork
     in
         Sub.batch
-            [ Sub.map GalleryMsg gallerySub
+            [ Sub.map SignupMsg signupSub
+            , Sub.map GalleryMsg gallerySub
             , Sub.map LoginMsg loginSub
             , Sub.map AddArtworkMsg addArtworkSub
+            , Sub.map ArtworkMsg artworkSub
             ]
 
 
@@ -198,10 +254,13 @@ hashToPage : String -> Page
 hashToPage hash =
     case hash of
         "#/" ->
-            GalleryPage
+            SignupPage
 
         "" ->
-            GalleryPage
+            SignupPage
+
+        "#/signup" ->
+            SignupPage
 
         "#/gallery" ->
             GalleryPage
@@ -212,6 +271,9 @@ hashToPage hash =
         "#/addArtwork" ->
             AddArtworkPage
 
+        "#/artwork" ->
+            ArtworkPage
+
         _ ->
             NotFound
 
@@ -219,6 +281,9 @@ hashToPage hash =
 pageToHash : Page -> String
 pageToHash page =
     case page of
+        SignupPage ->
+            "#/signup"
+
         GalleryPage ->
             "#/gallery"
 
@@ -227,6 +292,9 @@ pageToHash page =
 
         AddArtworkPage ->
             "#/addArtwork"
+
+        ArtworkPage ->
+            "#/artwork"
 
         NotFound ->
             "#notFound"

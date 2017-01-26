@@ -1,20 +1,21 @@
-port module Login exposing (..)
+port module Signup exposing (..)
 
 import Html exposing (..)
 import Html.Events exposing (..)
 import Html.Attributes exposing (..)
+import Http
+import Json.Encode as JE
+import Navigation
 
 
--- import Http
--- import Json.Encode as JE
 -- import Json.Decode as JD exposing (field)
--- import Navigation
 -- model
 
 
 type alias Model =
     { error : Maybe String
     , username : String
+    , email : String
     , password : String
     }
 
@@ -23,6 +24,7 @@ initModel : Model
 initModel =
     { username = ""
     , password = ""
+    , email = ""
     , error = Nothing
     }
 
@@ -38,16 +40,11 @@ init =
 
 type Msg
     = UsernameInput String
+    | EmailInput String
     | PasswordInput String
     | Submit
     | Error String
-
-
-
--- | LoginResponse (Result Http.Error String)
--- url : String
--- url =
---     "http://localhost:3000/authenticate"
+    | UserSaved String
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -56,72 +53,48 @@ update msg model =
         UsernameInput username ->
             ( { model | username = username }, Cmd.none )
 
+        EmailInput email ->
+            ( { model | email = email }, Cmd.none )
+
         PasswordInput password ->
             ( { model | password = password }, Cmd.none )
 
         Submit ->
-            ( model, sendName model.username )
+            let
+                body =
+                    JE.object
+                        [ ( "username", JE.string model.username )
+                        , ( "email", JE.string model.email )
+                        , ( "password", JE.string model.password )
+                        ]
+                        |> JE.encode 4
 
-        -- let
-        --     body =
-        --         JE.object
-        --             [ ( "username", JE.string model.username )
-        --             , ( "password", JE.string model.password )
-        --             ]
-        --             |> JE.encode 4
-        --             |> Http.stringBody "application/json"
-        --
-        --     decoder =
-        --         field "token" JD.string
-        --
-        --     request =
-        --         Http.post url body decoder
-        --
-        --     cmd =
-        --         Http.send LoginResponse request
-        -- in
-        --     ( model, cmd )
+                cmd =
+                    sendUser body
+            in
+                ( model, cmd )
+
         Error error ->
             ( { model | error = Just error }, Cmd.none )
 
-
-
--- LoginResponse (Ok token) ->
---     ( initModel, Navigation.newUrl "#/", Just token )
---
--- LoginResponse (Err err) ->
---     let
---         errMsg =
---             case err of
---                 Http.BadStatus resp ->
---                     case resp.status.code of
---                         401 ->
---                             resp.body
---
---                         _ ->
---                             resp.status.message
---
---                 _ ->
---                     "Login Error!"
---     in
---         ( { model | error = Just errMsg }, Cmd.none )
--- view
+        UserSaved key ->
+            ( initModel, Navigation.newUrl "#/addArtwork" )
 
 
 view : Model -> Html Msg
 view model =
     div [ class "main" ]
         [ errorPanel model.error
-        , loginForm model
+        , signupForm model
         , p [] [ text (toString model) ]
         ]
 
 
-loginForm : Model -> Html Msg
-loginForm model =
+signupForm : Model -> Html Msg
+signupForm model =
     div [ class "row" ]
         [ div [ class "col-md-6 col-md-offset-3" ]
-            [ h2 [] [ text "Login" ]
+            [ h2 [] [ text "Signup" ]
             , Html.form [ class "signup-login", onSubmit Submit ]
                 [ label [] [ text "Username" ]
                 , div [ class "form-group" ]
@@ -130,6 +103,16 @@ loginForm model =
                         , class "form-control"
                         , value model.username
                         , onInput UsernameInput
+                        ]
+                        []
+                    ]
+                , label [] [ text "Email" ]
+                , div [ class "form-group" ]
+                    [ input
+                        [ type_ "email"
+                        , class "form-control"
+                        , value model.email
+                        , onInput EmailInput
                         ]
                         []
                     ]
@@ -149,7 +132,7 @@ loginForm model =
                         [ type_ "submit"
                         , class "btn btn-default"
                         ]
-                        [ text "Login" ]
+                        [ text "Signup" ]
                     ]
                 ]
             ]
@@ -173,11 +156,11 @@ errorPanel error =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.none
+    Sub.batch
+        [ userSaved UserSaved ]
 
 
+port sendUser : String -> Cmd msg
 
--- ports
 
-
-port sendName : String -> Cmd msg
+port userSaved : (String -> msg) -> Sub msg
