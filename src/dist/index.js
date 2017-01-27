@@ -1,14 +1,7 @@
 require('./styles/main.scss')
-import Elm from '../elm/Main'
-const config = require('../../keys')
-import { addUser, checkUser } from './utils/firebaseHelper'
+const Elm = require('../elm/Main')
+const firebaseHelper = require('./utils/firebaseHelper')
 var app = Elm.Main.embed(document.getElementById('HouseGallery'))
-
-console.log(app)
-
-// Initialize Firebase
-var fbApp = firebase.initializeApp(config)
-var database = fbApp.database()
 
 // Subscriptions from Elm
 
@@ -21,7 +14,7 @@ app.ports.saveUser.subscribe(function (elmUserRecord) {
     password: jsonParsedElmRecord.password
   }
 
-  addUser(userToSave)
+  firebaseHelper.addUser(userToSave)
     .then(function (fbResponse) {
       console.log(fbResponse)
       app.ports.userSaved.send(fbResponse.uid)
@@ -38,7 +31,7 @@ app.ports.fetchingUser.subscribe(function (elmLoginRecord) {
     password: jsonParsedElmLoginRecord.password
   }
 
-  checkUser(userToCheck)
+  firebaseHelper.checkUser(userToCheck)
     .then(function (fbResponse) {
       console.log(fbResponse)
       app.ports.userLoggedIn.send(fbResponse.uid)

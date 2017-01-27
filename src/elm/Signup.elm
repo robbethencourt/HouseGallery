@@ -3,12 +3,10 @@ port module Signup exposing (..)
 import Html exposing (..)
 import Html.Events exposing (..)
 import Html.Attributes exposing (..)
-import Http
 import Json.Encode as JE
 import Navigation
 
 
--- import Json.Decode as JD exposing (field)
 -- model
 
 
@@ -17,7 +15,6 @@ type alias Model =
     , email : String
     , password : String
     , error : Maybe String
-    , key : String
     }
 
 
@@ -27,7 +24,6 @@ initModel =
     , password = ""
     , email = ""
     , error = Nothing
-    , key = ""
     }
 
 
@@ -49,17 +45,17 @@ type Msg
     | UserSaved String
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
+update : Msg -> Model -> ( Model, Cmd Msg, Maybe String )
 update msg model =
     case msg of
         UsernameInput username ->
-            ( { model | username = username }, Cmd.none )
+            ( { model | username = username }, Cmd.none, Nothing )
 
         EmailInput email ->
-            ( { model | email = email }, Cmd.none )
+            ( { model | email = email }, Cmd.none, Nothing )
 
         PasswordInput password ->
-            ( { model | password = password }, Cmd.none )
+            ( { model | password = password }, Cmd.none, Nothing )
 
         Submit ->
             let
@@ -74,19 +70,19 @@ update msg model =
                 cmd =
                     saveUser body
             in
-                ( model, cmd )
+                ( model, cmd, Nothing )
 
         Error error ->
-            ( { model | error = Just error }, Cmd.none )
+            ( { model | error = Just error }, Cmd.none, Nothing )
 
         UserSaved key ->
             ( { model
                 | username = ""
                 , email = ""
                 , password = ""
-                , key = key
               }
             , Navigation.newUrl "#/gallery"
+            , Just key
             )
 
 

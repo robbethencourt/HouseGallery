@@ -21,7 +21,7 @@ type alias Model =
     , login : Login.Model
     , addArtwork : AddArtwork.Model
     , artwork : Artwork.Model
-    , token : Maybe String
+    , userKey : Maybe String
     , loggedIn : Bool
     }
 
@@ -63,7 +63,7 @@ init location =
             , login = loginInitModel
             , addArtwork = addArtworkInitModel
             , artwork = artworkInitModel
-            , token = Nothing
+            , userKey = Nothing
             , loggedIn = False
             }
 
@@ -104,11 +104,25 @@ update msg model =
 
         SignupMsg msg ->
             let
-                ( signupModel, cmd ) =
+                ( signupModel, cmd, userKey ) =
                     Signup.update msg model.signup
+
+                loggedIn =
+                    userKey /= Nothing
+
+                saveUserKeyCmd =
+                    case userKey of
+                        Just key ->
+                            saveUserKey key
+
+                        Nothing ->
+                            Cmd.none
             in
                 ( { model | signup = signupModel }
-                , Cmd.map SignupMsg cmd
+                , Cmd.batch
+                    [ Cmd.map SignupMsg cmd
+                    , saveUserKeyCmd
+                    ]
                 )
 
         GalleryMsg msg ->
@@ -122,19 +136,29 @@ update msg model =
 
         LoginMsg msg ->
             let
-                ( loginModel, cmd ) =
+                ( loginModel, cmd, userKey ) =
                     Login.update msg model.login
 
-                -- loggedIn =
-                --     token /= Nothing
+                loggedIn =
+                    userKey /= Nothing
+
+                saveUserKeyCmd =
+                    case userKey of
+                        Just key ->
+                            saveUserKey key
+
+                        Nothing ->
+                            Cmd.none
             in
                 ( { model
-                    | login =
-                        loginModel
-                        -- , token = token
-                        -- , loggedIn = loggedIn
+                    | login = loginModel
+                    , userKey = userKey
+                    , loggedIn = loggedIn
                   }
-                , Cmd.map LoginMsg cmd
+                , Cmd.batch
+                    [ Cmd.map LoginMsg cmd
+                    , saveUserKeyCmd
+                    ]
                 )
 
         AddArtworkMsg msg ->
@@ -319,3 +343,6 @@ main =
         , view = view
         , subscriptions = subscriptions
         }
+
+
+port saveUserKey : String -> Cmd msg

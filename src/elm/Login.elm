@@ -7,9 +7,6 @@ import Json.Encode as JE
 import Navigation
 
 
--- import Http
--- import Json.Decode as JD exposing (field)
--- import Navigation
 -- model
 
 
@@ -17,7 +14,6 @@ type alias Model =
     { email : String
     , password : String
     , error : Maybe String
-    , key : String
     }
 
 
@@ -26,7 +22,6 @@ initModel =
     { email = ""
     , password = ""
     , error = Nothing
-    , key = ""
     }
 
 
@@ -47,21 +42,14 @@ type Msg
     | UserLoggedIn String
 
 
-
--- | LoginResponse (Result Http.Error String)
--- url : String
--- url =
---     "http://localhost:3000/authenticate"
-
-
-update : Msg -> Model -> ( Model, Cmd Msg )
+update : Msg -> Model -> ( Model, Cmd Msg, Maybe String )
 update msg model =
     case msg of
         EmailInput email ->
-            ( { model | email = email }, Cmd.none )
+            ( { model | email = email }, Cmd.none, Nothing )
 
         PasswordInput password ->
-            ( { model | password = password }, Cmd.none )
+            ( { model | password = password }, Cmd.none, Nothing )
 
         Submit ->
             let
@@ -75,18 +63,18 @@ update msg model =
                 cmd =
                     fetchingUser body
             in
-                ( model, cmd )
+                ( model, cmd, Nothing )
 
         Error error ->
-            ( { model | error = Just error }, Cmd.none )
+            ( { model | error = Just error }, Cmd.none, Nothing )
 
         UserLoggedIn key ->
             ( { model
                 | email = ""
                 , password = ""
-                , key = key
               }
             , Navigation.newUrl "#/gallery"
+            , Just key
             )
 
 
