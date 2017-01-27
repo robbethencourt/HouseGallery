@@ -3,27 +3,30 @@ port module Login exposing (..)
 import Html exposing (..)
 import Html.Events exposing (..)
 import Html.Attributes exposing (..)
+import Json.Encode as JE
+import Navigation
 
 
 -- import Http
--- import Json.Encode as JE
 -- import Json.Decode as JD exposing (field)
 -- import Navigation
 -- model
 
 
 type alias Model =
-    { username : String
+    { email : String
     , password : String
     , error : Maybe String
+    , key : String
     }
 
 
 initModel : Model
 initModel =
-    { username = ""
+    { email = ""
     , password = ""
     , error = Nothing
+    , key = ""
     }
 
 
@@ -37,10 +40,11 @@ init =
 
 
 type Msg
-    = UsernameInput String
+    = EmailInput String
     | PasswordInput String
     | Submit
     | Error String
+    | UserLoggedIn String
 
 
 
@@ -53,58 +57,40 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        UsernameInput username ->
-            ( { model | username = username }, Cmd.none )
+        EmailInput email ->
+            ( { model | email = email }, Cmd.none )
 
         PasswordInput password ->
             ( { model | password = password }, Cmd.none )
 
         Submit ->
-            ( model, sendName model.username )
+            let
+                body =
+                    JE.object
+                        [ ( "email", JE.string model.email )
+                        , ( "password", JE.string model.password )
+                        ]
+                        |> JE.encode 4
 
-        -- let
-        --     body =
-        --         JE.object
-        --             [ ( "username", JE.string model.username )
-        --             , ( "password", JE.string model.password )
-        --             ]
-        --             |> JE.encode 4
-        --             |> Http.stringBody "application/json"
-        --
-        --     decoder =
-        --         field "token" JD.string
-        --
-        --     request =
-        --         Http.post url body decoder
-        --
-        --     cmd =
-        --         Http.send LoginResponse request
-        -- in
-        --     ( model, cmd )
+                cmd =
+                    fetchingUser body
+            in
+                ( model, cmd )
+
         Error error ->
             ( { model | error = Just error }, Cmd.none )
 
+        UserLoggedIn key ->
+            ( { model
+                | email = ""
+                , password = ""
+                , key = key
+              }
+            , Navigation.newUrl "#/gallery"
+            )
 
 
--- LoginResponse (Ok token) ->
---     ( initModel, Navigation.newUrl "#/", Just token )
---
--- LoginResponse (Err err) ->
---     let
---         errMsg =
---             case err of
---                 Http.BadStatus resp ->
---                     case resp.status.code of
---                         401 ->
---                             resp.body
---
---                         _ ->
---                             resp.status.message
---
---                 _ ->
---                     "Login Error!"
---     in
---         ( { model | error = Just errMsg }, Cmd.none )
+
 -- view
 
 
@@ -123,13 +109,13 @@ loginForm model =
         [ div [ class "col-md-6 col-md-offset-3" ]
             [ h2 [] [ text "Login" ]
             , Html.form [ class "signup-login", onSubmit Submit ]
-                [ label [] [ text "Username" ]
+                [ label [] [ text "Email" ]
                 , div [ class "form-group" ]
                     [ input
                         [ type_ "text"
                         , class "form-control"
-                        , value model.username
-                        , onInput UsernameInput
+                        , value model.email
+                        , onInput EmailInput
                         ]
                         []
                     ]
@@ -173,11 +159,15 @@ errorPanel error =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.none
+    Sub.batch
+        [ userLoggedIn UserLoggedIn ]
 
 
 
 -- ports
 
 
-port sendName : String -> Cmd msg
+port fetchingUser : String -> Cmd msg
+
+
+port userLoggedIn : (String -> msg) -> Sub msg

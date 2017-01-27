@@ -1,7 +1,7 @@
 require('./styles/main.scss')
-var Elm = require('../elm/Main')
+import Elm from '../elm/Main'
 const config = require('../../keys')
-
+import { addUser, checkUser } from './utils/firebaseHelper'
 var app = Elm.Main.embed(document.getElementById('HouseGallery'))
 
 console.log(app)
@@ -9,29 +9,40 @@ console.log(app)
 // Initialize Firebase
 var fbApp = firebase.initializeApp(config)
 var database = fbApp.database()
-console.log(database)
 
-app.ports.sendUser.subscribe(function (elmUserRecord) {
-  console.log(elmUserRecord)
+// Subscriptions from Elm
+
+// Signup
+app.ports.saveUser.subscribe(function (elmUserRecord) {
   const jsonParsedElmRecord = JSON.parse(elmUserRecord)
   const userToSave = {
     username: jsonParsedElmRecord.username,
     email: jsonParsedElmRecord.email,
-    password: jsonParsedElmRecord.password,
-    gallery: []
+    password: jsonParsedElmRecord.password
   }
+
   addUser(userToSave)
     .then(function (fbResponse) {
-      console.log('saved')
-      app.ports.userSaved.send(fbResponse.key)
+      console.log(fbResponse)
+      app.ports.userSaved.send(fbResponse.uid)
     }, function (error) {
-      console.log('error: ' + error)
+      if (error) console.log('Error: {error}')
     })
 })
 
-function addUser (userToAdd) {
-  var promise = database
-    .ref('users')
-    .push(userToAdd)
-  return promise
-}
+// Login
+app.ports.fetchingUser.subscribe(function (elmLoginRecord) {
+  const jsonParsedElmLoginRecord = JSON.parse(elmLoginRecord)
+  const userToCheck = {
+    email: jsonParsedElmLoginRecord.email,
+    password: jsonParsedElmLoginRecord.password
+  }
+
+  checkUser(userToCheck)
+    .then(function (fbResponse) {
+      console.log(fbResponse)
+      app.ports.userLoggedIn.send(fbResponse.uid)
+    }, function (error) {
+      if (error) console.log('Error: {error}')
+    })
+})

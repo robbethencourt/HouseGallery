@@ -72,7 +72,7 @@ update msg model =
                         |> JE.encode 4
 
                 cmd =
-                    sendUser body
+                    saveUser body
             in
                 ( model, cmd )
 
@@ -169,7 +169,7 @@ subscriptions model =
         [ userSaved UserSaved ]
 
 
-port sendUser : String -> Cmd msg
+port saveUser : String -> Cmd msg
 
 
 port userSaved : (String -> msg) -> Sub msg
