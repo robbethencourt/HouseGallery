@@ -21,7 +21,8 @@ type alias Model =
     , login : Login.Model
     , addArtwork : AddArtwork.Model
     , artwork : Artwork.Model
-    , userKey : Maybe String
+    , token : Maybe String
+    , userId : Maybe String
     , loggedIn : Bool
     }
 
@@ -35,8 +36,8 @@ type Page
     | ArtworkPage
 
 
-init : Navigation.Location -> ( Model, Cmd Msg )
-init location =
+init : Flags -> Navigation.Location -> ( Model, Cmd Msg )
+init flags location =
     let
         page =
             hashToPage location.hash
@@ -63,8 +64,9 @@ init location =
             , login = loginInitModel
             , addArtwork = addArtworkInitModel
             , artwork = artworkInitModel
-            , userKey = Nothing
-            , loggedIn = False
+            , token = flags.token
+            , userId = Nothing
+            , loggedIn = flags.token /= Nothing
             }
 
         cmds =
@@ -91,6 +93,7 @@ type Msg
     | LoginMsg Login.Msg
     | AddArtworkMsg AddArtwork.Msg
     | ArtworkMsg Artwork.Msg
+    | SaveToken (Maybe String)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -104,16 +107,16 @@ update msg model =
 
         SignupMsg msg ->
             let
-                ( signupModel, cmd, userKey ) =
+                ( signupModel, cmd, userId ) =
                     Signup.update msg model.signup
 
                 loggedIn =
-                    userKey /= Nothing
+                    userId /= Nothing
 
-                saveUserKeyCmd =
-                    case userKey of
+                saveUserIdCmd =
+                    case userId of
                         Just key ->
-                            saveUserKey key
+                            saveUserId key
 
                         Nothing ->
                             Cmd.none
@@ -121,7 +124,7 @@ update msg model =
                 ( { model | signup = signupModel }
                 , Cmd.batch
                     [ Cmd.map SignupMsg cmd
-                    , saveUserKeyCmd
+                    , saveUserIdCmd
                     ]
                 )
 
@@ -136,28 +139,28 @@ update msg model =
 
         LoginMsg msg ->
             let
-                ( loginModel, cmd, userKey ) =
+                ( loginModel, cmd, userId ) =
                     Login.update msg model.login
 
                 loggedIn =
-                    userKey /= Nothing
+                    userId /= Nothing
 
-                saveUserKeyCmd =
-                    case userKey of
+                saveUserIdCmd =
+                    case userId of
                         Just key ->
-                            saveUserKey key
+                            saveUserId key
 
                         Nothing ->
                             Cmd.none
             in
                 ( { model
                     | login = loginModel
-                    , userKey = userKey
+                    , userId = userId
                     , loggedIn = loggedIn
                   }
                 , Cmd.batch
                     [ Cmd.map LoginMsg cmd
-                    , saveUserKeyCmd
+                    , saveUserIdCmd
                     ]
                 )
 
@@ -178,6 +181,11 @@ update msg model =
                 ( { model | artwork = artworkModel }
                 , Cmd.map ArtworkMsg cmd
                 )
+
+        SaveToken token ->
+            ( { model | token = token }
+            , Navigation.newUrl "#/gallery"
+            )
 
 
 
@@ -335,9 +343,13 @@ locationToMsg location =
         |> ChangePage
 
 
-main : Program Never Model Msg
+type alias Flags =
+    { token : Maybe String }
+
+
+main : Program Flags Model Msg
 main =
-    Navigation.program locationToMsg
+    Navigation.programWithFlags locationToMsg
         { init = init
         , update = update
         , view = view
@@ -345,4 +357,7 @@ main =
         }
 
 
-port saveUserKey : String -> Cmd msg
+port saveUserId : String -> Cmd msg
+
+
+port saveToken : String -> Cmd msg

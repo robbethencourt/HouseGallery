@@ -1,7 +1,8 @@
 require('./styles/main.scss')
 const Elm = require('../elm/Main')
 const firebaseHelper = require('./utils/firebaseHelper')
-var app = Elm.Main.embed(document.getElementById('HouseGallery'))
+const token = localStorage.getItem('token')
+var app = Elm.Main.embed(document.getElementById('HouseGallery'), {token: token})
 
 // Subscriptions from Elm
 
@@ -17,6 +18,7 @@ app.ports.saveUser.subscribe(function (elmUserRecord) {
   firebaseHelper.addUser(userToSave)
     .then(function (fbResponse) {
       console.log(fbResponse)
+      localStorage.setItem('token', fbResponse.refreshToken)
       app.ports.userSaved.send(fbResponse.uid)
     }, function (error) {
       if (error) console.log('Error: {error}')
@@ -34,6 +36,7 @@ app.ports.fetchingUser.subscribe(function (elmLoginRecord) {
   firebaseHelper.checkUser(userToCheck)
     .then(function (fbResponse) {
       console.log(fbResponse)
+      localStorage.setItem('token', fbResponse.refreshToken)
       app.ports.userLoggedIn.send(fbResponse.uid)
     }, function (error) {
       if (error) console.log('Error: {error}')
