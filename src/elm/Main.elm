@@ -9,6 +9,7 @@ import Gallery
 import Login
 import AddArtwork
 import Artwork
+import Json.Decode as JD exposing (..)
 
 
 -- model
@@ -22,7 +23,7 @@ type alias Model =
     , addArtwork : AddArtwork.Model
     , artwork : Artwork.Model
     , token : Maybe String
-    , userId : Maybe String
+    , uid : Maybe String
     , loggedIn : Bool
     }
 
@@ -42,6 +43,12 @@ init flags location =
         page =
             hashToPage location.hash
 
+        loggedIn =
+            flags.token /= Nothing
+
+        ( updatedPage, cmd ) =
+            authedRedirect page loggedIn
+
         ( signupInitModel, signupCmd ) =
             Signup.init
 
@@ -58,15 +65,15 @@ init flags location =
             Artwork.init
 
         initModel =
-            { page = page
+            { page = updatedPage
             , signup = signupInitModel
             , gallery = galleryInitModel
             , login = loginInitModel
             , addArtwork = addArtworkInitModel
             , artwork = artworkInitModel
             , token = flags.token
-            , userId = Nothing
-            , loggedIn = flags.token /= Nothing
+            , uid = Nothing
+            , loggedIn = loggedIn
             }
 
         cmds =
@@ -76,6 +83,7 @@ init flags location =
                 , Cmd.map LoginMsg loginCmd
                 , Cmd.map AddArtworkMsg addArtworkCmd
                 , Cmd.map ArtworkMsg artworkCmd
+                , cmd
                 ]
     in
         ( initModel, cmds )
@@ -93,7 +101,19 @@ type Msg
     | LoginMsg Login.Msg
     | AddArtworkMsg AddArtwork.Msg
     | ArtworkMsg Artwork.Msg
-    | SaveToken (Maybe String)
+    | Logout
+
+
+authPages : List Page
+authPages =
+    [ GalleryPage
+    , AddArtworkPage
+    , ArtworkPage
+    ]
+
+
+
+-- | SaveToken (Maybe String)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -103,28 +123,63 @@ update msg model =
             ( { model | page = page }, Navigation.newUrl <| pageToHash page )
 
         ChangePage page ->
-            ( { model | page = page }, Cmd.none )
+            let
+                ( updatedPage, cmd ) =
+                    authedRedirect page model.loggedIn
+            in
+                ( { model | page = updatedPage }, cmd )
 
         SignupMsg msg ->
             let
-                ( signupModel, cmd, userId ) =
+                ( signupModel, cmd, fbData ) =
                     Signup.update msg model.signup
 
                 loggedIn =
-                    userId /= Nothing
+                    fbData /= Nothing
 
-                saveUserIdCmd =
-                    case userId of
-                        Just key ->
-                            saveUserId key
+                uidDecoded =
+                    case fbData of
+                        Just jStringify ->
+                            case (decoder jStringify "uid") of
+                                Ok stringWithoutOK ->
+                                    Just stringWithoutOK
+
+                                Err error ->
+                                    Just "uid error"
 
                         Nothing ->
-                            Cmd.none
+                            Just "no uid"
+
+                tokenDecoded =
+                    case fbData of
+                        Just jStringifyToken ->
+                            case (decoder jStringifyToken "token") of
+                                Ok stringTokenWithoutOK ->
+                                    Just stringTokenWithoutOK
+
+                                Err error ->
+                                    Just "token error"
+
+                        Nothing ->
+                            Just "no token"
+
+                -- saveUserIdCmd =
+                --     case userId of
+                --         Just key ->
+                --             saveUserId key
+                --
+                --         Nothing ->
+                --             Cmd.none
             in
-                ( { model | signup = signupModel }
+                ( { model
+                    | signup = signupModel
+                    , token = tokenDecoded
+                    , uid = uidDecoded
+                    , loggedIn = loggedIn
+                  }
                 , Cmd.batch
                     [ Cmd.map SignupMsg cmd
-                    , saveUserIdCmd
+                      -- , saveUserIdCmd
                     ]
                 )
 
@@ -139,35 +194,65 @@ update msg model =
 
         LoginMsg msg ->
             let
-                ( loginModel, cmd, userId ) =
+                ( loginModel, cmd, fbData ) =
                     Login.update msg model.login
 
                 loggedIn =
-                    userId /= Nothing
+                    fbData /= Nothing
 
-                saveUserIdCmd =
-                    case userId of
-                        Just key ->
-                            saveUserId key
+                uidDecoded =
+                    case fbData of
+                        Just jStringify ->
+                            case (decoder jStringify "uid") of
+                                Ok stringWithoutOK ->
+                                    Just stringWithoutOK
+
+                                Err error ->
+                                    Just "uid error"
 
                         Nothing ->
-                            Cmd.none
+                            Just "no uid"
+
+                tokenDecoded =
+                    case fbData of
+                        Just jStringifyToken ->
+                            case (decoder jStringifyToken "token") of
+                                Ok stringTokenWithoutOK ->
+                                    Just stringTokenWithoutOK
+
+                                Err error ->
+                                    Just "token error"
+
+                        Nothing ->
+                            Just "no token"
+
+                -- saveUserIdCmd =
+                --     case userId of
+                --         Just key ->
+                --             saveUserId key
+                --
+                --         Nothing ->
+                --             Cmd.none
             in
                 ( { model
                     | login = loginModel
-                    , userId = userId
+                    , token = tokenDecoded
+                    , uid = uidDecoded
                     , loggedIn = loggedIn
                   }
                 , Cmd.batch
                     [ Cmd.map LoginMsg cmd
-                    , saveUserIdCmd
+                      -- , saveUserIdCmd
                     ]
                 )
 
         AddArtworkMsg msg ->
             let
                 ( addArtworkModel, cmd ) =
-                    AddArtwork.update msg model.addArtwork
+                    AddArtwork.update
+                        (Maybe.withDefault "" model.uid)
+                        msg
+                        model.addArtwork
             in
                 ( { model | addArtwork = addArtworkModel }
                 , Cmd.map AddArtworkMsg cmd
@@ -182,13 +267,36 @@ update msg model =
                 , Cmd.map ArtworkMsg cmd
                 )
 
-        SaveToken token ->
-            ( { model | token = token }
-            , Navigation.newUrl "#/gallery"
+        Logout ->
+            ( { model
+                | token = Nothing
+                , loggedIn = False
+              }
+            , Cmd.batch
+                [ logout ()
+                , Navigation.newUrl "#/login"
+                ]
             )
 
 
+authForPage : Page -> Bool -> Bool
+authForPage page loggedIn =
+    loggedIn || not (List.member page authPages)
 
+
+authedRedirect : Page -> Bool -> ( Page, Cmd Msg )
+authedRedirect page loggedIn =
+    if authForPage page loggedIn then
+        ( page, Cmd.none )
+    else
+        ( LoginPage, Navigation.modifyUrl <| pageToHash LoginPage )
+
+
+
+-- SaveToken token ->
+--     ( { model | token = token }
+--     , Navigation.newUrl "#/gallery"
+--     )
 -- view
 
 
@@ -231,24 +339,36 @@ view model =
 
 pageHeader : Model -> Html Msg
 pageHeader model =
-    header []
-        [ nav [ class "navbar" ]
-            [ ul [ class "nav navbar-nav navbar-left" ]
-                [ li []
-                    [ a [ href "#/" ] [ text "Home" ] ]
-                , li []
-                    [ a [ onClick (Navigate GalleryPage) ] [ text "Gallery" ] ]
-                , li []
-                    [ a [ onClick (Navigate AddArtworkPage) ] [ text "Add Artwork" ] ]
+    if model.loggedIn then
+        header []
+            [ nav [ class "navbar" ]
+                [ ul [ class "nav navbar-nav navbar-left" ]
+                    [ li []
+                        [ a [ href "#/" ] [ text "Home" ] ]
+                    , li []
+                        [ a [ onClick (Navigate GalleryPage) ] [ text "Gallery" ] ]
+                    , li []
+                        [ a [ onClick (Navigate AddArtworkPage) ] [ text "Add Artwork" ] ]
+                    ]
+                , ul [ class "nav navbar-nav navbar-right" ]
+                    [ li []
+                        [ a [ onClick Logout ] [ text "Logout" ] ]
+                    ]
                 ]
-            , ul [ class "nav navbar-nav navbar-right" ]
-                [ li []
-                    [ a [ onClick (Navigate LoginPage) ] [ text "Login" ] ]
-                , li []
-                    [ a [ onClick (Navigate SignupPage) ] [ text "Signup" ] ]
-                ]
+            , p [] [ text (toString model) ]
             ]
-        ]
+    else
+        header []
+            [ nav [ class "navbar" ]
+                [ ul [ class "nav navbar-nav navbar-right" ]
+                    [ li []
+                        [ a [ onClick (Navigate LoginPage) ] [ text "Login" ] ]
+                    , li []
+                        [ a [ onClick (Navigate SignupPage) ] [ text "Signup" ] ]
+                    ]
+                ]
+            , p [] [ text (toString model) ]
+            ]
 
 
 
@@ -286,10 +406,10 @@ hashToPage : String -> Page
 hashToPage hash =
     case hash of
         "#/" ->
-            SignupPage
+            LoginPage
 
         "" ->
-            SignupPage
+            LoginPage
 
         "#/signup" ->
             SignupPage
@@ -332,6 +452,11 @@ pageToHash page =
             "#notFound"
 
 
+decoder : String -> String -> Result String String
+decoder jsonToDecode jsonKey =
+    JD.decodeString (field jsonKey string) jsonToDecode
+
+
 
 -- main
 
@@ -357,7 +482,11 @@ main =
         }
 
 
-port saveUserId : String -> Cmd msg
+port logout : () -> Cmd msg
 
 
-port saveToken : String -> Cmd msg
+
+-- port saveUserId : String -> Cmd msg
+--
+--
+-- port saveToken : String -> Cmd msg

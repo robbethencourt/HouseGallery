@@ -1,8 +1,14 @@
-module AddArtwork exposing (..)
+port module AddArtwork exposing (..)
 
 import Html exposing (..)
 import Html.Events exposing (..)
 import Html.Attributes exposing (..)
+import Json.Encode as JE
+
+
+-- import Json.Decode as JD exposing (field)
+
+import Navigation
 
 
 -- model
@@ -62,8 +68,8 @@ type Msg
     | Submit
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
+update : String -> Msg -> Model -> ( Model, Cmd Msg )
+update uid msg model =
     case msg of
         ArtistInput artist ->
             ( { model
@@ -114,7 +120,121 @@ update msg model =
             )
 
         Submit ->
-            ( model, Cmd.none )
+            let
+                updatedModel =
+                    validate model
+
+                body =
+                    JE.object
+                        [ ( "artist", JE.string model.artist )
+                        , ( "title", JE.string model.title )
+                        , ( "medium", JE.string model.medium )
+                        , ( "year", JE.string model.year )
+                        , ( "price", JE.string model.price )
+                        , ( "artworkImage", JE.string model.artworkImage )
+                        , ( "uid", JE.string uid )
+                        ]
+                        |> JE.encode 4
+
+                cmd =
+                    addArtworkToFb body
+            in
+                if isValid updatedModel then
+                    ( initModel
+                    , Cmd.batch
+                        [ cmd
+                        , Navigation.newUrl "#/gallery"
+                        ]
+                    )
+                else
+                    ( updatedModel, Cmd.none )
+
+
+isValid : Model -> Bool
+isValid model =
+    model.artistError
+        == Nothing
+        && model.titleError
+        == Nothing
+        && model.mediumError
+        == Nothing
+        && model.yearError
+        == Nothing
+        && model.priceError
+        == Nothing
+        && model.artworkImageError
+        == Nothing
+
+
+validate : Model -> Model
+validate model =
+    model
+        |> validateArtist
+        |> validateTitle
+        |> validateMedium
+        |> validateYear
+        |> validatePrice
+        |> validateArtworkImage
+
+
+validateArtist : Model -> Model
+validateArtist model =
+    if String.isEmpty model.artist then
+        { model | artistError = Just "An Artist is Required" }
+    else
+        { model | artistError = Nothing }
+
+
+validateTitle : Model -> Model
+validateTitle model =
+    if String.isEmpty model.title then
+        { model | titleError = Just "A Title is Required" }
+    else
+        { model | titleError = Nothing }
+
+
+validateMedium : Model -> Model
+validateMedium model =
+    if String.isEmpty model.medium then
+        { model | mediumError = Just "A Medium is Required" }
+    else
+        { model | mediumError = Nothing }
+
+
+validateYear : Model -> Model
+validateYear model =
+    let
+        yearInt =
+            model.year
+                |> String.toInt
+                |> Result.withDefault 0
+    in
+        if yearInt <= 0 then
+            { model | yearError = Just "A Year is Required" }
+        else
+            { model | yearError = Nothing }
+
+
+validatePrice : Model -> Model
+validatePrice model =
+    let
+        priceFloat =
+            model.year
+                |> String.toFloat
+                |> Result.withDefault 0
+    in
+        if priceFloat <= 0 then
+            { model | priceError = Just "A Price is Required" }
+        else
+            { model | priceError = Nothing }
+
+
+validateArtworkImage : Model -> Model
+validateArtworkImage model =
+    if String.isEmpty model.artworkImage then
+        { model | artworkImageError = Just "An Image is Required" }
+    else
+        { model | artworkImageError = Nothing }
 
 
 
@@ -144,56 +264,62 @@ addArtwork model =
                         , onInput ArtistInput
                         ]
                         []
+                    , p [] [ text <| Maybe.withDefault "" model.artistError ]
                     ]
                 , label [] [ text "Title" ]
                 , div [ class "form-group" ]
                     [ input
-                        [ type_ "password"
+                        [ type_ "text"
                         , class "form-control"
                         , value model.title
                         , onInput TitleInput
                         ]
                         []
+                    , p [] [ text <| Maybe.withDefault "" model.titleError ]
                     ]
                 , label [] [ text "Medium" ]
                 , div [ class "form-group" ]
                     [ input
-                        [ type_ "password"
+                        [ type_ "text"
                         , class "form-control"
                         , value model.medium
                         , onInput MediumInput
                         ]
                         []
+                    , p [] [ text <| Maybe.withDefault "" model.mediumError ]
                     ]
                 , label [] [ text "Year" ]
                 , div [ class "form-group" ]
                     [ input
-                        [ type_ "password"
+                        [ type_ "text"
                         , class "form-control"
                         , value model.year
                         , onInput YearInput
                         ]
                         []
+                    , p [] [ text <| Maybe.withDefault "" model.yearError ]
                     ]
                 , label [] [ text "Price" ]
                 , div [ class "form-group" ]
                     [ input
-                        [ type_ "password"
+                        [ type_ "text"
                         , class "form-control"
                         , value model.price
                         , onInput PriceInput
                         ]
                         []
+                    , p [] [ text <| Maybe.withDefault "" model.priceError ]
                     ]
                 , label [] [ text "Artwork Image File" ]
                 , div [ class "form-group" ]
                     [ input
-                        [ type_ "password"
+                        [ type_ "text"
                         , class "form-control"
                         , value model.artworkImage
                         , onInput ArtworkImageInput
                         ]
                         []
+                    , p [] [ text <| Maybe.withDefault "" model.artworkImageError ]
                     ]
                 , div [ class "form-group" ]
                     [ label [] []
@@ -226,3 +352,10 @@ errorPanel error =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.none
+
+
+
+-- ports
+
+
+port addArtworkToFb : String -> Cmd msg

@@ -19,7 +19,10 @@ app.ports.saveUser.subscribe(function (elmUserRecord) {
     .then(function (fbResponse) {
       console.log(fbResponse)
       localStorage.setItem('token', fbResponse.refreshToken)
-      app.ports.userSaved.send(fbResponse.uid)
+      app.ports.userSaved.send(JSON.stringify({
+        uid: fbResponse.uid,
+        token: fbResponse.refreshToken
+      }))
     }, function (error) {
       if (error) console.log('Error: {error}')
     })
@@ -37,8 +40,21 @@ app.ports.fetchingUser.subscribe(function (elmLoginRecord) {
     .then(function (fbResponse) {
       console.log(fbResponse)
       localStorage.setItem('token', fbResponse.refreshToken)
-      app.ports.userLoggedIn.send(fbResponse.uid)
+      app.ports.userLoggedIn.send(JSON.stringify({
+        uid: fbResponse.uid,
+        token: fbResponse.refreshToken
+      }))
     }, function (error) {
       if (error) console.log('Error: {error}')
     })
+})
+
+// Logout
+app.ports.logout.subscribe(function () {
+  localStorage.clear()
+})
+
+// Add ArtworkPage
+app.ports.addArtworkToFb.subscribe(function (elmArtworkToAdd) {
+  console.log(elmArtworkToAdd)
 })

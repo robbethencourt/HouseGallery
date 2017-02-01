@@ -75,14 +75,14 @@ update msg model =
         Error error ->
             ( { model | error = Just error }, Cmd.none, Nothing )
 
-        UserSaved key ->
+        UserSaved fbData ->
             ( { model
                 | username = ""
                 , email = ""
                 , password = ""
               }
             , Navigation.newUrl "#/gallery"
-            , Just key
+            , Just fbData
             )
 
 
