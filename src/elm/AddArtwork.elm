@@ -66,6 +66,7 @@ type Msg
     | PriceInput String
     | ArtworkImageInput String
     | Submit
+    | ArtworkAdded String
 
 
 update : String -> Msg -> Model -> ( Model, Cmd Msg )
@@ -96,20 +97,10 @@ update uid msg model =
             )
 
         YearInput year ->
-            ( { model
-                | year = year
-                , yearError = Nothing
-              }
-            , Cmd.none
-            )
+            yearInputCheck model year
 
         PriceInput price ->
-            ( { model
-                | price = price
-                , priceError = Nothing
-              }
-            , Cmd.none
-            )
+            priceInputCheck model price
 
         ArtworkImageInput artworkImage ->
             ( { model
@@ -140,14 +131,59 @@ update uid msg model =
                     addArtworkToFb body
             in
                 if isValid updatedModel then
-                    ( initModel
-                    , Cmd.batch
-                        [ cmd
-                        , Navigation.newUrl "#/gallery"
-                        ]
-                    )
+                    ( initModel, cmd )
                 else
                     ( updatedModel, Cmd.none )
+
+        ArtworkAdded fbData ->
+            if fbData == "Error" then
+                ( { model | error = Just fbData }, Cmd.none )
+            else
+                ( initModel, Navigation.newUrl "#/gallery" )
+
+
+yearInputCheck : Model -> String -> ( Model, Cmd Msg )
+yearInputCheck model year =
+    let
+        yearInt =
+            year
+                |> String.toInt
+                |> Result.withDefault 0
+
+        yearError =
+            if yearInt <= 0 then
+                Just "Enter a positive number"
+            else
+                Nothing
+    in
+        ( { model
+            | year = year
+            , yearError = yearError
+          }
+        , Cmd.none
+        )
+
+
+priceInputCheck : Model -> String -> ( Model, Cmd Msg )
+priceInputCheck model price =
+    let
+        priceInt =
+            price
+                |> String.toFloat
+                |> Result.withDefault 0
+
+        priceError =
+            if priceInt <= 0 then
+                Just "Enter a positive number"
+            else
+                Nothing
+    in
+        ( { model
+            | price = price
+            , priceError = priceError
+          }
+        , Cmd.none
+        )
 
 
 isValid : Model -> Bool
@@ -351,7 +387,8 @@ errorPanel error =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.none
+    Sub.batch
+        [ artworkAdded ArtworkAdded ]
 
 
 
@@ -359,3 +396,6 @@ subscriptions model =
 
 
 port addArtworkToFb : String -> Cmd msg
+
+
+port artworkAdded : (String -> msg) -> Sub msg

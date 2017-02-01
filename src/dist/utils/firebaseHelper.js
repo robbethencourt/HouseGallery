@@ -18,7 +18,20 @@ const firebaseHelper = {
         var errorMessage = error.message
         if (error) `Error Code: {errorCode} | Error Message: {errorMessage}`
       })
-  } // end checkUser
+  }, // end checkUser
+  addArtwork: function (artworkToAdd) {
+    console.log(artworkToAdd)
+    return fbApp.database()
+      .ref('artwork')
+      .push(artworkToAdd)
+  }, // end addArtwork()
+  addArtworkToUserGallery: function (uidAndArtworkId) {
+    console.log(uidAndArtworkId)
+    return fbApp.database()
+      .ref('userGalleries')
+      .child(uidAndArtworkId.uid)
+      .push(uidAndArtworkId.artworkId)
+  }
 }
 
 module.exports = firebaseHelper

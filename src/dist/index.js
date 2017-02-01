@@ -56,5 +56,34 @@ app.ports.logout.subscribe(function () {
 
 // Add ArtworkPage
 app.ports.addArtworkToFb.subscribe(function (elmArtworkToAdd) {
-  console.log(elmArtworkToAdd)
+  const jsonParsedElmArtworkRecord = JSON.parse(elmArtworkToAdd)
+  const artworkFbObject = {
+    artist: jsonParsedElmArtworkRecord.artist,
+    title: jsonParsedElmArtworkRecord.title,
+    medium: jsonParsedElmArtworkRecord.medium,
+    year: jsonParsedElmArtworkRecord.year,
+    price: jsonParsedElmArtworkRecord.price,
+    artworkImageFile: jsonParsedElmArtworkRecord.artworkImage,
+    createdOn: Date.now(),
+    uid: jsonParsedElmArtworkRecord.uid
+  }
+  firebaseHelper.addArtwork(artworkFbObject)
+    .then(function (fbResponse) {
+      console.log(fbResponse)
+      const uidAndArtworkId = {
+        uid: artworkFbObject.uid,
+        artworkId: fbResponse.path.o[1]
+      }
+      firebaseHelper.addArtworkToUserGallery(uidAndArtworkId)
+        .then(function (fbResponseFromUserGallery) {
+          console.log(fbResponseFromUserGallery)
+          app.ports.artworkAdded.send('all items added')
+        }, function (errorInner) {
+          if (errorInner) console.log(`Error: {errorInner}`)
+          app.ports.artworkAdded.send('Error')
+        })
+    }, function (error) {
+      if (error) console.log('Error: {error}')
+      app.ports.artworkAdded.send('Error')
+    })
 })
