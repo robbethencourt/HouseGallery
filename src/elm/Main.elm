@@ -22,7 +22,7 @@ type alias Model =
     , login : Login.Model
     , addArtwork : AddArtwork.Model
     , artwork : Artwork.Model
-    , token : Maybe String
+    , fbLoggedIn : Maybe String
     , uid : Maybe String
     , loggedIn : Bool
     }
@@ -44,7 +44,7 @@ init flags location =
             hashToPage location.hash
 
         loggedIn =
-            flags.token /= Nothing
+            flags.fbLoggedIn /= Nothing
 
         ( updatedPage, cmd ) =
             authedRedirect page loggedIn
@@ -71,7 +71,7 @@ init flags location =
             , login = loginInitModel
             , addArtwork = addArtworkInitModel
             , artwork = artworkInitModel
-            , token = flags.token
+            , fbLoggedIn = flags.fbLoggedIn
             , uid = Nothing
             , loggedIn = loggedIn
             }
@@ -112,10 +112,6 @@ authPages =
     ]
 
 
-
--- | SaveToken (Maybe String)
-
-
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
@@ -150,37 +146,27 @@ update msg model =
                         Nothing ->
                             Just "no uid"
 
-                tokenDecoded =
+                fbLoggedInDecoded =
                     case fbData of
-                        Just jStringifyToken ->
-                            case (decoder jStringifyToken "token") of
-                                Ok stringTokenWithoutOK ->
-                                    Just stringTokenWithoutOK
+                        Just jStringifyFbLoggedIn ->
+                            case (decoder jStringifyFbLoggedIn "fbLoggedIn") of
+                                Ok stringFbLoggedInWithoutOK ->
+                                    Just stringFbLoggedInWithoutOK
 
                                 Err error ->
-                                    Just "token error"
+                                    Just "fbLoggedIn error"
 
                         Nothing ->
-                            Just "no token"
-
-                -- saveUserIdCmd =
-                --     case userId of
-                --         Just key ->
-                --             saveUserId key
-                --
-                --         Nothing ->
-                --             Cmd.none
+                            Just "no fbLoggedIn"
             in
                 ( { model
                     | signup = signupModel
-                    , token = tokenDecoded
+                    , fbLoggedIn = fbLoggedInDecoded
                     , uid = uidDecoded
                     , loggedIn = loggedIn
                   }
                 , Cmd.batch
-                    [ Cmd.map SignupMsg cmd
-                      -- , saveUserIdCmd
-                    ]
+                    [ Cmd.map SignupMsg cmd ]
                 )
 
         GalleryMsg msg ->
@@ -213,37 +199,27 @@ update msg model =
                         Nothing ->
                             Just "no uid"
 
-                tokenDecoded =
+                fbLoggedInDecoded =
                     case fbData of
-                        Just jStringifyToken ->
-                            case (decoder jStringifyToken "token") of
-                                Ok stringTokenWithoutOK ->
-                                    Just stringTokenWithoutOK
+                        Just jStringifyFbLoggedIn ->
+                            case (decoder jStringifyFbLoggedIn "fbLoggedIn") of
+                                Ok stringFbLoggedInWithoutOK ->
+                                    Just stringFbLoggedInWithoutOK
 
                                 Err error ->
-                                    Just "token error"
+                                    Just "fbLoggedIn error"
 
                         Nothing ->
-                            Just "no token"
-
-                -- saveUserIdCmd =
-                --     case userId of
-                --         Just key ->
-                --             saveUserId key
-                --
-                --         Nothing ->
-                --             Cmd.none
+                            Just "no fbLoggedIn"
             in
                 ( { model
                     | login = loginModel
-                    , token = tokenDecoded
+                    , fbLoggedIn = fbLoggedInDecoded
                     , uid = uidDecoded
                     , loggedIn = loggedIn
                   }
                 , Cmd.batch
-                    [ Cmd.map LoginMsg cmd
-                      -- , saveUserIdCmd
-                    ]
+                    [ Cmd.map LoginMsg cmd ]
                 )
 
         AddArtworkMsg msg ->
@@ -269,7 +245,8 @@ update msg model =
 
         Logout ->
             ( { model
-                | token = Nothing
+                | fbLoggedIn = Nothing
+                , uid = Nothing
                 , loggedIn = False
               }
             , Cmd.batch
@@ -293,10 +270,6 @@ authedRedirect page loggedIn =
 
 
 
--- SaveToken token ->
---     ( { model | token = token }
---     , Navigation.newUrl "#/gallery"
---     )
 -- view
 
 
@@ -344,7 +317,7 @@ pageHeader model =
             [ nav [ class "navbar" ]
                 [ ul [ class "nav navbar-nav navbar-left" ]
                     [ li []
-                        [ a [ href "#/" ] [ text "Home" ] ]
+                        [ a [ href "#/gallery" ] [ text "Home" ] ]
                     , li []
                         [ a [ onClick (Navigate GalleryPage) ] [ text "Gallery" ] ]
                     , li []
@@ -469,7 +442,7 @@ locationToMsg location =
 
 
 type alias Flags =
-    { token : Maybe String }
+    { fbLoggedIn : Maybe String }
 
 
 main : Program Flags Model Msg
@@ -483,10 +456,3 @@ main =
 
 
 port logout : () -> Cmd msg
-
-
-
--- port saveUserId : String -> Cmd msg
---
---
--- port saveToken : String -> Cmd msg

@@ -1,8 +1,19 @@
 require('./styles/main.scss')
 const Elm = require('../elm/Main')
 const firebaseHelper = require('./utils/firebaseHelper')
-const token = localStorage.getItem('token')
-var app = Elm.Main.embed(document.getElementById('HouseGallery'), {token: token})
+const fbLoggedIn = localStorage.getItem('fbLoggedIn')
+var app = Elm.Main.embed(document.getElementById('HouseGallery'), {fbLoggedIn: fbLoggedIn})
+
+// get user if one is signed in to firebaseHelper
+firebase.auth().onAuthStateChanged(function (user) {
+  if (user) {
+    app.ports.userLoggedIn.send(JSON.stringify({
+      uid: user.uid,
+      fbLoggedIn: 'True'
+    }))
+    getUserAndGallery(user.uid)
+  }
+})
 
 // Subscriptions from Elm
 
@@ -18,10 +29,10 @@ app.ports.saveUser.subscribe(function (elmUserRecord) {
   firebaseHelper.addUser(userToSave)
     .then(function (fbResponse) {
       console.log(fbResponse)
-      localStorage.setItem('token', fbResponse.refreshToken)
+      localStorage.setItem('fbLoggedIn', 'True')
       app.ports.userSaved.send(JSON.stringify({
         uid: fbResponse.uid,
-        token: fbResponse.refreshToken
+        fbLoggedIn: 'True'
       }))
     }, function (error) {
       if (error) console.log('Error: {error}')
@@ -39,10 +50,10 @@ app.ports.fetchingUser.subscribe(function (elmLoginRecord) {
   firebaseHelper.checkUser(userToCheck)
     .then(function (fbResponse) {
       console.log(fbResponse)
-      localStorage.setItem('token', fbResponse.refreshToken)
+      localStorage.setItem('fbLoggedIn', 'True')
       app.ports.userLoggedIn.send(JSON.stringify({
         uid: fbResponse.uid,
-        token: fbResponse.refreshToken
+        fbLoggedIn: 'True'
       }))
     }, function (error) {
       if (error) console.log('Error: {error}')
@@ -52,6 +63,7 @@ app.ports.fetchingUser.subscribe(function (elmLoginRecord) {
 // Logout
 app.ports.logout.subscribe(function () {
   localStorage.clear()
+  window.location.reload(true)
 })
 
 // Add ArtworkPage
@@ -78,6 +90,10 @@ app.ports.addArtworkToFb.subscribe(function (elmArtworkToAdd) {
         .then(function (fbResponseFromUserGallery) {
           console.log(fbResponseFromUserGallery)
           app.ports.artworkAdded.send('all items added')
+
+          // clear out the elm gallery model before calling for the artwork again
+          app.ports.clearGallery.send(null)
+          getUserAndGallery(jsonParsedElmArtworkRecord.uid)
         }, function (errorInner) {
           if (errorInner) console.log(`Error: {errorInner}`)
           app.ports.artworkAdded.send('Error')
@@ -85,5 +101,59 @@ app.ports.addArtworkToFb.subscribe(function (elmArtworkToAdd) {
     }, function (error) {
       if (error) console.log('Error: {error}')
       app.ports.artworkAdded.send('Error')
+    })
+})
+
+// gallery
+// call to firebase to get list of artwork for the user's gallery
+function getUserAndGallery (uid) {
+  firebaseHelper.getUsersGallery(uid)
+    .then(function (fbGalleryResponse) {
+      const fbGalleryObject = fbGalleryResponse.val()
+      const arrayOfArtworkIds =
+        Object.keys(fbGalleryObject)
+          .map(key => fbGalleryObject[key])
+
+      // array of db calls to pass to Promise.all and then pass to Elm
+      const arrayOfArtworkObjects =
+        arrayOfArtworkIds
+          .map(artwork => {
+            return firebaseHelper.getArtwork(artwork)
+              .then(function (fbArtworkObjResponse) {
+                return {
+                  artworkId: artwork,
+                  artworkObj: fbArtworkObjResponse.val()}
+              })
+          })
+      Promise.all(arrayOfArtworkObjects).then(gallery => {
+        gallery
+          .forEach(artwork => {
+            app.ports.usersGallery.send(JSON.stringify({
+              artworkId: artwork.artworkId,
+              artist: artwork.artworkObj.artist,
+              title: artwork.artworkObj.title,
+              year: artwork.artworkObj.year,
+              artworkImageFile: artwork.artworkObj.artworkImageFile
+            }))
+          })
+      })
+    })
+}
+
+// artwork and artwork Edit
+app.ports.getOneArtwork.subscribe(function (artworkId) {
+  firebaseHelper.getArtwork(artworkId)
+    .then(function (fbArtworkResponse) {
+      const fbArtworkObj = fbArtworkResponse.val()
+      console.log(fbArtworkObj)
+      app.ports.artworkReceived.send(JSON.stringify({
+        artworkId,
+        artist: fbArtworkObj.artist,
+        title: fbArtworkObj.title,
+        medium: fbArtworkObj.medium,
+        year: fbArtworkObj.year,
+        price: fbArtworkObj.price,
+        artworkImageFile: fbArtworkObj.artworkImageFile
+      }))
     })
 })

@@ -26,8 +26,8 @@ type alias Model =
     , yearError : Maybe String
     , price : String
     , priceError : Maybe String
-    , artworkImage : String
-    , artworkImageError : Maybe String
+    , artworkImageFile : String
+    , artworkImageFileError : Maybe String
     }
 
 
@@ -44,8 +44,8 @@ initModel =
     , yearError = Nothing
     , price = ""
     , priceError = Nothing
-    , artworkImage = ""
-    , artworkImageError = Nothing
+    , artworkImageFile = ""
+    , artworkImageFileError = Nothing
     }
 
 
@@ -102,10 +102,10 @@ update uid msg model =
         PriceInput price ->
             priceInputCheck model price
 
-        ArtworkImageInput artworkImage ->
+        ArtworkImageInput artworkImageFile ->
             ( { model
-                | artworkImage = artworkImage
-                , artworkImageError = Nothing
+                | artworkImageFile = artworkImageFile
+                , artworkImageFileError = Nothing
               }
             , Cmd.none
             )
@@ -122,7 +122,7 @@ update uid msg model =
                         , ( "medium", JE.string model.medium )
                         , ( "year", JE.string model.year )
                         , ( "price", JE.string model.price )
-                        , ( "artworkImage", JE.string model.artworkImage )
+                        , ( "artworkImage", JE.string model.artworkImageFile )
                         , ( "uid", JE.string uid )
                         ]
                         |> JE.encode 4
@@ -198,7 +198,7 @@ isValid model =
         == Nothing
         && model.priceError
         == Nothing
-        && model.artworkImageError
+        && model.artworkImageFileError
         == Nothing
 
 
@@ -267,10 +267,10 @@ validatePrice model =
 
 validateArtworkImage : Model -> Model
 validateArtworkImage model =
-    if String.isEmpty model.artworkImage then
-        { model | artworkImageError = Just "An Image is Required" }
+    if String.isEmpty model.artworkImageFile then
+        { model | artworkImageFileError = Just "An Image is Required" }
     else
-        { model | artworkImageError = Nothing }
+        { model | artworkImageFileError = Nothing }
 
 
 
@@ -351,11 +351,11 @@ addArtwork model =
                     [ input
                         [ type_ "text"
                         , class "form-control"
-                        , value model.artworkImage
+                        , value model.artworkImageFile
                         , onInput ArtworkImageInput
                         ]
                         []
-                    , p [] [ text <| Maybe.withDefault "" model.artworkImageError ]
+                    , p [] [ text <| Maybe.withDefault "" model.artworkImageFileError ]
                     ]
                 , div [ class "form-group" ]
                     [ label [] []
