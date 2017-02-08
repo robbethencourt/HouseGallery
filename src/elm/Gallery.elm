@@ -1,9 +1,11 @@
-module Gallery exposing (..)
+port module Gallery exposing (..)
 
 import Html exposing (..)
 import Html.Events exposing (..)
 import Html.Attributes exposing (..)
 import Navigation
+import Json.Decode as JD
+import Json.Decode.Pipeline as JDP
 
 
 -- model
@@ -13,30 +15,25 @@ type alias Model =
     { error : Maybe String
     , gallery : List GalleryItem
     , active : Bool
+    , routeParam : String
     }
 
 
 type alias GalleryItem =
-    { paintingId : String
+    { artworkId : String
     , artist : String
     , title : String
-    , year : Int
-    , artworkIcon : String
+    , year : String
+    , artworkImageFile : String
     }
-
-
-tempGallery : List GalleryItem
-tempGallery =
-    [ GalleryItem "1" "Some Dude" "Painting of 1" 1997 "an href needs to go here"
-    , GalleryItem "2" "Some Woman" "Painting of the Number 2" 2003 "another href needed"
-    ]
 
 
 initModel : Model
 initModel =
     { error = Nothing
-    , gallery = tempGallery
+    , gallery = []
     , active = False
+    , routeParam = ""
     }
 
 
@@ -52,16 +49,51 @@ init =
 type Msg
     = Error String
     | ArtworkPage String
+    | UsersGallery String
+    | ClearGallery
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        ArtworkPage pId ->
-            ( initModel, Navigation.newUrl ("#/artwork/" ++ pId) )
+        ArtworkPage artworkId ->
+            ( { model
+                | routeParam = artworkId
+              }
+            , Cmd.batch
+                [ getOneArtwork artworkId
+                , Navigation.newUrl "#/artwork"
+                ]
+            )
 
         Error error ->
             ( { model | error = Just error }, Cmd.none )
+
+        UsersGallery jsonGallery ->
+            decodeJson jsonGallery model
+
+        ClearGallery ->
+            ( initModel, Cmd.none )
+
+
+decodeJson : String -> Model -> ( Model, Cmd Msg )
+decodeJson jsonGallery model =
+    case JD.decodeString decodeGalleryItem jsonGallery of
+        Ok artwork ->
+            ( { model | gallery = artwork :: model.gallery }, Cmd.none )
+
+        Err err ->
+            ( { model | error = Just err }, Cmd.none )
+
+
+decodeGalleryItem : JD.Decoder GalleryItem
+decodeGalleryItem =
+    JDP.decode GalleryItem
+        |> JDP.required "artworkId" JD.string
+        |> JDP.required "artist" JD.string
+        |> JDP.required "title" JD.string
+        |> JDP.required "year" JD.string
+        |> JDP.required "artworkImageFile" JD.string
 
 
 
@@ -82,17 +114,17 @@ gallery { gallery } =
         |> List.map painting
         |> tbody []
         |> (\g -> galleryHeader :: [ g ])
-        |> table []
+        |> table [ class "table table-striped" ]
 
 
 painting : GalleryItem -> Html Msg
-painting { artist, title, year, artworkIcon, paintingId } =
+painting { artist, title, year, artworkImageFile, artworkId } =
     tr []
         [ td [] [ text artist ]
-        , td [] [ a [ onClick (ArtworkPage paintingId) ] [ text title ] ]
-        , td [] [ text (toString year) ]
-        , td [] [ text (artworkIcon) ]
-        , td [] [ button [ class paintingId ] [ text "Edit" ] ]
+        , td [] [ a [ onClick (ArtworkPage artworkId) ] [ text title ] ]
+        , td [] [ text year ]
+        , td [] [ text artworkImageFile ]
+        , td [] [ button [ class artworkId ] [ text "Edit" ] ]
         ]
 
 
@@ -125,4 +157,16 @@ errorPanel error =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.none
+    Sub.batch
+        [ usersGallery UsersGallery
+        , clearGallery (always ClearGallery)
+        ]
+
+
+port usersGallery : (String -> msg) -> Sub msg
+
+
+port clearGallery : (() -> msg) -> Sub msg
+
+
+port getOneArtwork : String -> Cmd msg

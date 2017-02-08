@@ -1,4 +1,4 @@
-port module Login exposing (..)
+port module Signup exposing (..)
 
 import Html exposing (..)
 import Html.Events exposing (..)
@@ -11,7 +11,8 @@ import Navigation
 
 
 type alias Model =
-    { email : String
+    { username : String
+    , email : String
     , password : String
     , error : Maybe String
     }
@@ -19,8 +20,9 @@ type alias Model =
 
 initModel : Model
 initModel =
-    { email = ""
+    { username = ""
     , password = ""
+    , email = ""
     , error = Nothing
     }
 
@@ -35,16 +37,20 @@ init =
 
 
 type Msg
-    = EmailInput String
+    = UsernameInput String
+    | EmailInput String
     | PasswordInput String
     | Submit
     | Error String
-    | UserLoggedIn String
+    | UserSaved String
 
 
 update : Msg -> Model -> ( Model, Cmd Msg, Maybe String )
 update msg model =
     case msg of
+        UsernameInput username ->
+            ( { model | username = username }, Cmd.none, Nothing )
+
         EmailInput email ->
             ( { model | email = email }, Cmd.none, Nothing )
 
@@ -55,22 +61,24 @@ update msg model =
             let
                 body =
                     JE.object
-                        [ ( "email", JE.string model.email )
+                        [ ( "username", JE.string model.username )
+                        , ( "email", JE.string model.email )
                         , ( "password", JE.string model.password )
                         ]
                         |> JE.encode 4
 
                 cmd =
-                    fetchingUser body
+                    saveUser body
             in
                 ( model, cmd, Nothing )
 
         Error error ->
             ( { model | error = Just error }, Cmd.none, Nothing )
 
-        UserLoggedIn fbData ->
+        UserSaved fbData ->
             ( { model
-                | email = ""
+                | username = ""
+                , email = ""
                 , password = ""
               }
             , Navigation.newUrl "#/gallery"
@@ -78,29 +86,35 @@ update msg model =
             )
 
 
-
--- view
-
-
 view : Model -> Html Msg
 view model =
     div [ class "main" ]
         [ errorPanel model.error
-        , loginForm model
+        , signupForm model
         , p [] [ text (toString model) ]
         ]
 
 
-loginForm : Model -> Html Msg
-loginForm model =
+signupForm : Model -> Html Msg
+signupForm model =
     div [ class "row" ]
         [ div [ class "col-md-6 col-md-offset-3" ]
-            [ h2 [] [ text "Login" ]
+            [ h2 [] [ text "Signup" ]
             , Html.form [ class "signup-login", onSubmit Submit ]
-                [ label [] [ text "Email" ]
+                [ label [] [ text "Username" ]
                 , div [ class "form-group" ]
                     [ input
                         [ type_ "text"
+                        , class "form-control"
+                        , value model.username
+                        , onInput UsernameInput
+                        ]
+                        []
+                    ]
+                , label [] [ text "Email" ]
+                , div [ class "form-group" ]
+                    [ input
+                        [ type_ "email"
                         , class "form-control"
                         , value model.email
                         , onInput EmailInput
@@ -123,7 +137,7 @@ loginForm model =
                         [ type_ "submit"
                         , class "btn btn-default"
                         ]
-                        [ text "Login" ]
+                        [ text "Signup" ]
                     ]
                 ]
             ]
@@ -148,14 +162,10 @@ errorPanel error =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [ userLoggedIn UserLoggedIn ]
+        [ userSaved UserSaved ]
 
 
-
--- ports
-
-
-port fetchingUser : String -> Cmd msg
+port saveUser : String -> Cmd msg
 
 
-port userLoggedIn : (String -> msg) -> Sub msg
+port userSaved : (String -> msg) -> Sub msg

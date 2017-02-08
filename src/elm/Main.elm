@@ -4,9 +4,12 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Navigation
+import Signup
 import Gallery
 import Login
 import AddArtwork
+import Artwork
+import Json.Decode as JD exposing (..)
 
 
 -- model
@@ -14,26 +17,40 @@ import AddArtwork
 
 type alias Model =
     { page : Page
+    , signup : Signup.Model
     , gallery : Gallery.Model
     , login : Login.Model
     , addArtwork : AddArtwork.Model
-    , token : Maybe String
+    , artwork : Artwork.Model
+    , fbLoggedIn : Maybe String
+    , uid : Maybe String
     , loggedIn : Bool
     }
 
 
 type Page
     = NotFound
+    | SignupPage
     | GalleryPage
     | LoginPage
     | AddArtworkPage
+    | ArtworkPage
 
 
-init : Navigation.Location -> ( Model, Cmd Msg )
-init location =
+init : Flags -> Navigation.Location -> ( Model, Cmd Msg )
+init flags location =
     let
         page =
             hashToPage location.hash
+
+        loggedIn =
+            flags.fbLoggedIn /= Nothing
+
+        ( updatedPage, cmd ) =
+            authedRedirect page loggedIn
+
+        ( signupInitModel, signupCmd ) =
+            Signup.init
 
         ( galleryInitModel, galleryCmd ) =
             Gallery.init
@@ -44,20 +61,29 @@ init location =
         ( addArtworkInitModel, addArtworkCmd ) =
             AddArtwork.init
 
+        ( artworkInitModel, artworkCmd ) =
+            Artwork.init
+
         initModel =
-            { page = page
+            { page = updatedPage
+            , signup = signupInitModel
             , gallery = galleryInitModel
             , login = loginInitModel
             , addArtwork = addArtworkInitModel
-            , token = Nothing
-            , loggedIn = False
+            , artwork = artworkInitModel
+            , fbLoggedIn = flags.fbLoggedIn
+            , uid = Nothing
+            , loggedIn = loggedIn
             }
 
         cmds =
             Cmd.batch
-                [ Cmd.map GalleryMsg galleryCmd
+                [ Cmd.map SignupMsg signupCmd
+                , Cmd.map GalleryMsg galleryCmd
                 , Cmd.map LoginMsg loginCmd
                 , Cmd.map AddArtworkMsg addArtworkCmd
+                , Cmd.map ArtworkMsg artworkCmd
+                , cmd
                 ]
     in
         ( initModel, cmds )
@@ -70,9 +96,20 @@ init location =
 type Msg
     = Navigate Page
     | ChangePage Page
+    | SignupMsg Signup.Msg
     | GalleryMsg Gallery.Msg
     | LoginMsg Login.Msg
     | AddArtworkMsg AddArtwork.Msg
+    | ArtworkMsg Artwork.Msg
+    | Logout
+
+
+authPages : List Page
+authPages =
+    [ GalleryPage
+    , AddArtworkPage
+    , ArtworkPage
+    ]
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -82,7 +119,55 @@ update msg model =
             ( { model | page = page }, Navigation.newUrl <| pageToHash page )
 
         ChangePage page ->
-            ( { model | page = page }, Cmd.none )
+            let
+                ( updatedPage, cmd ) =
+                    authedRedirect page model.loggedIn
+            in
+                ( { model | page = updatedPage }, cmd )
+
+        SignupMsg msg ->
+            let
+                ( signupModel, cmd, fbData ) =
+                    Signup.update msg model.signup
+
+                loggedIn =
+                    fbData /= Nothing
+
+                uidDecoded =
+                    case fbData of
+                        Just jStringify ->
+                            case (decoder jStringify "uid") of
+                                Ok stringWithoutOK ->
+                                    Just stringWithoutOK
+
+                                Err error ->
+                                    Just "uid error"
+
+                        Nothing ->
+                            Just "no uid"
+
+                fbLoggedInDecoded =
+                    case fbData of
+                        Just jStringifyFbLoggedIn ->
+                            case (decoder jStringifyFbLoggedIn "fbLoggedIn") of
+                                Ok stringFbLoggedInWithoutOK ->
+                                    Just stringFbLoggedInWithoutOK
+
+                                Err error ->
+                                    Just "fbLoggedIn error"
+
+                        Nothing ->
+                            Just "no fbLoggedIn"
+            in
+                ( { model
+                    | signup = signupModel
+                    , fbLoggedIn = fbLoggedInDecoded
+                    , uid = uidDecoded
+                    , loggedIn = loggedIn
+                  }
+                , Cmd.batch
+                    [ Cmd.map SignupMsg cmd ]
+                )
 
         GalleryMsg msg ->
             let
@@ -95,28 +180,96 @@ update msg model =
 
         LoginMsg msg ->
             let
-                ( loginModel, cmd, token ) =
+                ( loginModel, cmd, fbData ) =
                     Login.update msg model.login
 
                 loggedIn =
-                    token /= Nothing
+                    fbData /= Nothing
+
+                uidDecoded =
+                    case fbData of
+                        Just jStringify ->
+                            case (decoder jStringify "uid") of
+                                Ok stringWithoutOK ->
+                                    Just stringWithoutOK
+
+                                Err error ->
+                                    Just "uid error"
+
+                        Nothing ->
+                            Just "no uid"
+
+                fbLoggedInDecoded =
+                    case fbData of
+                        Just jStringifyFbLoggedIn ->
+                            case (decoder jStringifyFbLoggedIn "fbLoggedIn") of
+                                Ok stringFbLoggedInWithoutOK ->
+                                    Just stringFbLoggedInWithoutOK
+
+                                Err error ->
+                                    Just "fbLoggedIn error"
+
+                        Nothing ->
+                            Just "no fbLoggedIn"
             in
                 ( { model
                     | login = loginModel
-                    , token = token
+                    , fbLoggedIn = fbLoggedInDecoded
+                    , uid = uidDecoded
                     , loggedIn = loggedIn
                   }
-                , Cmd.map LoginMsg cmd
+                , Cmd.batch
+                    [ Cmd.map LoginMsg cmd ]
                 )
 
         AddArtworkMsg msg ->
             let
                 ( addArtworkModel, cmd ) =
-                    AddArtwork.update msg model.addArtwork
+                    AddArtwork.update
+                        (Maybe.withDefault "" model.uid)
+                        msg
+                        model.addArtwork
             in
                 ( { model | addArtwork = addArtworkModel }
                 , Cmd.map AddArtworkMsg cmd
                 )
+
+        ArtworkMsg msg ->
+            let
+                ( artworkModel, cmd ) =
+                    Artwork.update
+                        (Maybe.withDefault "" model.uid)
+                        msg
+                        model.artwork
+            in
+                ( { model | artwork = artworkModel }
+                , Cmd.map ArtworkMsg cmd
+                )
+
+        Logout ->
+            ( { model
+                | fbLoggedIn = Nothing
+                , uid = Nothing
+                , loggedIn = False
+              }
+            , Cmd.batch
+                [ logout ()
+                , Navigation.newUrl "#/login"
+                ]
+            )
+
+
+authForPage : Page -> Bool -> Bool
+authForPage page loggedIn =
+    loggedIn || not (List.member page authPages)
+
+
+authedRedirect : Page -> Bool -> ( Page, Cmd Msg )
+authedRedirect page loggedIn =
+    if authForPage page loggedIn then
+        ( page, Cmd.none )
+    else
+        ( LoginPage, Navigation.modifyUrl <| pageToHash LoginPage )
 
 
 
@@ -128,6 +281,10 @@ view model =
     let
         page =
             case model.page of
+                SignupPage ->
+                    Html.map SignupMsg
+                        (Signup.view model.signup)
+
                 GalleryPage ->
                     Html.map GalleryMsg
                         (Gallery.view model.gallery)
@@ -140,13 +297,17 @@ view model =
                     Html.map AddArtworkMsg
                         (AddArtwork.view model.addArtwork)
 
+                ArtworkPage ->
+                    Html.map ArtworkMsg
+                        (Artwork.view model.artwork)
+
                 NotFound ->
                     div [ class "main" ]
                         [ h1 []
                             [ text "Page Not Found!" ]
                         ]
     in
-        div []
+        div [ class "container-fluid" ]
             [ pageHeader model
             , page
             ]
@@ -154,21 +315,36 @@ view model =
 
 pageHeader : Model -> Html Msg
 pageHeader model =
-    header []
-        [ a [ href "#/" ] [ text "Home" ]
-        , ul []
-            [ li []
-                [ a [ onClick (Navigate GalleryPage) ] [ text "Gallery" ] ]
-            , li []
-                [ a [ onClick (Navigate AddArtworkPage) ] [ text "Add Artwork" ] ]
-            ]
-        , ul []
-            [ li []
-                [ a [ onClick (Navigate LoginPage) ] [ text "Login" ]
+    if model.loggedIn then
+        header []
+            [ nav [ class "navbar" ]
+                [ ul [ class "nav navbar-nav navbar-left" ]
+                    [ li []
+                        [ a [ href "#/gallery" ] [ text "Home" ] ]
+                    , li []
+                        [ a [ onClick (Navigate GalleryPage) ] [ text "Gallery" ] ]
+                    , li []
+                        [ a [ onClick (Navigate AddArtworkPage) ] [ text "Add Artwork" ] ]
+                    ]
+                , ul [ class "nav navbar-nav navbar-right" ]
+                    [ li []
+                        [ a [ onClick Logout ] [ text "Logout" ] ]
+                    ]
                 ]
+            , p [] [ text (toString model) ]
             ]
-        , p [] [ text (toString model) ]
-        ]
+    else
+        header []
+            [ nav [ class "navbar" ]
+                [ ul [ class "nav navbar-nav navbar-right" ]
+                    [ li []
+                        [ a [ onClick (Navigate LoginPage) ] [ text "Login" ] ]
+                    , li []
+                        [ a [ onClick (Navigate SignupPage) ] [ text "Signup" ] ]
+                    ]
+                ]
+            , p [] [ text (toString model) ]
+            ]
 
 
 
@@ -178,6 +354,9 @@ pageHeader model =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     let
+        signupSub =
+            Signup.subscriptions model.signup
+
         gallerySub =
             Gallery.subscriptions model.gallery
 
@@ -186,11 +365,16 @@ subscriptions model =
 
         addArtworkSub =
             AddArtwork.subscriptions model.addArtwork
+
+        artworkSub =
+            Artwork.subscriptions model.artwork
     in
         Sub.batch
-            [ Sub.map GalleryMsg gallerySub
+            [ Sub.map SignupMsg signupSub
+            , Sub.map GalleryMsg gallerySub
             , Sub.map LoginMsg loginSub
             , Sub.map AddArtworkMsg addArtworkSub
+            , Sub.map ArtworkMsg artworkSub
             ]
 
 
@@ -198,10 +382,13 @@ hashToPage : String -> Page
 hashToPage hash =
     case hash of
         "#/" ->
-            GalleryPage
+            LoginPage
 
         "" ->
-            GalleryPage
+            LoginPage
+
+        "#/signup" ->
+            SignupPage
 
         "#/gallery" ->
             GalleryPage
@@ -212,6 +399,9 @@ hashToPage hash =
         "#/addArtwork" ->
             AddArtworkPage
 
+        "#/artwork" ->
+            ArtworkPage
+
         _ ->
             NotFound
 
@@ -219,6 +409,9 @@ hashToPage hash =
 pageToHash : Page -> String
 pageToHash page =
     case page of
+        SignupPage ->
+            "#/signup"
+
         GalleryPage ->
             "#/gallery"
 
@@ -228,8 +421,16 @@ pageToHash page =
         AddArtworkPage ->
             "#/addArtwork"
 
+        ArtworkPage ->
+            "#/artwork"
+
         NotFound ->
             "#notFound"
+
+
+decoder : String -> String -> Result String String
+decoder jsonToDecode jsonKey =
+    JD.decodeString (field jsonKey string) jsonToDecode
 
 
 
@@ -243,11 +444,18 @@ locationToMsg location =
         |> ChangePage
 
 
-main : Program Never Model Msg
+type alias Flags =
+    { fbLoggedIn : Maybe String }
+
+
+main : Program Flags Model Msg
 main =
-    Navigation.program locationToMsg
+    Navigation.programWithFlags locationToMsg
         { init = init
         , update = update
         , view = view
         , subscriptions = subscriptions
         }
+
+
+port logout : () -> Cmd msg
