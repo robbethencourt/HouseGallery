@@ -1,7 +1,7 @@
 const config = require('../../../keys')
 var fbApp = firebase.initializeApp(config)
 const fbAuth = firebase.auth()
-const database = firebase.database()
+const database = fbApp.database()
 
 const firebaseHelper = {
   addUser: function (usersDataToSave) {
@@ -38,7 +38,11 @@ const firebaseHelper = {
   }, // end getUsersGallery()
   getArtwork: function (artworkToQuery) {
     return database.ref('/artwork/' + artworkToQuery).once('value')
-  } // end getArtwork()
+  }, // end getArtwork()
+  editArtwork: function (artworkId, artworkToEdit) {
+    console.log(artworkId, artworkToEdit)
+    return database.ref('/artwork/' + artworkId).update(artworkToEdit)
+  } // end editArtwork()
 }
 
 module.exports = firebaseHelper

@@ -4,6 +4,7 @@ import Html exposing (..)
 import Html.Events exposing (..)
 import Html.Attributes exposing (..)
 import Navigation
+import Json.Encode as JE
 import Json.Decode as JD
 import Json.Decode.Pipeline as JDP
 
@@ -63,24 +64,69 @@ init =
 type Msg
     = ArtworkReceived String
     | EditArtworkPage
+    | ArtistEditInput String
+    | TitleEditInput String
+    | MediumEditInput String
+    | YearEditInput String
+    | PriceEditInput String
+    | ArtworkImageFileEditInput String
     | SubmitEditedArtwork
     | Error String
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
-    case msg of
-        ArtworkReceived jsonArtwork ->
-            decodeJson jsonArtwork model
+update : String -> Msg -> Model -> ( Model, Cmd Msg )
+update uid msg model =
+    let
+        artwork =
+            model.artwork
+    in
+        case msg of
+            ArtworkReceived jsonArtwork ->
+                decodeJson jsonArtwork model
 
-        EditArtworkPage ->
-            ( { model | isEditing = True }, Cmd.none )
+            EditArtworkPage ->
+                ( { model | isEditing = True }, Cmd.none )
 
-        SubmitEditedArtwork ->
-            ( { model | isEditing = False }, Cmd.none )
+            ArtistEditInput artist ->
+                ( { model | artwork = { artwork | artist = artist } }, Cmd.none )
 
-        Error error ->
-            ( { model | error = Just error }, Cmd.none )
+            TitleEditInput title ->
+                ( { model | artwork = { artwork | title = title } }, Cmd.none )
+
+            MediumEditInput medium ->
+                ( { model | artwork = { artwork | medium = medium } }, Cmd.none )
+
+            YearEditInput year ->
+                ( { model | artwork = { artwork | year = year } }, Cmd.none )
+
+            PriceEditInput price ->
+                ( { model | artwork = { artwork | price = price } }, Cmd.none )
+
+            ArtworkImageFileEditInput artworkImageFile ->
+                ( { model | artwork = { artwork | artworkImageFile = artworkImageFile } }, Cmd.none )
+
+            SubmitEditedArtwork ->
+                let
+                    body =
+                        JE.object
+                            [ ( "artworkId", JE.string model.artwork.artworkId )
+                            , ( "artist", JE.string model.artwork.artist )
+                            , ( "title", JE.string model.artwork.title )
+                            , ( "medium", JE.string model.artwork.medium )
+                            , ( "year", JE.string model.artwork.year )
+                            , ( "price", JE.string model.artwork.price )
+                            , ( "artworkImage", JE.string model.artwork.artworkImageFile )
+                            , ( "uid", JE.string uid )
+                            ]
+                            |> JE.encode 4
+
+                    cmd =
+                        submitEditedArtwork body
+                in
+                    ( { model | isEditing = False }, cmd )
+
+            Error error ->
+                ( { model | error = Just error }, Cmd.none )
 
 
 decodeJson : String -> Model -> ( Model, Cmd Msg )
@@ -152,12 +198,12 @@ editArtwork : Model -> Html Msg
 editArtwork model =
     div []
         [ ul []
-            [ li [] [ input [ type_ "text", value model.artwork.artist ] [] ]
-            , li [] [ input [ type_ "text", value model.artwork.title ] [] ]
-            , li [] [ input [ type_ "text", value model.artwork.medium ] [] ]
-            , li [] [ input [ type_ "text", value model.artwork.year ] [] ]
-            , li [] [ input [ type_ "text", value model.artwork.price ] [] ]
-            , li [] [ input [ type_ "text", value model.artwork.artworkImageFile ] [] ]
+            [ li [] [ input [ type_ "text", value model.artwork.artist, onInput ArtistEditInput ] [] ]
+            , li [] [ input [ type_ "text", value model.artwork.title, onInput TitleEditInput ] [] ]
+            , li [] [ input [ type_ "text", value model.artwork.medium, onInput MediumEditInput ] [] ]
+            , li [] [ input [ type_ "text", value model.artwork.year, onInput YearEditInput ] [] ]
+            , li [] [ input [ type_ "text", value model.artwork.price, onInput PriceEditInput ] [] ]
+            , li [] [ input [ type_ "text", value model.artwork.artworkImageFile, onInput ArtworkImageFileEditInput ] [] ]
             ]
         , div [] [ button [ onClick SubmitEditedArtwork ] [ text "Edit Artwork" ] ]
         ]
@@ -185,3 +231,6 @@ subscriptions model =
 
 
 port artworkReceived : (String -> msg) -> Sub msg
+
+
+port submitEditedArtwork : String -> Cmd msg

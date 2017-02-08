@@ -237,7 +237,10 @@ update msg model =
         ArtworkMsg msg ->
             let
                 ( artworkModel, cmd ) =
-                    Artwork.update msg model.artwork
+                    Artwork.update
+                        (Maybe.withDefault "" model.uid)
+                        msg
+                        model.artwork
             in
                 ( { model | artwork = artworkModel }
                 , Cmd.map ArtworkMsg cmd

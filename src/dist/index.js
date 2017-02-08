@@ -157,3 +157,24 @@ app.ports.getOneArtwork.subscribe(function (artworkId) {
       }))
     })
 })
+
+// send artwork to component
+app.ports.submitEditedArtwork.subscribe(function (artworkToEdit) {
+  const jsonParsedElmArtworkToEditRecord = JSON.parse(artworkToEdit)
+  const artworkId = jsonParsedElmArtworkToEditRecord.artworkId
+  const artworkFbObject = {
+    artist: jsonParsedElmArtworkToEditRecord.artist,
+    title: jsonParsedElmArtworkToEditRecord.title,
+    medium: jsonParsedElmArtworkToEditRecord.medium,
+    year: jsonParsedElmArtworkToEditRecord.year,
+    price: jsonParsedElmArtworkToEditRecord.price,
+    artworkImageFile: jsonParsedElmArtworkToEditRecord.artworkImage,
+    uid: jsonParsedElmArtworkToEditRecord.uid
+  }
+  firebaseHelper.editArtwork(artworkId, artworkFbObject)
+    .then(function (fbEditArtworkResponse) {
+      // clear out the elm gallery model before calling for the artwork again
+      app.ports.clearGallery.send(null)
+      getUserAndGallery(artworkFbObject.uid)
+    })
+})
