@@ -1,8 +1,13 @@
+/* global localStorage, firebase */
 require('./styles/main.scss')
 const Elm = require('../elm/Main')
 const firebaseHelper = require('./utils/firebaseHelper')
 const fbLoggedIn = localStorage.getItem('fbLoggedIn')
 var app = Elm.Main.embed(document.getElementById('HouseGallery'), {fbLoggedIn: fbLoggedIn})
+const request = require('superagent')
+
+const CLOUDINARY_UPLOAD_PRESET = 'te2ylsdc'
+const CLOUDINARY_UPLOAD_URL = 'https://api.cloudinary.com/v1_1/du9exzlar/upload'
 
 // get user if one is signed in to firebaseHelper
 firebase.auth().onAuthStateChanged(function (user) {
@@ -102,6 +107,22 @@ app.ports.addArtworkToFb.subscribe(function (elmArtworkToAdd) {
       if (error) console.log('Error: {error}')
       app.ports.artworkAdded.send('Error')
     })
+})
+
+// cloudinary
+app.ports.fetchImageFile.subscribe(function (id) {
+  const el = document.getElementById(id)
+  const imageFile = el.files[0]
+  let upload = request.post(CLOUDINARY_UPLOAD_URL)
+    .field('upload_preset', CLOUDINARY_UPLOAD_PRESET)
+    .field('file', imageFile)
+
+  upload.end(function (err, response) {
+    if (err) { console.log(err) }
+    if (response.body.secure_url !== '') {
+      app.ports.imageFileRead.send(response.body.secure_url)
+    }
+  })
 })
 
 // gallery

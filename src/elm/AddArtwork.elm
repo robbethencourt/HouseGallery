@@ -3,6 +3,7 @@ port module AddArtwork exposing (..)
 import Html exposing (..)
 import Html.Events exposing (..)
 import Html.Attributes exposing (..)
+import Json.Decode
 import Json.Encode as JE
 
 
@@ -64,6 +65,7 @@ type Msg
     | MediumInput String
     | YearInput String
     | PriceInput String
+    | FetchImageFile String
     | ArtworkImageInput String
     | Submit
     | ArtworkAdded String
@@ -101,6 +103,9 @@ update uid msg model =
 
         PriceInput price ->
             priceInputCheck model price
+
+        FetchImageFile filename ->
+            ( model, fetchImageFile "cloudinary-input" )
 
         ArtworkImageInput artworkImageFile ->
             ( { model
@@ -140,6 +145,11 @@ update uid msg model =
                 ( { model | error = Just fbData }, Cmd.none )
             else
                 ( initModel, Navigation.newUrl "#/gallery" )
+
+
+onChange : (String -> msg) -> Html.Attribute msg
+onChange tagger =
+    on "change" (Json.Decode.map tagger Html.Events.targetValue)
 
 
 yearInputCheck : Model -> String -> ( Model, Cmd Msg )
@@ -349,10 +359,10 @@ addArtwork model =
                 , label [] [ text "Artwork Image File" ]
                 , div [ class "form-group" ]
                     [ input
-                        [ type_ "text"
+                        [ type_ "file"
                         , class "form-control"
-                        , value model.artworkImageFile
-                        , onInput ArtworkImageInput
+                        , id "cloudinary-input"
+                        , onChange FetchImageFile
                         ]
                         []
                     , p [] [ text <| Maybe.withDefault "" model.artworkImageFileError ]
@@ -388,7 +398,9 @@ errorPanel error =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [ artworkAdded ArtworkAdded ]
+        [ artworkAdded ArtworkAdded
+        , imageFileRead ArtworkImageInput
+        ]
 
 
 
@@ -399,3 +411,9 @@ port addArtworkToFb : String -> Cmd msg
 
 
 port artworkAdded : (String -> msg) -> Sub msg
+
+
+port fetchImageFile : String -> Cmd msg
+
+
+port imageFileRead : (String -> msg) -> Sub msg
