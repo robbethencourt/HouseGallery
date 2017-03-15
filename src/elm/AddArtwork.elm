@@ -366,6 +366,7 @@ addArtwork model =
                         ]
                         []
                     , p [] [ text <| Maybe.withDefault "" model.artworkImageFileError ]
+                    , img [ src model.artworkImageFile, class "thumbnail" ] []
                     ]
                 , div [ class "form-group" ]
                     [ label [] []

@@ -74,7 +74,6 @@ app.ports.addArtworkToFb.subscribe(function (elmArtworkToAdd) {
   const jsonParsedElmArtworkRecord = JSON.parse(elmArtworkToAdd)
   const el = document.getElementById('cloudinary-input')
   const imageFile = el.files[0]
-  console.log(imageFile)
   let cloudinaryImageLink = new Promise(function (resolve, reject) {
     let upload = request.post(config.CLOUDINARY_UPLOAD_URL)
       .field('upload_preset', config.CLOUDINARY_UPLOAD_PRESET)
@@ -132,7 +131,12 @@ app.ports.addArtworkToFb.subscribe(function (elmArtworkToAdd) {
 app.ports.fetchImageFile.subscribe(function (id) {
   const el = document.getElementById(id)
   const imageFile = el.files[0]
-  app.ports.imageFileRead.send(imageFile.name)
+  let reader = new FileReader()
+  reader.readAsDataURL(imageFile)
+  reader.onload = function (e) {
+    console.log(e.target.result)
+    app.ports.imageFileRead.send(e.target.result)
+  }
 })
 
 // gallery

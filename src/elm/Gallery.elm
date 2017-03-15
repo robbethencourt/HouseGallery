@@ -120,10 +120,10 @@ gallery { gallery } =
 painting : GalleryItem -> Html Msg
 painting { artist, title, year, artworkImageFile, artworkId } =
     tr []
-        [ td [] [ text artist ]
+        [ td [] [ img [ src artworkImageFile, class "thumbnail" ] [] ]
+        , td [] [ text artist ]
         , td [] [ a [ onClick (ArtworkPage artworkId) ] [ text title ] ]
         , td [] [ text year ]
-        , td [] [ img [ src artworkImageFile ] [] ]
         , td [] [ button [ class artworkId ] [ text "Edit" ] ]
         ]
 
@@ -132,10 +132,10 @@ galleryHeader : Html Msg
 galleryHeader =
     thead []
         [ tr []
-            [ th [] [ text "Artist" ]
+            [ th [] [ text "Artwork" ]
+            , th [] [ text "Artist" ]
             , th [] [ text "Title" ]
             , th [] [ text "Year" ]
-            , th [] [ text "Artwork" ]
             ]
         ]
 
