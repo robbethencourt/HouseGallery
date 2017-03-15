@@ -188,7 +188,7 @@ artwork model =
             , li [] [ text model.artwork.medium ]
             , li [] [ text model.artwork.year ]
             , li [] [ text model.artwork.price ]
-            , li [] [ text model.artwork.artworkImageFile ]
+            , li [] [ img [ src model.artwork.artworkImageFile ] [] ]
             ]
         , div [] [ button [ onClick EditArtworkPage ] [ text "Edit Artwork" ] ]
         ]

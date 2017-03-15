@@ -5,9 +5,7 @@ const firebaseHelper = require('./utils/firebaseHelper')
 const fbLoggedIn = localStorage.getItem('fbLoggedIn')
 var app = Elm.Main.embed(document.getElementById('HouseGallery'), {fbLoggedIn: fbLoggedIn})
 const request = require('superagent')
-
-const CLOUDINARY_UPLOAD_PRESET = 'te2ylsdc'
-const CLOUDINARY_UPLOAD_URL = 'https://api.cloudinary.com/v1_1/du9exzlar/upload'
+const config = require('../../keys').cloudinary
 
 // get user if one is signed in to firebaseHelper
 firebase.auth().onAuthStateChanged(function (user) {
@@ -74,38 +72,59 @@ app.ports.logout.subscribe(function () {
 // Add ArtworkPage
 app.ports.addArtworkToFb.subscribe(function (elmArtworkToAdd) {
   const jsonParsedElmArtworkRecord = JSON.parse(elmArtworkToAdd)
-  const artworkFbObject = {
-    artist: jsonParsedElmArtworkRecord.artist,
-    title: jsonParsedElmArtworkRecord.title,
-    medium: jsonParsedElmArtworkRecord.medium,
-    year: jsonParsedElmArtworkRecord.year,
-    price: jsonParsedElmArtworkRecord.price,
-    artworkImageFile: jsonParsedElmArtworkRecord.artworkImage,
-    createdOn: Date.now(),
-    uid: jsonParsedElmArtworkRecord.uid
-  }
-  firebaseHelper.addArtwork(artworkFbObject)
-    .then(function (fbResponse) {
-      console.log(fbResponse)
-      const uidAndArtworkId = {
-        uid: artworkFbObject.uid,
-        artworkId: fbResponse.path.o[1]
-      }
-      firebaseHelper.addArtworkToUserGallery(uidAndArtworkId)
-        .then(function (fbResponseFromUserGallery) {
-          console.log(fbResponseFromUserGallery)
-          app.ports.artworkAdded.send('all items added')
+  const el = document.getElementById('cloudinary-input')
+  const imageFile = el.files[0]
+  console.log(imageFile)
+  let cloudinaryImageLink = new Promise(function (resolve, reject) {
+    let upload = request.post(config.CLOUDINARY_UPLOAD_URL)
+      .field('upload_preset', config.CLOUDINARY_UPLOAD_PRESET)
+      .field('file', imageFile)
 
-          // clear out the elm gallery model before calling for the artwork again
-          app.ports.clearGallery.send(null)
-          getUserAndGallery(jsonParsedElmArtworkRecord.uid)
-        }, function (errorInner) {
-          if (errorInner) console.log(`Error: {errorInner}`)
+    upload.end(function (err, response) {
+      if (err) { console.log(err) }
+      if (response.body.secure_url !== '') {
+        resolve(response.body.secure_url)
+      }
+    })
+  })
+  cloudinaryImageLink
+    .then(function (imageLink) {
+      const artworkFbObject = {
+        artist: jsonParsedElmArtworkRecord.artist,
+        title: jsonParsedElmArtworkRecord.title,
+        medium: jsonParsedElmArtworkRecord.medium,
+        year: jsonParsedElmArtworkRecord.year,
+        price: jsonParsedElmArtworkRecord.price,
+        artworkImageFile: imageLink,
+        createdOn: Date.now(),
+        uid: jsonParsedElmArtworkRecord.uid
+      }
+      firebaseHelper.addArtwork(artworkFbObject)
+        .then(function (fbResponse) {
+          console.log(fbResponse)
+          const uidAndArtworkId = {
+            uid: artworkFbObject.uid,
+            artworkId: fbResponse.path.o[1]
+          }
+          firebaseHelper.addArtworkToUserGallery(uidAndArtworkId)
+            .then(function (fbResponseFromUserGallery) {
+              console.log(fbResponseFromUserGallery)
+              app.ports.artworkAdded.send('all items added')
+
+              // clear out the elm gallery model before calling for the artwork again
+              app.ports.clearGallery.send(null)
+              getUserAndGallery(jsonParsedElmArtworkRecord.uid)
+            }, function (errorInner) {
+              if (errorInner) console.log(`Error: {errorInner}`)
+              app.ports.artworkAdded.send('Error')
+            })
+        }, function (error) {
+          if (error) console.log('Error: {error}')
           app.ports.artworkAdded.send('Error')
         })
-    }, function (error) {
-      if (error) console.log('Error: {error}')
-      app.ports.artworkAdded.send('Error')
+    })
+    .catch(function (error) {
+      console.log(error)
     })
 })
 
@@ -113,16 +132,7 @@ app.ports.addArtworkToFb.subscribe(function (elmArtworkToAdd) {
 app.ports.fetchImageFile.subscribe(function (id) {
   const el = document.getElementById(id)
   const imageFile = el.files[0]
-  let upload = request.post(CLOUDINARY_UPLOAD_URL)
-    .field('upload_preset', CLOUDINARY_UPLOAD_PRESET)
-    .field('file', imageFile)
-
-  upload.end(function (err, response) {
-    if (err) { console.log(err) }
-    if (response.body.secure_url !== '') {
-      app.ports.imageFileRead.send(response.body.secure_url)
-    }
-  })
+  app.ports.imageFileRead.send(imageFile.name)
 })
 
 // gallery

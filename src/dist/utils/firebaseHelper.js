@@ -1,4 +1,4 @@
-const config = require('../../../keys')
+const config = require('../../../keys').firebase
 var fbApp = firebase.initializeApp(config)
 const fbAuth = firebase.auth()
 const database = fbApp.database()

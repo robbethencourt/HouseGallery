@@ -123,7 +123,7 @@ painting { artist, title, year, artworkImageFile, artworkId } =
         [ td [] [ text artist ]
         , td [] [ a [ onClick (ArtworkPage artworkId) ] [ text title ] ]
         , td [] [ text year ]
-        , td [] [ text artworkImageFile ]
+        , td [] [ img [ src artworkImageFile ] [] ]
         , td [] [ button [ class artworkId ] [ text "Edit" ] ]
         ]
 
