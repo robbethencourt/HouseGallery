@@ -1,4 +1,4 @@
-/* global localStorage, firebase */
+/* global localStorage, firebase, FileReader */
 require('./styles/main.scss')
 const Elm = require('../elm/Main')
 const firebaseHelper = require('./utils/firebaseHelper')
@@ -128,6 +128,7 @@ app.ports.addArtworkToFb.subscribe(function (elmArtworkToAdd) {
 })
 
 // cloudinary
+// AddArtwork module
 app.ports.fetchImageFile.subscribe(function (id) {
   const el = document.getElementById(id)
   const imageFile = el.files[0]
@@ -136,6 +137,17 @@ app.ports.fetchImageFile.subscribe(function (id) {
   reader.onload = function (e) {
     console.log(e.target.result)
     app.ports.imageFileRead.send(e.target.result)
+  }
+})
+
+// Artwork module
+app.ports.fetchImageFileEdit.subscribe(function (id) {
+  const el = document.getElementById(id)
+  const imageFile = el.files[0]
+  let reader = new FileReader()
+  reader.readAsDataURL(imageFile)
+  reader.onload = function (e) {
+    app.ports.imageFileReadEdit.send(e.target.result)
   }
 })
 
@@ -177,10 +189,11 @@ function getUserAndGallery (uid) {
 
 // artwork and artwork Edit
 app.ports.getOneArtwork.subscribe(function (artworkId) {
+  // Artwork module
+  app.ports.fetchingArtwork.send('fetching')
   firebaseHelper.getArtwork(artworkId)
     .then(function (fbArtworkResponse) {
       const fbArtworkObj = fbArtworkResponse.val()
-      console.log(fbArtworkObj)
       app.ports.artworkReceived.send(JSON.stringify({
         artworkId,
         artist: fbArtworkObj.artist,
@@ -188,7 +201,8 @@ app.ports.getOneArtwork.subscribe(function (artworkId) {
         medium: fbArtworkObj.medium,
         year: fbArtworkObj.year,
         price: fbArtworkObj.price,
-        artworkImageFile: fbArtworkObj.artworkImageFile
+        artworkImageFile: fbArtworkObj.artworkImageFile,
+        oldArtworkImageFile: ''
       }))
     })
 })
@@ -196,20 +210,51 @@ app.ports.getOneArtwork.subscribe(function (artworkId) {
 // send artwork to component
 app.ports.submitEditedArtwork.subscribe(function (artworkToEdit) {
   const jsonParsedElmArtworkToEditRecord = JSON.parse(artworkToEdit)
-  const artworkId = jsonParsedElmArtworkToEditRecord.artworkId
-  const artworkFbObject = {
-    artist: jsonParsedElmArtworkToEditRecord.artist,
-    title: jsonParsedElmArtworkToEditRecord.title,
-    medium: jsonParsedElmArtworkToEditRecord.medium,
-    year: jsonParsedElmArtworkToEditRecord.year,
-    price: jsonParsedElmArtworkToEditRecord.price,
-    artworkImageFile: jsonParsedElmArtworkToEditRecord.artworkImage,
-    uid: jsonParsedElmArtworkToEditRecord.uid
-  }
-  firebaseHelper.editArtwork(artworkId, artworkFbObject)
-    .then(function (fbEditArtworkResponse) {
-      // clear out the elm gallery model before calling for the artwork again
-      app.ports.clearGallery.send(null)
-      getUserAndGallery(artworkFbObject.uid)
+
+  console.log(jsonParsedElmArtworkToEditRecord.oldArtworkImageFile)
+
+  // I have to put the public_id of the imageFile
+
+  // need to get that from the url being passed
+
+  // then supply that to cloudinary instead of the entire url
+
+  // delete the other artwork image file from cloudinary
+  request.delete(config.CLOUDINARY_DESTROY_URL)
+    .field('file', jsonParsedElmArtworkToEditRecord.oldArtworkImageFile)
+
+  const el = document.getElementById('cloudinary-input')
+  const imageFile = el.files[0]
+
+  let cloudinaryImageLink = new Promise(function (resolve, reject) {
+    let upload = request.post(config.CLOUDINARY_UPLOAD_URL)
+      .field('upload_preset', config.CLOUDINARY_UPLOAD_PRESET)
+      .field('file', imageFile)
+
+    upload.end(function (err, response) {
+      if (err) { console.log(err) }
+      if (response.body.secure_url !== '') {
+        resolve(response.body.secure_url)
+      }
+    })
+  })
+  cloudinaryImageLink
+    .then(function (imageLink) {
+      const artworkId = jsonParsedElmArtworkToEditRecord.artworkId
+      const artworkFbObject = {
+        artist: jsonParsedElmArtworkToEditRecord.artist,
+        title: jsonParsedElmArtworkToEditRecord.title,
+        medium: jsonParsedElmArtworkToEditRecord.medium,
+        year: jsonParsedElmArtworkToEditRecord.year,
+        price: jsonParsedElmArtworkToEditRecord.price,
+        artworkImageFile: imageLink,
+        uid: jsonParsedElmArtworkToEditRecord.uid
+      }
+      firebaseHelper.editArtwork(artworkId, artworkFbObject)
+        .then(function (fbEditArtworkResponse) {
+          // clear out the elm gallery model before calling for the artwork again
+          app.ports.clearGallery.send(null)
+          getUserAndGallery(artworkFbObject.uid)
+        })
     })
 })

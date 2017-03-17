@@ -3,7 +3,6 @@ port module Artwork exposing (..)
 import Html exposing (..)
 import Html.Events exposing (..)
 import Html.Attributes exposing (..)
-import Navigation
 import Json.Encode as JE
 import Json.Decode as JD
 import Json.Decode.Pipeline as JDP
@@ -17,6 +16,7 @@ type alias Model =
     , active : Bool
     , artwork : Artwork
     , isEditing : Bool
+    , isFetching : Bool
     }
 
 
@@ -28,6 +28,7 @@ type alias Artwork =
     , year : String
     , price : String
     , artworkImageFile : String
+    , oldArtworkImageFile : String
     }
 
 
@@ -40,6 +41,7 @@ initArtwork =
     , year = ""
     , price = ""
     , artworkImageFile = ""
+    , oldArtworkImageFile = ""
     }
 
 
@@ -49,6 +51,7 @@ initModel =
     , active = False
     , artwork = initArtwork
     , isEditing = False
+    , isFetching = True
     }
 
 
@@ -62,14 +65,17 @@ init =
 
 
 type Msg
-    = ArtworkReceived String
-    | EditArtworkPage
+    = FetchingArtwork String
+    | ArtworkReceived String
+    | EditArtwork
+    | ViewArtwork
     | ArtistEditInput String
     | TitleEditInput String
     | MediumEditInput String
     | YearEditInput String
     | PriceEditInput String
     | ArtworkImageFileEditInput String
+    | FetchImageFileEdit String
     | SubmitEditedArtwork
     | Error String
 
@@ -81,11 +87,17 @@ update uid msg model =
             model.artwork
     in
         case msg of
+            FetchingArtwork fetching ->
+                ( { model | isFetching = True }, Cmd.none )
+
             ArtworkReceived jsonArtwork ->
                 decodeJson jsonArtwork model
 
-            EditArtworkPage ->
+            EditArtwork ->
                 ( { model | isEditing = True }, Cmd.none )
+
+            ViewArtwork ->
+                ( { model | isEditing = False }, Cmd.none )
 
             ArtistEditInput artist ->
                 ( { model | artwork = { artwork | artist = artist } }, Cmd.none )
@@ -105,6 +117,9 @@ update uid msg model =
             ArtworkImageFileEditInput artworkImageFile ->
                 ( { model | artwork = { artwork | artworkImageFile = artworkImageFile } }, Cmd.none )
 
+            FetchImageFileEdit filename ->
+                ( { model | artwork = { artwork | oldArtworkImageFile = artwork.artworkImageFile } }, fetchImageFileEdit "cloudinary-input" )
+
             SubmitEditedArtwork ->
                 let
                     body =
@@ -116,6 +131,7 @@ update uid msg model =
                             , ( "year", JE.string model.artwork.year )
                             , ( "price", JE.string model.artwork.price )
                             , ( "artworkImage", JE.string model.artwork.artworkImageFile )
+                            , ( "oldArtworkImageFile", JE.string model.artwork.oldArtworkImageFile )
                             , ( "uid", JE.string uid )
                             ]
                             |> JE.encode 4
@@ -123,10 +139,20 @@ update uid msg model =
                     cmd =
                         submitEditedArtwork body
                 in
-                    ( { model | isEditing = False }, cmd )
+                    ( { model
+                        | artwork = { artwork | oldArtworkImageFile = "" }
+                        , isEditing = False
+                      }
+                    , cmd
+                    )
 
             Error error ->
                 ( { model | error = Just error }, Cmd.none )
+
+
+onChange : (String -> msg) -> Html.Attribute msg
+onChange tagger =
+    on "change" (JD.map tagger Html.Events.targetValue)
 
 
 decodeJson : String -> Model -> ( Model, Cmd Msg )
@@ -134,13 +160,16 @@ decodeJson jsonArtwork model =
     case JD.decodeString decodeArtworkItem jsonArtwork of
         Ok artwork ->
             ( { model
-                | artwork = { artwork | artworkId = artwork.artworkId }
+                | isEditing = False
+                , artwork = { artwork | artworkId = artwork.artworkId }
                 , artwork = { artwork | artist = artwork.artist }
                 , artwork = { artwork | title = artwork.title }
                 , artwork = { artwork | medium = artwork.medium }
                 , artwork = { artwork | year = artwork.year }
                 , artwork = { artwork | price = artwork.price }
                 , artwork = { artwork | artworkImageFile = artwork.artworkImageFile }
+                , artwork = { artwork | oldArtworkImageFile = "" }
+                , isFetching = False
               }
             , Cmd.none
             )
@@ -159,6 +188,7 @@ decodeArtworkItem =
         |> JDP.required "year" JD.string
         |> JDP.required "price" JD.string
         |> JDP.required "artworkImageFile" JD.string
+        |> JDP.required "oldArtworkImageFile" JD.string
 
 
 
@@ -167,7 +197,10 @@ decodeArtworkItem =
 
 view : Model -> Html Msg
 view model =
-    if model.isEditing then
+    if model.isFetching then
+        div [ class "main" ]
+            [ h1 [] [ text "Loading..." ] ]
+    else if model.isEditing then
         div [ class "main" ]
             [ errorPanel model.error
             , editArtwork model
@@ -182,7 +215,8 @@ view model =
 artwork : Model -> Html Msg
 artwork model =
     div []
-        [ ul []
+        [ p [] [ button [ onClick EditArtwork ] [ text "Edit Artwork" ] ]
+        , ul []
             [ li [] [ text model.artwork.artist ]
             , li [] [ text model.artwork.title ]
             , li [] [ text model.artwork.medium ]
@@ -190,21 +224,31 @@ artwork model =
             , li [] [ text model.artwork.price ]
             , li [] [ img [ src model.artwork.artworkImageFile ] [] ]
             ]
-        , div [] [ button [ onClick EditArtworkPage ] [ text "Edit Artwork" ] ]
         ]
 
 
 editArtwork : Model -> Html Msg
 editArtwork model =
     div []
-        [ ul []
+        [ p [] [ button [ onClick ViewArtwork ] [ text "View Artwork" ] ]
+        , ul []
             [ li [] [ input [ type_ "text", value model.artwork.artist, onInput ArtistEditInput ] [] ]
             , li [] [ input [ type_ "text", value model.artwork.title, onInput TitleEditInput ] [] ]
             , li [] [ input [ type_ "text", value model.artwork.medium, onInput MediumEditInput ] [] ]
             , li [] [ input [ type_ "text", value model.artwork.year, onInput YearEditInput ] [] ]
             , li [] [ input [ type_ "text", value model.artwork.price, onInput PriceEditInput ] [] ]
-            , li [] [ input [ type_ "text", value model.artwork.artworkImageFile, onInput ArtworkImageFileEditInput ] [] ]
+              -- , li [] [ input [ type_ "text", value model.artwork.artworkImageFile, onInput ArtworkImageFileEditInput ] [] ]
+            , li []
+                [ input
+                    [ type_ "file"
+                    , class "form-control"
+                    , id "cloudinary-input"
+                    , onChange FetchImageFileEdit
+                    ]
+                    []
+                ]
             ]
+        , img [ src model.artwork.artworkImageFile, class "thumbnail" ] []
         , div [] [ button [ onClick SubmitEditedArtwork ] [ text "Edit Artwork" ] ]
         ]
 
@@ -227,10 +271,22 @@ errorPanel error =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [ artworkReceived ArtworkReceived ]
+        [ fetchingArtwork FetchingArtwork
+        , artworkReceived ArtworkReceived
+        , imageFileReadEdit ArtworkImageFileEditInput
+        ]
+
+
+port fetchingArtwork : (String -> msg) -> Sub msg
 
 
 port artworkReceived : (String -> msg) -> Sub msg
+
+
+port fetchImageFileEdit : String -> Cmd msg
+
+
+port imageFileReadEdit : (String -> msg) -> Sub msg
 
 
 port submitEditedArtwork : String -> Cmd msg

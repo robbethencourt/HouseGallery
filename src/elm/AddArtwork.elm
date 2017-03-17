@@ -3,7 +3,7 @@ port module AddArtwork exposing (..)
 import Html exposing (..)
 import Html.Events exposing (..)
 import Html.Attributes exposing (..)
-import Json.Decode
+import Json.Decode as JD
 import Json.Encode as JE
 
 
@@ -149,7 +149,7 @@ update uid msg model =
 
 onChange : (String -> msg) -> Html.Attribute msg
 onChange tagger =
-    on "change" (Json.Decode.map tagger Html.Events.targetValue)
+    on "change" (JD.map tagger Html.Events.targetValue)
 
 
 yearInputCheck : Model -> String -> ( Model, Cmd Msg )
