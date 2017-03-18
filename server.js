@@ -17,7 +17,12 @@ app.use(bodyParser.text())
 app.use(bodyParser.json({type: 'application/vnd.api+json'}))
 
 // Routes
-require('./routes/api-routes.js')(app)
+// require('./routes/api-routes.js')(app)
+app.use(express.static('./dist'))
+
+app.get('/', function (req, res) {
+  res.sendFile('index.html')
+}) // end app.get()
 
 // Listener
 app.listen(PORT, function () {

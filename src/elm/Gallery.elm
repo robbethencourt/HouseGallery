@@ -111,7 +111,7 @@ view : Model -> Html Msg
 view model =
     if model.isFetching then
         div [ class "main" ]
-            [ h1 [] [ text "Loading..." ] ]
+            [ img [ src "dist/img/houseable-loading.svg" ] [] ]
     else
         div [ class "main" ]
             [ errorPanel model.error

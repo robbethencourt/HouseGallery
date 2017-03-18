@@ -211,17 +211,34 @@ app.ports.getOneArtwork.subscribe(function (artworkId) {
 app.ports.submitEditedArtwork.subscribe(function (artworkToEdit) {
   const jsonParsedElmArtworkToEditRecord = JSON.parse(artworkToEdit)
 
-  console.log(jsonParsedElmArtworkToEditRecord.oldArtworkImageFile)
-
-  // I have to put the public_id of the imageFile
-
-  // need to get that from the url being passed
-
-  // then supply that to cloudinary instead of the entire url
-
-  // delete the other artwork image file from cloudinary
-  request.delete(config.CLOUDINARY_DESTROY_URL)
-    .field('file', jsonParsedElmArtworkToEditRecord.oldArtworkImageFile)
+  // console.log(jsonParsedElmArtworkToEditRecord.oldArtworkImageFile)
+  //
+  // const compose = (f, g) => x => f(g(x))
+  //
+  // // grab the image file
+  // // slice the string at the public_id and grab the second array
+  // const cloudinaryUploadLink = jsonParsedElmArtworkToEditRecord.oldArtworkImageFile
+  // const createArrayFromUploadLink = function (link) {
+  //   return link.split('/')
+  // }
+  // const getCloudinaryPublicId = function (uploadArray) {
+  //   return uploadArray[uploadArray.length - 1].split('.')[0]
+  // }
+  //
+  // const imageToDeletePublicId = compose(getCloudinaryPublicId, createArrayFromUploadLink)(cloudinaryUploadLink)
+  // console.log(imageToDeletePublicId)
+  //
+  // // delete the other artwork image file from cloudinary
+  // let cloudinaryDestroy = request.post(config.CLOUDINARY_DESTROY_URL)
+  //   .field('public_id', imageToDeletePublicId)
+  //   .field('api_key', config.apiKey)
+  //   // .field('timestamp', Date.now())
+  //   // missing the signature. How am i going to create one?
+  //
+  // cloudinaryDestroy.end(function (err, response) {
+  //   if (err) { console.log(err) }
+  //   console.log(response)
+  // })
 
   const el = document.getElementById('cloudinary-input')
   const imageFile = el.files[0]
