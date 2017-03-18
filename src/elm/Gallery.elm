@@ -16,6 +16,7 @@ type alias Model =
     , gallery : List GalleryItem
     , active : Bool
     , routeParam : String
+    , isFetching : Bool
     }
 
 
@@ -34,6 +35,7 @@ initModel =
     , gallery = []
     , active = False
     , routeParam = ""
+    , isFetching = True
     }
 
 
@@ -80,7 +82,12 @@ decodeJson : String -> Model -> ( Model, Cmd Msg )
 decodeJson jsonGallery model =
     case JD.decodeString decodeGalleryItem jsonGallery of
         Ok artwork ->
-            ( { model | gallery = artwork :: model.gallery }, Cmd.none )
+            ( { model
+                | gallery = artwork :: model.gallery
+                , isFetching = False
+              }
+            , Cmd.none
+            )
 
         Err err ->
             ( { model | error = Just err }, Cmd.none )
@@ -102,10 +109,14 @@ decodeGalleryItem =
 
 view : Model -> Html Msg
 view model =
-    div [ class "main" ]
-        [ errorPanel model.error
-        , gallery model
-        ]
+    if model.isFetching then
+        div [ class "main" ]
+            [ img [ src "dist/img/houseable-loading.svg" ] [] ]
+    else
+        div [ class "main" ]
+            [ errorPanel model.error
+            , gallery model
+            ]
 
 
 gallery : Model -> Html Msg
@@ -120,11 +131,10 @@ gallery { gallery } =
 painting : GalleryItem -> Html Msg
 painting { artist, title, year, artworkImageFile, artworkId } =
     tr []
-        [ td [] [ text artist ]
+        [ td [] [ img [ src artworkImageFile, class "thumbnail" ] [] ]
+        , td [] [ text artist ]
         , td [] [ a [ onClick (ArtworkPage artworkId) ] [ text title ] ]
         , td [] [ text year ]
-        , td [] [ text artworkImageFile ]
-        , td [] [ button [ class artworkId ] [ text "Edit" ] ]
         ]
 
 
@@ -132,10 +142,10 @@ galleryHeader : Html Msg
 galleryHeader =
     thead []
         [ tr []
-            [ th [] [ text "Artist" ]
+            [ th [] [ text "Artwork" ]
+            , th [] [ text "Artist" ]
             , th [] [ text "Title" ]
             , th [] [ text "Year" ]
-            , th [] [ text "Artwork" ]
             ]
         ]
 
