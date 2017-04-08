@@ -4,6 +4,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Navigation
+import Home
 import Signup
 import Gallery
 import Login
@@ -17,6 +18,7 @@ import Json.Decode as JD exposing (..)
 
 type alias Model =
     { page : Page
+    , home : Home.Model
     , signup : Signup.Model
     , gallery : Gallery.Model
     , login : Login.Model
@@ -30,6 +32,7 @@ type alias Model =
 
 type Page
     = NotFound
+    | HomePage
     | SignupPage
     | GalleryPage
     | LoginPage
@@ -49,6 +52,9 @@ init flags location =
         ( updatedPage, cmd ) =
             authedRedirect page loggedIn
 
+        ( homeInitModel, homeCmd ) =
+            Home.init
+
         ( signupInitModel, signupCmd ) =
             Signup.init
 
@@ -66,6 +72,7 @@ init flags location =
 
         initModel =
             { page = updatedPage
+            , home = homeInitModel
             , signup = signupInitModel
             , gallery = galleryInitModel
             , login = loginInitModel
@@ -78,7 +85,8 @@ init flags location =
 
         cmds =
             Cmd.batch
-                [ Cmd.map SignupMsg signupCmd
+                [ Cmd.map HomeMsg homeCmd
+                , Cmd.map SignupMsg signupCmd
                 , Cmd.map GalleryMsg galleryCmd
                 , Cmd.map LoginMsg loginCmd
                 , Cmd.map AddArtworkMsg addArtworkCmd
@@ -96,6 +104,7 @@ init flags location =
 type Msg
     = Navigate Page
     | ChangePage Page
+    | HomeMsg Home.Msg
     | SignupMsg Signup.Msg
     | GalleryMsg Gallery.Msg
     | LoginMsg Login.Msg
@@ -124,6 +133,9 @@ update msg model =
                     authedRedirect page model.loggedIn
             in
                 ( { model | page = updatedPage }, cmd )
+
+        HomeMsg msg ->
+            ( model, Cmd.none )
 
         SignupMsg msg ->
             let
@@ -281,6 +293,10 @@ view model =
     let
         page =
             case model.page of
+                HomePage ->
+                    Html.map HomeMsg
+                        (Home.view model.home)
+
                 SignupPage ->
                     Html.map SignupMsg
                         (Signup.view model.signup)
@@ -354,6 +370,9 @@ pageHeader model =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     let
+        homeSub =
+            Home.subscriptions model.home
+
         signupSub =
             Signup.subscriptions model.signup
 
@@ -370,7 +389,8 @@ subscriptions model =
             Artwork.subscriptions model.artwork
     in
         Sub.batch
-            [ Sub.map SignupMsg signupSub
+            [ Sub.map HomeMsg homeSub
+            , Sub.map SignupMsg signupSub
             , Sub.map GalleryMsg gallerySub
             , Sub.map LoginMsg loginSub
             , Sub.map AddArtworkMsg addArtworkSub
@@ -382,10 +402,10 @@ hashToPage : String -> Page
 hashToPage hash =
     case hash of
         "#/" ->
-            LoginPage
+            HomePage
 
         "" ->
-            LoginPage
+            HomePage
 
         "#/signup" ->
             SignupPage
@@ -409,6 +429,9 @@ hashToPage hash =
 pageToHash : Page -> String
 pageToHash page =
     case page of
+        HomePage ->
+            "#/"
+
         SignupPage ->
             "#/signup"
 

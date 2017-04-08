@@ -1,12 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 16.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
 <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="300px"
 	 height="200px" viewBox="0 0 300 200" enable-background="new 0 0 300 200" xml:space="preserve">
-<g id="Layer_3">
-	<polyline fill="none" stroke="#A5C0CE" stroke-width="1.6522" points="104.67,98.636 150.441,59.038 196.213,98.636 	"/>
-	<polygon fill="#A5C0CE" stroke="#A5C0CE" stroke-width="2" points="150.813,63.636 110,98.636 110,137 141,137 141,111 161,111
-		161,137 191,137 191,98.636 	"/>
-	<polygon fill="#A5C0CE" stroke="#A5C0CE" stroke-width="1.6522" points="165.297,67.341 182.432,83.195 182.432,55.156
-		165.297,55.156 	"/>
-	<polygon fill="none" stroke="#A5C0CE" stroke-width="2" points="74,56.453 149.5,12.907 225,56.453 225,143.546 149.5,187.094
-		74,143.546 	"/>
+<g id="Layer_1" display="none">
+	<g id="Layer_3" display="inline">
+		<polyline fill="none" stroke="#A5C0CE" stroke-width="1.6522" points="104.67,98.636 150.441,59.038 196.213,98.636 		"/>
+		<polygon fill="#A5C0CE" stroke="#A5C0CE" stroke-width="2" points="150.813,63.636 110,98.636 110,137 141,137 141,111 161,111 
+			161,137 191,137 191,98.636 		"/>
+		<polygon fill="#A5C0CE" stroke="#A5C0CE" stroke-width="1.6522" points="165.297,67.341 182.432,83.195 182.432,55.156 
+			165.297,55.156 		"/>
+		<polygon fill="none" stroke="#A5C0CE" stroke-width="2" points="74,56.453 149.5,12.907 225,56.453 225,143.546 149.5,187.094 
+			74,143.546 		"/>
+	</g>
+</g>
+<g id="Layer_2" display="none">
+	<polygon display="inline" points="138.1,60.72 94.71,60.72 51.319,60.72 94.71,17.329 	"/>
+	<polygon display="inline" points="248.681,60.72 205.29,60.72 161.899,60.72 205.29,17.329 	"/>
+	<polygon display="inline" points="101.974,6.966 145.364,6.966 188.754,6.966 145.364,50.356 	"/>
+	<polygon display="inline" points="115.433,192.124 84.751,161.442 54.069,130.761 115.433,130.761 	"/>
+	<polygon display="inline" points="51.319,131.671 82.001,162.353 112.683,193.034 51.319,193.034 	"/>
+	<polygon display="inline" points="182.182,192.124 151.5,161.442 120.818,130.761 182.182,130.761 	"/>
+	<polygon display="inline" points="118.068,131.671 148.75,162.353 179.432,193.034 118.068,193.034 	"/>
+	<polygon display="inline" points="248.681,192.124 217.999,161.442 187.317,130.761 248.681,130.761 	"/>
+	<polygon display="inline" points="184.567,131.671 215.249,162.353 245.931,193.034 184.567,193.034 	"/>
+	<polygon display="inline" points="112.683,127.783 82.001,97.102 51.319,66.42 112.683,66.42 	"/>
+	<polygon display="inline" points="51.319,66.421 82.001,97.103 112.683,127.784 51.319,127.784 	"/>
+	<polygon display="inline" points="182.182,126.874 151.5,96.192 120.818,65.511 182.182,65.511 	"/>
+	<polygon display="inline" points="118.068,66.421 148.75,97.103 179.432,127.784 118.068,127.784 	"/>
+	<polygon display="inline" points="248.681,126.874 217.999,96.192 187.317,65.511 248.681,65.511 	"/>
+	<polygon display="inline" points="184.567,66.421 215.249,97.103 245.931,127.784 184.567,127.784 	"/>
+</g>
+<g id="Layer_3_1_" display="none">
+	<text transform="matrix(1 0 0 1 32.8184 97.4546)" display="inline" font-family="'GillSansMTPro-Book'" font-size="36">houseable</text>
+</g>
+<g id="houseable-icon">
+	<g>
+		<polygon id="middle-2" fill="#2A303F" points="122.333,127.668 94.664,100.001 66.996,72.332 122.333,72.332 		"/>
+		<polygon id="middle-1" fill="#2A303F" points="66.996,72.332 94.664,100.001 122.333,127.67 66.996,127.67 		"/>
+		<polygon id="middle-4" fill="#2A303F" points="177.669,127.668 150.001,100 122.332,72.332 177.669,72.332 		"/>
+		<polygon id="middle-3" fill="#2A303F" points="122.333,72.332 150.001,100.001 177.669,127.67 122.333,127.67 		"/>
+		<polygon id="middle-6" fill="#38DDE5" points="233.005,127.668 205.338,100 177.669,72.332 233.005,72.332 		"/>
+		<polygon id="middle-5_1_" fill="#29C3D3" points="177.669,72.332 205.338,100.001 233.005,127.67 177.669,127.67 		"/>
+		<polygon id="middle-5" fill="#29C3D3" points="66.997,72.331 94.664,44.663 122.333,16.996 122.333,72.331 		"/>
+		<polygon id="top-4" fill="#29C3D3" points="177.669,72.331 150.001,44.663 122.333,16.995 177.669,16.995 		"/>
+		<polygon id="top-3" fill="#2A303F" points="122.332,16.996 150.001,44.664 177.669,72.332 122.332,72.332 		"/>
+		<polygon id="top-5" fill="#38E8E8" points="177.669,16.996 205.338,44.664 233.005,72.332 177.669,72.332 		"/>
+		<polygon id="bottom-1" fill="#2A303F" points="66.997,127.67 94.665,155.336 122.333,183.006 66.995,183.006 		"/>
+		<polygon id="bottom-2" fill="#2A303F" points="122.333,183.004 94.665,155.336 66.997,127.668 122.333,127.668 		"/>
+		<polygon id="bottom-3" fill="#F9F9F9" points="122.332,127.67 150,155.336 177.669,183.006 122.332,183.006 		"/>
+		<polygon id="bottom-4" fill="#F9F9F9" points="177.669,183.004 150.001,155.336 122.333,127.668 177.669,127.668 		"/>
+		<polygon id="bottom-6" fill="#2A303F" points="233.005,183.004 205.338,155.336 177.669,127.668 233.005,127.668 		"/>
+		<polygon id="bottom-5" fill="#2A303F" points="177.669,127.67 205.338,155.336 233.005,183.006 177.669,183.006 		"/>
+	</g>
 </g>
 </svg>
