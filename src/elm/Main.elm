@@ -4,6 +4,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Navigation
+import Home
 import Signup
 import Gallery
 import Login
@@ -17,6 +18,7 @@ import Json.Decode as JD exposing (..)
 
 type alias Model =
     { page : Page
+    , home : Home.Model
     , signup : Signup.Model
     , gallery : Gallery.Model
     , login : Login.Model
@@ -30,6 +32,7 @@ type alias Model =
 
 type Page
     = NotFound
+    | HomePage
     | SignupPage
     | GalleryPage
     | LoginPage
@@ -49,6 +52,9 @@ init flags location =
         ( updatedPage, cmd ) =
             authedRedirect page loggedIn
 
+        ( homeInitModel, homeCmd ) =
+            Home.init
+
         ( signupInitModel, signupCmd ) =
             Signup.init
 
@@ -66,6 +72,7 @@ init flags location =
 
         initModel =
             { page = updatedPage
+            , home = homeInitModel
             , signup = signupInitModel
             , gallery = galleryInitModel
             , login = loginInitModel
@@ -78,7 +85,8 @@ init flags location =
 
         cmds =
             Cmd.batch
-                [ Cmd.map SignupMsg signupCmd
+                [ Cmd.map HomeMsg homeCmd
+                , Cmd.map SignupMsg signupCmd
                 , Cmd.map GalleryMsg galleryCmd
                 , Cmd.map LoginMsg loginCmd
                 , Cmd.map AddArtworkMsg addArtworkCmd
@@ -96,6 +104,7 @@ init flags location =
 type Msg
     = Navigate Page
     | ChangePage Page
+    | HomeMsg Home.Msg
     | SignupMsg Signup.Msg
     | GalleryMsg Gallery.Msg
     | LoginMsg Login.Msg
@@ -124,6 +133,15 @@ update msg model =
                     authedRedirect page model.loggedIn
             in
                 ( { model | page = updatedPage }, cmd )
+
+        HomeMsg msg ->
+            let
+                ( homeModel, cmd ) =
+                    Home.update msg model.home
+            in
+                ( { model | home = homeModel }
+                , Cmd.map HomeMsg cmd
+                )
 
         SignupMsg msg ->
             let
@@ -281,6 +299,10 @@ view model =
     let
         page =
             case model.page of
+                HomePage ->
+                    Html.map HomeMsg
+                        (Home.view model.home)
+
                 SignupPage ->
                     Html.map SignupMsg
                         (Signup.view model.signup)
@@ -307,7 +329,7 @@ view model =
                             [ text "Page Not Found!" ]
                         ]
     in
-        div [ class "container-fluid" ]
+        div []
             [ pageHeader model
             , page
             ]
@@ -316,34 +338,48 @@ view model =
 pageHeader : Model -> Html Msg
 pageHeader model =
     if model.loggedIn then
-        header []
+        header [ class "container-fluid" ]
             [ nav [ class "navbar" ]
                 [ ul [ class "nav navbar-nav navbar-left" ]
                     [ li []
-                        [ a [ href "#/gallery" ] [ text "Home" ] ]
+                        [ a
+                            [ class "a-img", onClick (Navigate HomePage) ]
+                            [ img [ class "nav__img", src "dist/img/houseable-logo.svg" ] [] ]
+                        ]
                     , li []
                         [ a [ onClick (Navigate GalleryPage) ] [ text "Gallery" ] ]
                     , li []
                         [ a [ onClick (Navigate AddArtworkPage) ] [ text "Add Artwork" ] ]
                     ]
-                , ul [ class "nav navbar-nav navbar-right" ]
-                    [ li []
-                        [ a [ onClick Logout ] [ text "Logout" ] ]
+                , div [ class "collapse navbar-collapse", id "myNavbar" ]
+                    [ ul [ class "nav navbar-nav navbar-right" ]
+                        [ li []
+                            [ a [ onClick Logout ] [ text "Logout" ] ]
+                        ]
                     ]
                 ]
-            , p [] [ text (toString model) ]
+              -- , p [] [ text (toString model) ]
             ]
     else
-        header []
+        header [ class "container-fluid" ]
             [ nav [ class "navbar" ]
-                [ ul [ class "nav navbar-nav navbar-right" ]
+                [ ul [ class "nav navbar-nav navbar-left" ]
                     [ li []
-                        [ a [ onClick (Navigate LoginPage) ] [ text "Login" ] ]
-                    , li []
-                        [ a [ onClick (Navigate SignupPage) ] [ text "Signup" ] ]
+                        [ a
+                            [ class "a-img", onClick (Navigate HomePage) ]
+                            [ img [ class "nav__img", src "dist/img/houseable-logo.svg" ] [] ]
+                        ]
+                    ]
+                , div [ class "collapse navbar-collapse", id "myNavbar" ]
+                    [ ul [ class "nav navbar-nav navbar-right" ]
+                        [ li []
+                            [ a [ onClick (Navigate LoginPage) ] [ text "Login" ] ]
+                        , li []
+                            [ a [ onClick (Navigate SignupPage) ] [ text "Signup" ] ]
+                        ]
                     ]
                 ]
-            , p [] [ text (toString model) ]
+              -- , p [] [ text (toString model) ]
             ]
 
 
@@ -354,6 +390,9 @@ pageHeader model =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     let
+        homeSub =
+            Home.subscriptions model.home
+
         signupSub =
             Signup.subscriptions model.signup
 
@@ -370,7 +409,8 @@ subscriptions model =
             Artwork.subscriptions model.artwork
     in
         Sub.batch
-            [ Sub.map SignupMsg signupSub
+            [ Sub.map HomeMsg homeSub
+            , Sub.map SignupMsg signupSub
             , Sub.map GalleryMsg gallerySub
             , Sub.map LoginMsg loginSub
             , Sub.map AddArtworkMsg addArtworkSub
@@ -382,10 +422,10 @@ hashToPage : String -> Page
 hashToPage hash =
     case hash of
         "#/" ->
-            LoginPage
+            HomePage
 
         "" ->
-            LoginPage
+            HomePage
 
         "#/signup" ->
             SignupPage
@@ -409,6 +449,9 @@ hashToPage hash =
 pageToHash : Page -> String
 pageToHash page =
     case page of
+        HomePage ->
+            "#/"
+
         SignupPage ->
             "#/signup"
 

@@ -202,55 +202,104 @@ view model =
             -- [ h1 [] [ text "Loading..." ] ]
             [ img [ src "dist/img/houseable-loading.svg" ] [] ]
     else if model.isEditing then
-        div [ class "main" ]
-            [ errorPanel model.error
-            , editArtwork model
+        div [ class "main main--gallery" ]
+            [ div [ class "container" ]
+                [ errorPanel model.error
+                , editArtwork model
+                ]
             ]
     else
-        div [ class "main" ]
-            [ errorPanel model.error
-            , artwork model
+        div [ class "main main--gallery" ]
+            [ div [ class "container" ]
+                [ errorPanel model.error
+                , artwork model
+                ]
             ]
 
 
 artwork : Model -> Html Msg
 artwork model =
-    div []
-        [ p [] [ button [ onClick EditArtwork ] [ text "Edit Artwork" ] ]
-        , ul []
-            [ li [] [ text model.artwork.artist ]
-            , li [] [ text model.artwork.title ]
-            , li [] [ text model.artwork.medium ]
-            , li [] [ text model.artwork.year ]
-            , li [] [ text model.artwork.price ]
-            , li [] [ img [ src model.artwork.artworkImageFile ] [] ]
+    div [ class "row" ]
+        [ div [ class "artwork-container vertical-align" ]
+            [ div [ class "col-sm-6 artwork-container__col-sm-6" ]
+                [ img [ src model.artwork.artworkImageFile ] []
+                ]
+            , div [ class "col-sm-6 artwork-container__col-sm-6" ]
+                [ div [ class "text-center artwork-container__artwork-details" ]
+                    [ h2 [ class "artwork-container__artwork-details__artist" ] [ text model.artwork.artist ]
+                    , p [ class "artwork-container__artwork-details__title" ] [ text (model.artwork.title ++ ", " ++ model.artwork.year) ]
+                    , p [ class "artwork-container__artwork-details__medium" ] [ text model.artwork.medium ]
+                    , p [ class "align-middle artwork-container__artwork-details__price" ] [ text ("$" ++ model.artwork.price) ]
+                    , button [ class "btn btn--green", onClick EditArtwork ] [ text "edit artwork" ]
+                    ]
+                ]
             ]
         ]
 
 
 editArtwork : Model -> Html Msg
 editArtwork model =
-    div []
-        [ p [] [ button [ onClick ViewArtwork ] [ text "View Artwork" ] ]
-        , ul []
-            [ li [] [ input [ type_ "text", value model.artwork.artist, onInput ArtistEditInput ] [] ]
-            , li [] [ input [ type_ "text", value model.artwork.title, onInput TitleEditInput ] [] ]
-            , li [] [ input [ type_ "text", value model.artwork.medium, onInput MediumEditInput ] [] ]
-            , li [] [ input [ type_ "text", value model.artwork.year, onInput YearEditInput ] [] ]
-            , li [] [ input [ type_ "text", value model.artwork.price, onInput PriceEditInput ] [] ]
-              -- , li [] [ input [ type_ "text", value model.artwork.artworkImageFile, onInput ArtworkImageFileEditInput ] [] ]
-            , li []
-                [ input
-                    [ type_ "file"
-                    , class "form-control"
-                    , id "cloudinary-input"
-                    , onChange FetchImageFileEdit
+    div [ class "row" ]
+        [ div [ class "artwork-container vertical-align" ]
+            [ div [ class "col-sm-6 artwork-container__col-sm-6" ]
+                [ img [ src model.artwork.artworkImageFile ] []
+                ]
+            , div [ class "col-sm-6 artwork-container__col-sm-6" ]
+                [ div [ class "text-center artwork-container__artwork-details" ]
+                    [ Html.form [ class "formRow__form" ]
+                        [ input
+                            [ type_ "text"
+                            , class "formRow__input artwork-container__input--artist"
+                            , value model.artwork.artist
+                            , onInput ArtistEditInput
+                            ]
+                            []
+                        , input
+                            [ type_ "text"
+                            , class "formRow__input artwork-container__input--title"
+                            , value model.artwork.title
+                            , onInput TitleEditInput
+                            ]
+                            []
+                        , input
+                            [ type_ "text"
+                            , class "formRow__input artwork-container__input--medium"
+                            , value model.artwork.medium
+                            , onInput MediumEditInput
+                            ]
+                            []
+                        , input
+                            [ type_ "text"
+                            , class "formRow__input artwork-container__input--year"
+                            , value model.artwork.year
+                            , onInput YearEditInput
+                            ]
+                            []
+                        , input
+                            [ type_ "text"
+                            , class "formRow__input artwork-container__input--price"
+                            , value model.artwork.price
+                            , onInput PriceEditInput
+                            ]
+                            []
+                        , input
+                            [ type_ "file"
+                            , class "formRow__input artwork-container__input--artworkImageFile"
+                            , id "cloudinary-input"
+                            , onChange FetchImageFileEdit
+                            ]
+                            []
+                        , button
+                            [ class "btn btn--white formRow--btn"
+                            , onClick SubmitEditedArtwork
+                            ]
+                            [ text "submit edited artwork" ]
+                        ]
                     ]
-                    []
                 ]
             ]
-        , img [ src model.artwork.artworkImageFile, class "thumbnail" ] []
-        , div [] [ button [ onClick SubmitEditedArtwork ] [ text "Edit Artwork" ] ]
+        , div [ class "text-center div__btn--center" ]
+            [ button [ class "btn btn--white btn--center", onClick ViewArtwork ] [ text "return to artwork view" ] ]
         ]
 
 

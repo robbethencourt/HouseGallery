@@ -1,0 +1,25 @@
+/* nav */
+
+.navbar {
+  margin-bottom: 0;
+}
+
+.nav__img {
+  height: 50px;
+  padding-top: 5px;
+  padding-bottom: 7px;
+}
+
+.navbar-left > li > a.a-img {
+  padding: 0;
+}
+
+.navbar-right {
+  margin-top: 0;
+  margin-right: 0;
+}
+
+.nav > li > a:hover,
+.nav > li > a:focus {
+  background-color: transparent;
+}

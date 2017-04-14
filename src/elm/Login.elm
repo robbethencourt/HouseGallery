@@ -87,43 +87,38 @@ view model =
     div [ class "main" ]
         [ errorPanel model.error
         , loginForm model
-        , p [] [ text (toString model) ]
+          -- , p [] [ text (toString model) ]
         ]
 
 
 loginForm : Model -> Html Msg
 loginForm model =
-    div [ class "row" ]
+    div [ class "row formRow" ]
         [ div [ class "col-md-6 col-md-offset-3" ]
-            [ h2 [] [ text "Login" ]
-            , Html.form [ class "signup-login", onSubmit Submit ]
-                [ label [] [ text "Email" ]
-                , div [ class "form-group" ]
-                    [ input
-                        [ type_ "text"
-                        , class "form-control"
-                        , value model.email
-                        , onInput EmailInput
-                        ]
-                        []
+            [ Html.form [ class "formRow__form", onSubmit Submit ]
+                [ input
+                    [ type_ "email"
+                    , class "formRow__input formRow__input--email"
+                    , placeholder "email"
+                    , value model.email
+                    , onInput EmailInput
                     ]
-                , label [] [ text "Password" ]
-                , div [ class "form-group" ]
-                    [ input
-                        [ type_ "password"
-                        , class "form-control"
-                        , value model.password
-                        , onInput PasswordInput
-                        ]
-                        []
+                    []
+                , input
+                    [ type_ "password"
+                    , class "formRow__input formRow__input--password"
+                    , placeholder "password"
+                    , value model.password
+                    , onInput PasswordInput
                     ]
+                    []
                 , div [ class "form-group" ]
                     [ label [] []
                     , button
                         [ type_ "submit"
-                        , class "btn btn-default"
+                        , class "btn btn--white formRow--btn"
                         ]
-                        [ text "Login" ]
+                        [ text "login" ]
                     ]
                 ]
             ]

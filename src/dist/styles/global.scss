@@ -1,0 +1,199 @@
+/* global */
+
+$light_green: #38e8e8;
+$dark_green: #29c3d3;
+$dark_blue: #2a303f;
+$orange: #feac5e;
+$gray: #BCC5CF;
+$dark_gray: #5C6B7A;
+$error: #FF7575;
+$headings_font: 'Lato', sans-serif;
+
+
+/* headings */
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: $headings_font;
+}
+
+
+/* links */
+
+a,
+a:active {
+  cursor: pointer;
+  font-weight: bold;
+  transition: .3s;
+  color: $dark_green;
+}
+
+a:hover,
+a:focus {
+  transition: .3s;
+  color: $dark_blue;
+}
+
+
+/* buttons */
+
+.btn {
+  padding: 15px 3.5em;
+  border-radius: 0;
+  font-weight: bold;
+  transition: .3s;
+  box-shadow: lighten($dark_blue, 40%) 0px 10px 20px;
+}
+
+.btn:hover,
+.btn:focus {
+  outline: none;
+  transition: .3s;
+  box-shadow: lighten($dark_blue, 30%) 0px 0px 0px;
+}
+
+.div__btn--center {
+  margin-top: 90px;
+}
+
+.btn--white {
+  color: $light_green;
+  background-color: #fff;
+}
+
+.btn--white:hover, .btn--white:focus {
+  color: #fff;
+  background-color: $dark_blue;
+}
+
+.btn--green {
+  color: #fff;
+  background-color: $light_green;
+}
+
+.btn--green:hover, .btn-green:focus {
+  color: #fff;
+  background-color: $dark_green;
+}
+
+
+/* forms */
+.formRow {
+  background: #38e8e8;
+  background: -moz-linear-gradient(45deg, #38e8e8 1%, #38e8e8 55%, #38e8e8 55%, #2a303f 55%, #2a303f 100%);
+  background: -webkit-linear-gradient(45deg, #38e8e8 1%,#38e8e8 55%,#38e8e8 55%,#2a303f 55%,#2a303f 100%);
+  background: linear-gradient(45deg, #38e8e8 1%,#38e8e8 55%,#38e8e8 55%,#2a303f 55%,#2a303f 100%);
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#38e8e8', endColorstr='#2a303f',GradientType=1 );
+}
+
+.formRow__form {
+  width: 300px;
+  /* this needs to be in a media query */
+  margin: 80px auto;
+  box-shadow: 1px 3px 10px lighten($dark_blue, 20%);
+}
+
+.formRow__form__h3 {
+  margin-bottom: 0;
+  padding-top: 15px;
+  padding-bottom: 15px;
+  color: #fff;
+  background-color: $dark_blue;
+}
+
+.formRow__input {
+  width: 100%;
+  padding: 20px 1em;
+  border: none;
+  color: #fff;
+  font-weight: bold;
+}
+
+.formRow__input:focus {
+  outline: none;
+  background-color: saturate( $dark_green, 20% );
+}
+
+.formRow__p--error {
+  transition: .3s;
+  margin-bottom: 0;
+  padding: 20px;
+  color: #fff;
+  background-color: $error;
+}
+
+.formRow__p--error:empty {
+  padding: 0;
+}
+
+.formRow--btn {
+  width: 100%;
+  box-shadow: 0 0 0 #000;
+}
+
+/* placeholder text styles */
+::-webkit-input-placeholder, .form-control::-webkit-input-placeholder { /* Chrome/Opera/Safari */
+  color: lighten($dark_green, 45%);
+}
+::-moz-placeholder, .form-control::-moz-input-placeholder { /* Firefox 19+ */
+  color: lighten($dark_green, 45%);
+}
+:-ms-input-placeholder, .form-control:-ms-input-placeholder { /* IE 10+ */
+  color: lighten($dark_green, 45%);
+}
+:-moz-placeholder, .form-control:-moz-input-placeholder { /* Firefox 18- */
+  color: lighten($dark_green, 45%);
+}
+
+
+/* loading */
+
+.loading-container {
+  width: 300px;
+  margin: 2em auto;
+}
+
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+  }
+}
+
+.fade-in {
+  opacity: 0;
+  animation: fadeIn .5s ease-in 1 forwards;
+}
+
+.is-paused {
+  animation-play-state: paused;
+}
+
+
+/* helper styles */
+
+img {
+  max-width: 100%;
+}
+
+.thumbnail {
+  max-width: 100px;
+}
+
+
+/* flexbox */
+
+/* Small Devices, Tablets */
+@media only screen and (min-width : 768px) {
+
+  .vertical-align {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: row;
+  }
+
+}

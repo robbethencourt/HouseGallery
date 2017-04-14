@@ -297,85 +297,69 @@ view model =
 
 addArtwork : Model -> Html Msg
 addArtwork model =
-    div [ class "row" ]
+    div [ class "row formRow" ]
         [ div [ class "col-md-6 col-md-offset-3" ]
-            [ h2 [] [ text "Add Artwork" ]
-            , Html.form [ class "signup-login", onSubmit Submit ]
-                [ label [] [ text "Artist" ]
-                , div [ class "form-group" ]
-                    [ input
-                        [ type_ "text"
-                        , class "form-control"
-                        , value model.artist
-                        , onInput ArtistInput
-                        ]
-                        []
-                    , p [] [ text <| Maybe.withDefault "" model.artistError ]
+            [ Html.form [ class "formRow__form", onSubmit Submit ]
+                [ input
+                    [ type_ "text"
+                    , class "formRow__input artwork-container__input--artist"
+                    , placeholder "artist"
+                    , value model.artist
+                    , onInput ArtistInput
                     ]
-                , label [] [ text "Title" ]
-                , div [ class "form-group" ]
-                    [ input
-                        [ type_ "text"
-                        , class "form-control"
-                        , value model.title
-                        , onInput TitleInput
-                        ]
-                        []
-                    , p [] [ text <| Maybe.withDefault "" model.titleError ]
+                    []
+                , p [ class "formRow__p--error" ] [ text <| Maybe.withDefault "" model.artistError ]
+                , input
+                    [ type_ "text"
+                    , class "formRow__input artwork-container__input--title"
+                    , placeholder "title"
+                    , value model.title
+                    , onInput TitleInput
                     ]
-                , label [] [ text "Medium" ]
-                , div [ class "form-group" ]
-                    [ input
-                        [ type_ "text"
-                        , class "form-control"
-                        , value model.medium
-                        , onInput MediumInput
-                        ]
-                        []
-                    , p [] [ text <| Maybe.withDefault "" model.mediumError ]
+                    []
+                , p [ class "formRow__p--error" ] [ text <| Maybe.withDefault "" model.titleError ]
+                , input
+                    [ type_ "text"
+                    , class "formRow__input artwork-container__input--medium"
+                    , placeholder "medium"
+                    , value model.medium
+                    , onInput MediumInput
                     ]
-                , label [] [ text "Year" ]
-                , div [ class "form-group" ]
-                    [ input
-                        [ type_ "text"
-                        , class "form-control"
-                        , value model.year
-                        , onInput YearInput
-                        ]
-                        []
-                    , p [] [ text <| Maybe.withDefault "" model.yearError ]
+                    []
+                , p [ class "formRow__p--error" ] [ text <| Maybe.withDefault "" model.mediumError ]
+                , input
+                    [ type_ "text"
+                    , class "formRow__input artwork-container__input--year"
+                    , placeholder "year"
+                    , value model.year
+                    , onInput YearInput
                     ]
-                , label [] [ text "Price" ]
-                , div [ class "form-group" ]
-                    [ input
-                        [ type_ "text"
-                        , class "form-control"
-                        , value model.price
-                        , onInput PriceInput
-                        ]
-                        []
-                    , p [] [ text <| Maybe.withDefault "" model.priceError ]
+                    []
+                , p [ class "formRow__p--error" ] [ text <| Maybe.withDefault "" model.yearError ]
+                , input
+                    [ type_ "text"
+                    , class "formRow__input artwork-container__input--price"
+                    , placeholder "price"
+                    , value model.price
+                    , onInput PriceInput
                     ]
-                , label [] [ text "Artwork Image File" ]
-                , div [ class "form-group" ]
-                    [ input
-                        [ type_ "file"
-                        , class "form-control"
-                        , id "cloudinary-input"
-                        , onChange FetchImageFile
-                        ]
-                        []
-                    , p [] [ text <| Maybe.withDefault "" model.artworkImageFileError ]
-                    , img [ src model.artworkImageFile, class "thumbnail" ] []
+                    []
+                , p [ class "formRow__p--error" ] [ text <| Maybe.withDefault "" model.priceError ]
+                , input
+                    [ type_ "file"
+                    , class "formRow__input artwork-container__input--artworkImageFile"
+                    , placeholder "artwork image file"
+                    , id "cloudinary-input"
+                    , onChange FetchImageFile
                     ]
-                , div [ class "form-group" ]
-                    [ label [] []
-                    , button
-                        [ type_ "submit"
-                        , class "btn btn-default"
-                        ]
-                        [ text "Save Artwork" ]
+                    []
+                , p [ class "formRow__p--error" ] [ text <| Maybe.withDefault "" model.artworkImageFileError ]
+                , img [ src model.artworkImageFile, class "thumbnail" ] []
+                , button
+                    [ type_ "submit"
+                    , class "btn btn--white formRow--btn"
                     ]
+                    [ text "add artwork" ]
                 ]
             ]
         ]
