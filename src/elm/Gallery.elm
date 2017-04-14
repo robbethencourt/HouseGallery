@@ -6,6 +6,7 @@ import Html.Attributes exposing (..)
 import Navigation
 import Json.Decode as JD
 import Json.Decode.Pipeline as JDP
+import Loading
 
 
 -- model
@@ -24,7 +25,9 @@ type alias GalleryItem =
     { artworkId : String
     , artist : String
     , title : String
+    , medium : String
     , year : String
+    , price : String
     , artworkImageFile : String
     }
 
@@ -99,7 +102,9 @@ decodeGalleryItem =
         |> JDP.required "artworkId" JD.string
         |> JDP.required "artist" JD.string
         |> JDP.required "title" JD.string
+        |> JDP.required "medium" JD.string
         |> JDP.required "year" JD.string
+        |> JDP.required "price" JD.string
         |> JDP.required "artworkImageFile" JD.string
 
 
@@ -111,10 +116,12 @@ view : Model -> Html Msg
 view model =
     if model.isFetching then
         div [ class "main" ]
-            [ img [ src "dist/img/houseable-loading.svg" ] [] ]
+            -- [ img [ src "dist/img/houseable-loading.svg", class "loading-svg" ] [] ]
+            [ Loading.loadingSvg ]
     else
-        div [ class "main" ]
+        div [ class "main main--gallery" ]
             [ errorPanel model.error
+            , galleryHeader
             , gallery model
             ]
 
@@ -123,31 +130,32 @@ gallery : Model -> Html Msg
 gallery { gallery } =
     gallery
         |> List.map painting
-        |> tbody []
-        |> (\g -> galleryHeader :: [ g ])
-        |> table [ class "table table-striped" ]
+        |> div [ class "container" ]
 
 
 painting : GalleryItem -> Html Msg
-painting { artist, title, year, artworkImageFile, artworkId } =
-    tr []
-        [ td [] [ img [ src artworkImageFile, class "thumbnail" ] [] ]
-        , td [] [ text artist ]
-        , td [] [ a [ onClick (ArtworkPage artworkId) ] [ text title ] ]
-        , td [] [ text year ]
+painting { artist, title, medium, year, price, artworkImageFile, artworkId } =
+    div [ class "row" ]
+        [ div [ class "artwork-container vertical-align" ]
+            [ div [ class "col-sm-6 artwork-container__col-sm-6" ]
+                [ img [ src artworkImageFile ] []
+                ]
+            , div [ class "col-sm-6 artwork-container__col-sm-6" ]
+                [ div [ class "text-center artwork-container__artwork-details" ]
+                    [ h2 [ class "artwork-container__artwork-details__artist" ] [ text artist ]
+                    , p [ class "artwork-container__artwork-details__title" ] [ text (title ++ ", " ++ year) ]
+                    , p [ class "artwork-container__artwork-details__medium" ] [ text medium ]
+                    , p [ class "align-middle artwork-container__artwork-details__price" ] [ text ("$" ++ price) ]
+                    , button [ class "btn btn--green", onClick (ArtworkPage artworkId) ] [ text "view artwork" ]
+                    ]
+                ]
+            ]
         ]
 
 
 galleryHeader : Html Msg
 galleryHeader =
-    thead []
-        [ tr []
-            [ th [] [ text "Artwork" ]
-            , th [] [ text "Artist" ]
-            , th [] [ text "Title" ]
-            , th [] [ text "Year" ]
-            ]
-        ]
+    h2 [ class "text-center gallery-header" ] [ text "Your Gallery" ]
 
 
 errorPanel : Maybe String -> Html a

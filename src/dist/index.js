@@ -173,13 +173,16 @@ function getUserAndGallery (uid) {
               })
           })
       Promise.all(arrayOfArtworkObjects).then(gallery => {
+        console.log(gallery)
         gallery
           .forEach(artwork => {
             app.ports.usersGallery.send(JSON.stringify({
               artworkId: artwork.artworkId,
               artist: artwork.artworkObj.artist,
               title: artwork.artworkObj.title,
+              medium: artwork.artworkObj.medium,
               year: artwork.artworkObj.year,
+              price: artwork.artworkObj.price,
               artworkImageFile: artwork.artworkObj.artworkImageFile
             }))
           })

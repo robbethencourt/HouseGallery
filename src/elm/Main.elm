@@ -135,7 +135,13 @@ update msg model =
                 ( { model | page = updatedPage }, cmd )
 
         HomeMsg msg ->
-            ( model, Cmd.none )
+            let
+                ( homeModel, cmd ) =
+                    Home.update msg model.home
+            in
+                ( { model | home = homeModel }
+                , Cmd.map HomeMsg cmd
+                )
 
         SignupMsg msg ->
             let
@@ -323,7 +329,7 @@ view model =
                             [ text "Page Not Found!" ]
                         ]
     in
-        div [ class "container-fluid" ]
+        div []
             [ pageHeader model
             , page
             ]
@@ -332,34 +338,48 @@ view model =
 pageHeader : Model -> Html Msg
 pageHeader model =
     if model.loggedIn then
-        header []
+        header [ class "container-fluid" ]
             [ nav [ class "navbar" ]
                 [ ul [ class "nav navbar-nav navbar-left" ]
                     [ li []
-                        [ a [ href "#/gallery" ] [ text "Home" ] ]
+                        [ a
+                            [ class "a-img", onClick (Navigate HomePage) ]
+                            [ img [ class "nav__img", src "dist/img/houseable-logo.svg" ] [] ]
+                        ]
                     , li []
                         [ a [ onClick (Navigate GalleryPage) ] [ text "Gallery" ] ]
                     , li []
                         [ a [ onClick (Navigate AddArtworkPage) ] [ text "Add Artwork" ] ]
                     ]
-                , ul [ class "nav navbar-nav navbar-right" ]
-                    [ li []
-                        [ a [ onClick Logout ] [ text "Logout" ] ]
+                , div [ class "collapse navbar-collapse", id "myNavbar" ]
+                    [ ul [ class "nav navbar-nav navbar-right" ]
+                        [ li []
+                            [ a [ onClick Logout ] [ text "Logout" ] ]
+                        ]
                     ]
                 ]
-            , p [] [ text (toString model) ]
+              -- , p [] [ text (toString model) ]
             ]
     else
-        header []
+        header [ class "container-fluid" ]
             [ nav [ class "navbar" ]
-                [ ul [ class "nav navbar-nav navbar-right" ]
+                [ ul [ class "nav navbar-nav navbar-left" ]
                     [ li []
-                        [ a [ onClick (Navigate LoginPage) ] [ text "Login" ] ]
-                    , li []
-                        [ a [ onClick (Navigate SignupPage) ] [ text "Signup" ] ]
+                        [ a
+                            [ class "a-img", onClick (Navigate HomePage) ]
+                            [ img [ class "nav__img", src "dist/img/houseable-logo.svg" ] [] ]
+                        ]
+                    ]
+                , div [ class "collapse navbar-collapse", id "myNavbar" ]
+                    [ ul [ class "nav navbar-nav navbar-right" ]
+                        [ li []
+                            [ a [ onClick (Navigate LoginPage) ] [ text "Login" ] ]
+                        , li []
+                            [ a [ onClick (Navigate SignupPage) ] [ text "Signup" ] ]
+                        ]
                     ]
                 ]
-            , p [] [ text (toString model) ]
+              -- , p [] [ text (toString model) ]
             ]
 
 

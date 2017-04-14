@@ -3,6 +3,7 @@ module Home exposing (..)
 import Html exposing (..)
 import Html.Events exposing (..)
 import Html.Attributes exposing (..)
+import Navigation
 
 
 -- model
@@ -34,7 +35,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         SignupPage ->
-            ( model, Cmd.none )
+            ( { model | error = Just "woops" }, Navigation.newUrl "#/signup" )
 
 
 
@@ -43,11 +44,13 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    div []
-        [ div [ class "jumbotron" ]
-            [ h1 [] [ text "houseable" ]
-            , p [] [ text "save, share and sell your art collection online" ]
-            , button [] [ text "sign up" ]
+    div [ class "fluid-container" ]
+        [ div [ class "jumbotron jumbo-bg" ]
+            [ div [ class "container" ]
+                [ h1 [] [ text "houseable" ]
+                , p [] [ em [] [ text "save, share and sell your art collection online" ] ]
+                , button [ class "jumbotron__btn btn btn--white", onClick SignupPage ] [ text "sign up" ]
+                ]
             ]
         ]
 

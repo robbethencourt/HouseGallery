@@ -1,0 +1,25 @@
+/* Artwork */
+
+.artwork-container__input--artist {
+  background-color: $dark_green;
+}
+
+.artwork-container__input--title {
+  background-color: lighten($dark_green, 5%);
+}
+
+.artwork-container__input--medium {
+  background-color: lighten($dark_green, 10%);
+}
+
+.artwork-container__input--year {
+  background-color: lighten($dark_green, 15%);
+}
+
+.artwork-container__input--price {
+  background-color: lighten($dark_green, 20%);
+}
+
+.artwork-container__input--artworkImageFile {
+  background-color: lighten($dark_green, 25%);
+}

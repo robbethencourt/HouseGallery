@@ -2,10 +2,9 @@ $icon-font-path: '~bootstrap-sass/assets/fonts/bootstrap/';
 @import '~bootstrap-sass/assets/stylesheets/bootstrap/_mixins.scss';
 @import '~bootstrap-sass/assets/stylesheets/_bootstrap.scss';
 
-// custom scss below
-
-// .main { background: black; }
-
-.thumbnail {
-  max-width: 100px;
-}
+@import "global";
+@import "nav";
+@import "Home";
+@import "Signup";
+@import "Gallery";
+@import "Artwork";
