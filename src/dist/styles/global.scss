@@ -113,9 +113,14 @@ a:focus {
   font-weight: bold;
 }
 
-.formRow__input:focus {
+.formRow__input:focus, .formRow__input:active {
   outline: none;
   background-color: saturate( $dark_green, 20% );
+}
+
+/* bootstrap fix */
+input[type="file"]:focus {
+  outline: none;
 }
 
 .formRow__p--error {
@@ -147,29 +152,6 @@ a:focus {
 }
 :-moz-placeholder, .form-control:-moz-input-placeholder { /* Firefox 18- */
   color: lighten($dark_green, 45%);
-}
-
-
-/* loading */
-
-.loading-container {
-  width: 300px;
-  margin: 2em auto;
-}
-
-@keyframes fadeIn {
-  to {
-    opacity: 1;
-  }
-}
-
-.fade-in {
-  opacity: 0;
-  animation: fadeIn .5s ease-in 1 forwards;
-}
-
-.is-paused {
-  animation-play-state: paused;
 }
 
 

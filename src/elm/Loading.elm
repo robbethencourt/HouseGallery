@@ -9,7 +9,7 @@ loadingSvg : Html.Html msg
 loadingSvg =
     div [ class "loading-container" ]
         [ svg
-            [ width "300", height "200", viewBox "0 0 300 200" ]
+            [ width "250", height "125", viewBox "0 0 300 200" ]
             [ g [ id "houseable-loading" ]
                 [ polygon [ id "middle-2", fill "#2A303F", points "122.333,127.668 94.664,100.001 66.996,72.332 122.333,72.332" ] []
                 , polygon [ id "middle-1", fill "#2A303F", points "66.996,72.332 94.664,100.001 122.333,127.67 66.996,127.67" ] []

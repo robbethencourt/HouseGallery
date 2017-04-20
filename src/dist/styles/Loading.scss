@@ -1,0 +1,24 @@
+/* Loading */
+
+.loading-container {
+  height: 50vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: row;
+}
+
+$polygon-count: 16;
+
+#houseable-loading polygon {
+  opacity: 1;
+  animation: polygon 2.5s linear infinite;
+  @for $i from 1 through $polygon-count {
+    &:nth-child(#{$i}) { animation-delay: 100ms * $i; }
+  }
+}
+
+@keyframes polygon {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0; }
+}

@@ -6,6 +6,7 @@ import Html.Attributes exposing (..)
 import Json.Encode as JE
 import Json.Decode as JD
 import Json.Decode.Pipeline as JDP
+import Loading
 
 
 -- model
@@ -199,8 +200,7 @@ view : Model -> Html Msg
 view model =
     if model.isFetching then
         div [ class "main" ]
-            -- [ h1 [] [ text "Loading..." ] ]
-            [ img [ src "dist/img/houseable-loading.svg" ] [] ]
+            [ Loading.loadingSvg ]
     else if model.isEditing then
         div [ class "main main--gallery" ]
             [ div [ class "container" ]
@@ -246,7 +246,7 @@ editArtwork model =
                 ]
             , div [ class "col-sm-6 artwork-container__col-sm-6" ]
                 [ div [ class "text-center artwork-container__artwork-details" ]
-                    [ Html.form [ class "formRow__form" ]
+                    [ Html.form [ class "formRow__form formRow__form--artwork-edit" ]
                         [ input
                             [ type_ "text"
                             , class "formRow__input artwork-container__input--artist"
