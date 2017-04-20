@@ -173,7 +173,6 @@ function getUserAndGallery (uid) {
               })
           })
       Promise.all(arrayOfArtworkObjects).then(gallery => {
-        console.log(gallery)
         gallery
           .forEach(artwork => {
             app.ports.usersGallery.send(JSON.stringify({
@@ -213,6 +212,7 @@ app.ports.getOneArtwork.subscribe(function (artworkId) {
 // send artwork to component
 app.ports.submitEditedArtwork.subscribe(function (artworkToEdit) {
   const jsonParsedElmArtworkToEditRecord = JSON.parse(artworkToEdit)
+  console.log(jsonParsedElmArtworkToEditRecord)
 
   // console.log(jsonParsedElmArtworkToEditRecord.oldArtworkImageFile)
   //
@@ -246,35 +246,57 @@ app.ports.submitEditedArtwork.subscribe(function (artworkToEdit) {
   const el = document.getElementById('cloudinary-input')
   const imageFile = el.files[0]
 
-  let cloudinaryImageLink = new Promise(function (resolve, reject) {
-    let upload = request.post(config.CLOUDINARY_UPLOAD_URL)
-      .field('upload_preset', config.CLOUDINARY_UPLOAD_PRESET)
-      .field('file', imageFile)
+  console.log(imageFile)
 
-    upload.end(function (err, response) {
-      if (err) { console.log(err) }
-      if (response.body.secure_url !== '') {
-        resolve(response.body.secure_url)
-      }
+  if (imageFile !== undefined) {
+    let cloudinaryImageLink = new Promise(function (resolve, reject) {
+      let upload = request.post(config.CLOUDINARY_UPLOAD_URL)
+        .field('upload_preset', config.CLOUDINARY_UPLOAD_PRESET)
+        .field('file', imageFile)
+
+      upload.end(function (err, response) {
+        if (err) { console.log(err) }
+        if (response.body.secure_url !== '') {
+          resolve(response.body.secure_url)
+        }
+      })
     })
-  })
-  cloudinaryImageLink
-    .then(function (imageLink) {
-      const artworkId = jsonParsedElmArtworkToEditRecord.artworkId
-      const artworkFbObject = {
-        artist: jsonParsedElmArtworkToEditRecord.artist,
-        title: jsonParsedElmArtworkToEditRecord.title,
-        medium: jsonParsedElmArtworkToEditRecord.medium,
-        year: jsonParsedElmArtworkToEditRecord.year,
-        price: jsonParsedElmArtworkToEditRecord.price,
-        artworkImageFile: imageLink,
-        uid: jsonParsedElmArtworkToEditRecord.uid
-      }
-      firebaseHelper.editArtwork(artworkId, artworkFbObject)
-        .then(function (fbEditArtworkResponse) {
-          // clear out the elm gallery model before calling for the artwork again
-          app.ports.clearGallery.send(null)
-          getUserAndGallery(artworkFbObject.uid)
-        })
-    })
+    cloudinaryImageLink
+      .then(function (imageLink) {
+        const artworkId = jsonParsedElmArtworkToEditRecord.artworkId
+        const artworkFbObject = {
+          artist: jsonParsedElmArtworkToEditRecord.artist,
+          title: jsonParsedElmArtworkToEditRecord.title,
+          medium: jsonParsedElmArtworkToEditRecord.medium,
+          year: jsonParsedElmArtworkToEditRecord.year,
+          price: jsonParsedElmArtworkToEditRecord.price,
+          artworkImageFile: imageLink,
+          uid: jsonParsedElmArtworkToEditRecord.uid
+        }
+        firebaseHelper.editArtwork(artworkId, artworkFbObject)
+          .then(function (fbEditArtworkResponse) {
+            // clear out the elm gallery model before calling for the artwork again
+            app.ports.clearGallery.send(null)
+            getUserAndGallery(artworkFbObject.uid)
+          })
+      })
+  } else {
+    const artworkId = jsonParsedElmArtworkToEditRecord.artworkId
+    const artworkFbObject = {
+      artist: jsonParsedElmArtworkToEditRecord.artist,
+      title: jsonParsedElmArtworkToEditRecord.title,
+      medium: jsonParsedElmArtworkToEditRecord.medium,
+      year: jsonParsedElmArtworkToEditRecord.year,
+      price: jsonParsedElmArtworkToEditRecord.price,
+      artworkImageFile: jsonParsedElmArtworkToEditRecord.artworkImage,
+      uid: jsonParsedElmArtworkToEditRecord.uid
+    }
+    console.log(artworkFbObject)
+    firebaseHelper.editArtwork(artworkId, artworkFbObject)
+      .then(function (fbEditArtworkResponse) {
+        // clear out the elm gallery model before calling for the artwork again
+        app.ports.clearGallery.send(null)
+        getUserAndGallery(artworkFbObject.uid)
+      })
+  }
 })

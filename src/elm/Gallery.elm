@@ -116,7 +116,6 @@ view : Model -> Html Msg
 view model =
     if model.isFetching then
         div [ class "main" ]
-            -- [ img [ src "dist/img/houseable-loading.svg", class "loading-svg" ] [] ]
             [ Loading.loadingSvg ]
     else
         div [ class "main main--gallery" ]

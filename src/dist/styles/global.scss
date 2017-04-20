@@ -113,7 +113,7 @@ a:focus {
   font-weight: bold;
 }
 
-.formRow__input:focus {
+.formRow__input:focus, .formRow__input:active {
   outline: none;
   background-color: saturate( $dark_green, 20% );
 }
@@ -150,29 +150,6 @@ a:focus {
 }
 
 
-/* loading */
-
-.loading-container {
-  width: 300px;
-  margin: 2em auto;
-}
-
-@keyframes fadeIn {
-  to {
-    opacity: 1;
-  }
-}
-
-.fade-in {
-  opacity: 0;
-  animation: fadeIn .5s ease-in 1 forwards;
-}
-
-.is-paused {
-  animation-play-state: paused;
-}
-
-
 /* helper styles */
 
 img {
@@ -181,6 +158,18 @@ img {
 
 .thumbnail {
   max-width: 100px;
+}
+
+
+/* bootstrap fix */
+
+input[type="file"]:focus {
+  outline: none;
+}
+
+.row {
+  margin-right: 0;
+  margin-left: 0;
 }
 
 

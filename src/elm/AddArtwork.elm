@@ -5,10 +5,6 @@ import Html.Events exposing (..)
 import Html.Attributes exposing (..)
 import Json.Decode as JD
 import Json.Encode as JE
-
-
--- import Json.Decode as JD exposing (field)
-
 import Navigation
 
 
@@ -354,7 +350,7 @@ addArtwork model =
                     ]
                     []
                 , p [ class "formRow__p--error" ] [ text <| Maybe.withDefault "" model.artworkImageFileError ]
-                , img [ src model.artworkImageFile, class "thumbnail" ] []
+                , img [ src model.artworkImageFile ] []
                 , button
                     [ type_ "submit"
                     , class "btn btn--white formRow--btn"
