@@ -118,11 +118,6 @@ a:focus {
   background-color: saturate( $dark_green, 20% );
 }
 
-/* bootstrap fix */
-input[type="file"]:focus {
-  outline: none;
-}
-
 .formRow__p--error {
   transition: .3s;
   margin-bottom: 0;
@@ -163,6 +158,18 @@ img {
 
 .thumbnail {
   max-width: 100px;
+}
+
+
+/* bootstrap fix */
+
+input[type="file"]:focus {
+  outline: none;
+}
+
+.row {
+  margin-right: 0;
+  margin-left: 0;
 }
 
 
