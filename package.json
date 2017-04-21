@@ -3,7 +3,8 @@
   "version": "0.0.0",
   "description": "Log artwork in an easy to retrieve web application",
   "scripts": {
-    "start": "webpack-dev-server --hot --inline --content-base src/",
+    "start": "node server.js",
+    "runDev": "webpack-dev-server --hot --inline --content-base src/",
     "build": "rimraf dist && webpack"
   },
   "repository": {
