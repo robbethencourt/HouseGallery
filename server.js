@@ -18,7 +18,7 @@ app.use(bodyParser.json({type: 'application/vnd.api+json'}))
 
 // Routes
 // require('./routes/api-routes.js')(app)
-app.use(express.static('./dist'))
+app.use(express.static('./src'))
 
 app.get('/', function (req, res) {
   res.sendFile(__dirname + './dist/index.html')
