@@ -18,10 +18,10 @@ app.use(bodyParser.json({type: 'application/vnd.api+json'}))
 
 // Routes
 // require('./routes/api-routes.js')(app)
-app.use(express.static('./src'))
+app.use(express.static('./dist'))
 
 app.get('/', function (req, res) {
-  res.sendFile(__dirname + './src/dist/index.html')
+  res.sendFile('index.html')
 }) // end app.get()
 
 // Listener
