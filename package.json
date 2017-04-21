@@ -4,7 +4,7 @@
   "description": "Log artwork in an easy to retrieve web application",
   "scripts": {
     "start": "node server.js",
-    "runDev": "webpack-dev-server --hot --inline --content-base src/",
+    "dev": "webpack-dev-server --hot --inline --content-base src/",
     "build": "rimraf dist && webpack"
   },
   "repository": {
