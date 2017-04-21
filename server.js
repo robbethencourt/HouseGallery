@@ -21,7 +21,7 @@ app.use(bodyParser.json({type: 'application/vnd.api+json'}))
 app.use(express.static('./src'))
 
 app.get('/', function (req, res) {
-  res.sendFile(__dirname + './dist/index.html')
+  res.sendFile(__dirname + './src/dist/index.html')
 }) // end app.get()
 
 // Listener
