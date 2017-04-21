@@ -5,7 +5,8 @@
   "scripts": {
     "start": "node server.js",
     "dev": "webpack-dev-server --hot --inline --content-base src/",
-    "build": "rimraf dist && webpack"
+    "prebuild": "rimraf dist",
+    "build": "webpack"
   },
   "repository": {
     "type": "git",
