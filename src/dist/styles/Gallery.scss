@@ -40,8 +40,12 @@
 
 .artwork-container__artwork-details__medium {
   color: $gray;
-  font-weight: bold;
   font-style: italic;
+}
+
+.artwork-container__artwork-details__dimensions {
+  color: $gray;
+  font-weight: bold;
 }
 
 .artwork-container__artwork-details__price {

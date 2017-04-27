@@ -16,10 +16,14 @@
   background-color: lighten($dark_green, 15%);
 }
 
-.artwork-container__input--price {
+.artwork-container__input--dimensions {
   background-color: lighten($dark_green, 20%);
 }
 
-.artwork-container__input--artworkImageFile {
+.artwork-container__input--price {
   background-color: lighten($dark_green, 25%);
+}
+
+.artwork-container__input--artworkImageFile {
+  background-color: lighten($dark_green, 30%);
 }

@@ -21,6 +21,8 @@ type alias Model =
     , mediumError : Maybe String
     , year : String
     , yearError : Maybe String
+    , dimensions : String
+    , dimensionsError : Maybe String
     , price : String
     , priceError : Maybe String
     , artworkImageFile : String
@@ -39,6 +41,8 @@ initModel =
     , mediumError = Nothing
     , year = ""
     , yearError = Nothing
+    , dimensions = ""
+    , dimensionsError = Nothing
     , price = ""
     , priceError = Nothing
     , artworkImageFile = ""
@@ -60,6 +64,7 @@ type Msg
     | TitleInput String
     | MediumInput String
     | YearInput String
+    | DimensionsInput String
     | PriceInput String
     | FetchImageFile String
     | ArtworkImageInput String
@@ -97,6 +102,14 @@ update uid msg model =
         YearInput year ->
             yearInputCheck model year
 
+        DimensionsInput dimensions ->
+            ( { model
+                | dimensions = dimensions
+                , dimensionsError = Nothing
+              }
+            , Cmd.none
+            )
+
         PriceInput price ->
             priceInputCheck model price
 
@@ -122,6 +135,7 @@ update uid msg model =
                         , ( "title", JE.string model.title )
                         , ( "medium", JE.string model.medium )
                         , ( "year", JE.string model.year )
+                        , ( "dimensions", JE.string model.dimensions )
                         , ( "price", JE.string model.price )
                         , ( "artworkImage", JE.string model.artworkImageFile )
                         , ( "uid", JE.string uid )
@@ -202,6 +216,8 @@ isValid model =
         == Nothing
         && model.yearError
         == Nothing
+        && model.dimensionsError
+        == Nothing
         && model.priceError
         == Nothing
         && model.artworkImageFileError
@@ -215,6 +231,7 @@ validate model =
         |> validateTitle
         |> validateMedium
         |> validateYear
+        |> validateDimensions
         |> validatePrice
         |> validateArtworkImage
 
@@ -255,6 +272,14 @@ validateYear model =
             { model | yearError = Just "A Year is Required" }
         else
             { model | yearError = Nothing }
+
+
+validateDimensions : Model -> Model
+validateDimensions model =
+    if String.isEmpty model.dimensions then
+        { model | dimensionsError = Just "Dimensions are Required" }
+    else
+        { model | dimensionsError = Nothing }
 
 
 validatePrice : Model -> Model
@@ -332,6 +357,15 @@ addArtwork model =
                     ]
                     []
                 , p [ class "formRow__p--error" ] [ text <| Maybe.withDefault "" model.yearError ]
+                , input
+                    [ type_ "text"
+                    , class "formRow__input artwork-container__input--dimensions"
+                    , placeholder "dimensions (eg 72 x 20)"
+                    , value model.dimensions
+                    , onInput DimensionsInput
+                    ]
+                    []
+                , p [ class "formRow__p--error" ] [ text <| Maybe.withDefault "" model.dimensionsError ]
                 , input
                     [ type_ "text"
                     , class "formRow__input artwork-container__input--price"

@@ -27,6 +27,7 @@ type alias GalleryItem =
     , title : String
     , medium : String
     , year : String
+    , dimensions : String
     , price : String
     , artworkImageFile : String
     }
@@ -104,6 +105,7 @@ decodeGalleryItem =
         |> JDP.required "title" JD.string
         |> JDP.required "medium" JD.string
         |> JDP.required "year" JD.string
+        |> JDP.required "dimensions" JD.string
         |> JDP.required "price" JD.string
         |> JDP.required "artworkImageFile" JD.string
 
@@ -133,7 +135,7 @@ gallery { gallery } =
 
 
 painting : GalleryItem -> Html Msg
-painting { artist, title, medium, year, price, artworkImageFile, artworkId } =
+painting { artist, title, medium, year, dimensions, price, artworkImageFile, artworkId } =
     div [ class "row" ]
         [ div [ class "artwork-container vertical-align" ]
             [ div [ class "col-sm-6 artwork-container__col-sm-6" ]
@@ -144,6 +146,7 @@ painting { artist, title, medium, year, price, artworkImageFile, artworkId } =
                     [ h2 [ class "artwork-container__artwork-details__artist" ] [ text artist ]
                     , p [ class "artwork-container__artwork-details__title" ] [ text (title ++ ", " ++ year) ]
                     , p [ class "artwork-container__artwork-details__medium" ] [ text medium ]
+                    , p [ class "artwork-container__artwork-details__dimensions" ] [ text dimensions ]
                     , p [ class "align-middle artwork-container__artwork-details__price" ] [ text ("$" ++ price) ]
                     , button [ class "btn btn--green", onClick (ArtworkPage artworkId) ] [ text "view artwork" ]
                     ]
