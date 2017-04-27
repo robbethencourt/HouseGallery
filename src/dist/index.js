@@ -93,6 +93,7 @@ app.ports.addArtworkToFb.subscribe(function (elmArtworkToAdd) {
         title: jsonParsedElmArtworkRecord.title,
         medium: jsonParsedElmArtworkRecord.medium,
         year: jsonParsedElmArtworkRecord.year,
+        dimensions: jsonParsedElmArtworkRecord.dimensions,
         price: jsonParsedElmArtworkRecord.price,
         artworkImageFile: imageLink,
         createdOn: Date.now(),
@@ -181,6 +182,7 @@ function getUserAndGallery (uid) {
               title: artwork.artworkObj.title,
               medium: artwork.artworkObj.medium,
               year: artwork.artworkObj.year,
+              dimensions: artwork.artworkObj.dimensions,
               price: artwork.artworkObj.price,
               artworkImageFile: artwork.artworkObj.artworkImageFile
             }))
@@ -202,6 +204,7 @@ app.ports.getOneArtwork.subscribe(function (artworkId) {
         title: fbArtworkObj.title,
         medium: fbArtworkObj.medium,
         year: fbArtworkObj.year,
+        dimensions: fbArtworkObj.dimensions,
         price: fbArtworkObj.price,
         artworkImageFile: fbArtworkObj.artworkImageFile,
         oldArtworkImageFile: ''
@@ -269,6 +272,7 @@ app.ports.submitEditedArtwork.subscribe(function (artworkToEdit) {
           title: jsonParsedElmArtworkToEditRecord.title,
           medium: jsonParsedElmArtworkToEditRecord.medium,
           year: jsonParsedElmArtworkToEditRecord.year,
+          dimensions: jsonParsedElmArtworkToEditRecord.dimensions,
           price: jsonParsedElmArtworkToEditRecord.price,
           artworkImageFile: imageLink,
           uid: jsonParsedElmArtworkToEditRecord.uid
@@ -287,6 +291,7 @@ app.ports.submitEditedArtwork.subscribe(function (artworkToEdit) {
       title: jsonParsedElmArtworkToEditRecord.title,
       medium: jsonParsedElmArtworkToEditRecord.medium,
       year: jsonParsedElmArtworkToEditRecord.year,
+      dimensions: jsonParsedElmArtworkToEditRecord.dimensions,
       price: jsonParsedElmArtworkToEditRecord.price,
       artworkImageFile: jsonParsedElmArtworkToEditRecord.artworkImage,
       uid: jsonParsedElmArtworkToEditRecord.uid

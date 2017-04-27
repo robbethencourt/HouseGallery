@@ -27,6 +27,7 @@ type alias Artwork =
     , title : String
     , medium : String
     , year : String
+    , dimensions : String
     , price : String
     , artworkImageFile : String
     , oldArtworkImageFile : String
@@ -40,6 +41,7 @@ initArtwork =
     , title = ""
     , medium = ""
     , year = ""
+    , dimensions = ""
     , price = ""
     , artworkImageFile = ""
     , oldArtworkImageFile = ""
@@ -74,6 +76,7 @@ type Msg
     | TitleEditInput String
     | MediumEditInput String
     | YearEditInput String
+    | DimensionsEditInput String
     | PriceEditInput String
     | ArtworkImageFileEditInput String
     | FetchImageFileEdit String
@@ -112,6 +115,9 @@ update uid msg model =
             YearEditInput year ->
                 ( { model | artwork = { artwork | year = year } }, Cmd.none )
 
+            DimensionsEditInput dimensions ->
+                ( { model | artwork = { artwork | dimensions = dimensions } }, Cmd.none )
+
             PriceEditInput price ->
                 ( { model | artwork = { artwork | price = price } }, Cmd.none )
 
@@ -130,6 +136,7 @@ update uid msg model =
                             , ( "title", JE.string model.artwork.title )
                             , ( "medium", JE.string model.artwork.medium )
                             , ( "year", JE.string model.artwork.year )
+                            , ( "dimensions", JE.string model.artwork.dimensions )
                             , ( "price", JE.string model.artwork.price )
                             , ( "artworkImage", JE.string model.artwork.artworkImageFile )
                             , ( "oldArtworkImageFile", JE.string model.artwork.oldArtworkImageFile )
@@ -167,6 +174,7 @@ decodeJson jsonArtwork model =
                 , artwork = { artwork | title = artwork.title }
                 , artwork = { artwork | medium = artwork.medium }
                 , artwork = { artwork | year = artwork.year }
+                , artwork = { artwork | dimensions = artwork.dimensions }
                 , artwork = { artwork | price = artwork.price }
                 , artwork = { artwork | artworkImageFile = artwork.artworkImageFile }
                 , artwork = { artwork | oldArtworkImageFile = "" }
@@ -187,6 +195,7 @@ decodeArtworkItem =
         |> JDP.required "title" JD.string
         |> JDP.required "medium" JD.string
         |> JDP.required "year" JD.string
+        |> JDP.required "dimensions" JD.string
         |> JDP.required "price" JD.string
         |> JDP.required "artworkImageFile" JD.string
         |> JDP.required "oldArtworkImageFile" JD.string
@@ -229,6 +238,7 @@ artwork model =
                     [ h2 [ class "artwork-container__artwork-details__artist" ] [ text model.artwork.artist ]
                     , p [ class "artwork-container__artwork-details__title" ] [ text (model.artwork.title ++ ", " ++ model.artwork.year) ]
                     , p [ class "artwork-container__artwork-details__medium" ] [ text model.artwork.medium ]
+                    , p [ class "artwork-container__artwork-details__dimensions" ] [ text model.artwork.dimensions ]
                     , p [ class "align-middle artwork-container__artwork-details__price" ] [ text ("$" ++ model.artwork.price) ]
                     , button [ class "btn btn--green", onClick EditArtwork ] [ text "edit artwork" ]
                     ]
@@ -273,6 +283,13 @@ editArtwork model =
                             , class "formRow__input artwork-container__input--year"
                             , value model.artwork.year
                             , onInput YearEditInput
+                            ]
+                            []
+                        , input
+                            [ type_ "text"
+                            , class "formRow__input artwork-container__input--dimensions"
+                            , value model.artwork.dimensions
+                            , onInput DimensionsEditInput
                             ]
                             []
                         , input
