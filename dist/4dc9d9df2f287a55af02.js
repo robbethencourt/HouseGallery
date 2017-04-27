@@ -139,6 +139,7 @@
 	        title: jsonParsedElmArtworkRecord.title,
 	        medium: jsonParsedElmArtworkRecord.medium,
 	        year: jsonParsedElmArtworkRecord.year,
+	        dimensions: jsonParsedElmArtworkRecord.dimensions,
 	        price: jsonParsedElmArtworkRecord.price,
 	        artworkImageFile: imageLink,
 	        createdOn: Date.now(),
@@ -227,6 +228,7 @@
 	              title: artwork.artworkObj.title,
 	              medium: artwork.artworkObj.medium,
 	              year: artwork.artworkObj.year,
+	              dimensions: artwork.artworkObj.dimensions,
 	              price: artwork.artworkObj.price,
 	              artworkImageFile: artwork.artworkObj.artworkImageFile
 	            }))
@@ -248,6 +250,7 @@
 	        title: fbArtworkObj.title,
 	        medium: fbArtworkObj.medium,
 	        year: fbArtworkObj.year,
+	        dimensions: fbArtworkObj.dimensions,
 	        price: fbArtworkObj.price,
 	        artworkImageFile: fbArtworkObj.artworkImageFile,
 	        oldArtworkImageFile: ''
@@ -315,6 +318,7 @@
 	          title: jsonParsedElmArtworkToEditRecord.title,
 	          medium: jsonParsedElmArtworkToEditRecord.medium,
 	          year: jsonParsedElmArtworkToEditRecord.year,
+	          dimensions: jsonParsedElmArtworkToEditRecord.dimensions,
 	          price: jsonParsedElmArtworkToEditRecord.price,
 	          artworkImageFile: imageLink,
 	          uid: jsonParsedElmArtworkToEditRecord.uid
@@ -333,6 +337,7 @@
 	      title: jsonParsedElmArtworkToEditRecord.title,
 	      medium: jsonParsedElmArtworkToEditRecord.medium,
 	      year: jsonParsedElmArtworkToEditRecord.year,
+	      dimensions: jsonParsedElmArtworkToEditRecord.dimensions,
 	      price: jsonParsedElmArtworkToEditRecord.price,
 	      artworkImageFile: jsonParsedElmArtworkToEditRecord.artworkImage,
 	      uid: jsonParsedElmArtworkToEditRecord.uid
@@ -10290,6 +10295,15 @@
 			model,
 			{priceError: _elm_lang$core$Maybe$Nothing});
 	};
+	var _user$project$AddArtwork$validateDimensions = function (model) {
+		return _elm_lang$core$String$isEmpty(model.dimensions) ? _elm_lang$core$Native_Utils.update(
+			model,
+			{
+				dimensionsError: _elm_lang$core$Maybe$Just('Dimensions are Required')
+			}) : _elm_lang$core$Native_Utils.update(
+			model,
+			{dimensionsError: _elm_lang$core$Maybe$Nothing});
+	};
 	var _user$project$AddArtwork$validateYear = function (model) {
 		var yearInt = A2(
 			_elm_lang$core$Result$withDefault,
@@ -10333,13 +10347,14 @@
 	var _user$project$AddArtwork$validate = function (model) {
 		return _user$project$AddArtwork$validateArtworkImage(
 			_user$project$AddArtwork$validatePrice(
-				_user$project$AddArtwork$validateYear(
-					_user$project$AddArtwork$validateMedium(
-						_user$project$AddArtwork$validateTitle(
-							_user$project$AddArtwork$validateArtist(model))))));
+				_user$project$AddArtwork$validateDimensions(
+					_user$project$AddArtwork$validateYear(
+						_user$project$AddArtwork$validateMedium(
+							_user$project$AddArtwork$validateTitle(
+								_user$project$AddArtwork$validateArtist(model)))))));
 	};
 	var _user$project$AddArtwork$isValid = function (model) {
-		return _elm_lang$core$Native_Utils.eq(model.artistError, _elm_lang$core$Maybe$Nothing) && (_elm_lang$core$Native_Utils.eq(model.titleError, _elm_lang$core$Maybe$Nothing) && (_elm_lang$core$Native_Utils.eq(model.mediumError, _elm_lang$core$Maybe$Nothing) && (_elm_lang$core$Native_Utils.eq(model.yearError, _elm_lang$core$Maybe$Nothing) && (_elm_lang$core$Native_Utils.eq(model.priceError, _elm_lang$core$Maybe$Nothing) && _elm_lang$core$Native_Utils.eq(model.artworkImageFileError, _elm_lang$core$Maybe$Nothing)))));
+		return _elm_lang$core$Native_Utils.eq(model.artistError, _elm_lang$core$Maybe$Nothing) && (_elm_lang$core$Native_Utils.eq(model.titleError, _elm_lang$core$Maybe$Nothing) && (_elm_lang$core$Native_Utils.eq(model.mediumError, _elm_lang$core$Maybe$Nothing) && (_elm_lang$core$Native_Utils.eq(model.yearError, _elm_lang$core$Maybe$Nothing) && (_elm_lang$core$Native_Utils.eq(model.dimensionsError, _elm_lang$core$Maybe$Nothing) && (_elm_lang$core$Native_Utils.eq(model.priceError, _elm_lang$core$Maybe$Nothing) && _elm_lang$core$Native_Utils.eq(model.artworkImageFileError, _elm_lang$core$Maybe$Nothing))))));
 	};
 	var _user$project$AddArtwork$priceInputCheck = F2(
 		function (model, price) {
@@ -10377,7 +10392,7 @@
 			'change',
 			A2(_elm_lang$core$Json_Decode$map, tagger, _elm_lang$html$Html_Events$targetValue));
 	};
-	var _user$project$AddArtwork$initModel = {error: _elm_lang$core$Maybe$Nothing, artist: '', artistError: _elm_lang$core$Maybe$Nothing, title: '', titleError: _elm_lang$core$Maybe$Nothing, medium: '', mediumError: _elm_lang$core$Maybe$Nothing, year: '', yearError: _elm_lang$core$Maybe$Nothing, price: '', priceError: _elm_lang$core$Maybe$Nothing, artworkImageFile: '', artworkImageFileError: _elm_lang$core$Maybe$Nothing};
+	var _user$project$AddArtwork$initModel = {error: _elm_lang$core$Maybe$Nothing, artist: '', artistError: _elm_lang$core$Maybe$Nothing, title: '', titleError: _elm_lang$core$Maybe$Nothing, medium: '', mediumError: _elm_lang$core$Maybe$Nothing, year: '', yearError: _elm_lang$core$Maybe$Nothing, dimensions: '', dimensionsError: _elm_lang$core$Maybe$Nothing, price: '', priceError: _elm_lang$core$Maybe$Nothing, artworkImageFile: '', artworkImageFileError: _elm_lang$core$Maybe$Nothing};
 	var _user$project$AddArtwork$init = {ctor: '_Tuple2', _0: _user$project$AddArtwork$initModel, _1: _elm_lang$core$Platform_Cmd$none};
 	var _user$project$AddArtwork$addArtworkToFb = _elm_lang$core$Native_Platform.outgoingPort(
 		'addArtworkToFb',
@@ -10420,6 +10435,14 @@
 					};
 				case 'YearInput':
 					return A2(_user$project$AddArtwork$yearInputCheck, model, _p1._0);
+				case 'DimensionsInput':
+					return {
+						ctor: '_Tuple2',
+						_0: _elm_lang$core$Native_Utils.update(
+							model,
+							{dimensions: _p1._0, dimensionsError: _elm_lang$core$Maybe$Nothing}),
+						_1: _elm_lang$core$Platform_Cmd$none
+					};
 				case 'PriceInput':
 					return A2(_user$project$AddArtwork$priceInputCheck, model, _p1._0);
 				case 'FetchImageFile':
@@ -10473,24 +10496,32 @@
 												ctor: '::',
 												_0: {
 													ctor: '_Tuple2',
-													_0: 'price',
-													_1: _elm_lang$core$Json_Encode$string(model.price)
+													_0: 'dimensions',
+													_1: _elm_lang$core$Json_Encode$string(model.dimensions)
 												},
 												_1: {
 													ctor: '::',
 													_0: {
 														ctor: '_Tuple2',
-														_0: 'artworkImage',
-														_1: _elm_lang$core$Json_Encode$string(model.artworkImageFile)
+														_0: 'price',
+														_1: _elm_lang$core$Json_Encode$string(model.price)
 													},
 													_1: {
 														ctor: '::',
 														_0: {
 															ctor: '_Tuple2',
-															_0: 'uid',
-															_1: _elm_lang$core$Json_Encode$string(uid)
+															_0: 'artworkImage',
+															_1: _elm_lang$core$Json_Encode$string(model.artworkImageFile)
 														},
-														_1: {ctor: '[]'}
+														_1: {
+															ctor: '::',
+															_0: {
+																ctor: '_Tuple2',
+																_0: 'uid',
+																_1: _elm_lang$core$Json_Encode$string(uid)
+															},
+															_1: {ctor: '[]'}
+														}
 													}
 												}
 											}
@@ -10532,7 +10563,11 @@
 											return function (k) {
 												return function (l) {
 													return function (m) {
-														return {error: a, artist: b, artistError: c, title: d, titleError: e, medium: f, mediumError: g, year: h, yearError: i, price: j, priceError: k, artworkImageFile: l, artworkImageFileError: m};
+														return function (n) {
+															return function (o) {
+																return {error: a, artist: b, artistError: c, title: d, titleError: e, medium: f, mediumError: g, year: h, yearError: i, dimensions: j, dimensionsError: k, price: l, priceError: m, artworkImageFile: n, artworkImageFileError: o};
+															};
+														};
 													};
 												};
 											};
@@ -10570,6 +10605,9 @@
 	};
 	var _user$project$AddArtwork$PriceInput = function (a) {
 		return {ctor: 'PriceInput', _0: a};
+	};
+	var _user$project$AddArtwork$DimensionsInput = function (a) {
+		return {ctor: 'DimensionsInput', _0: a};
 	};
 	var _user$project$AddArtwork$YearInput = function (a) {
 		return {ctor: 'YearInput', _0: a};
@@ -10786,16 +10824,16 @@
 																		_0: _elm_lang$html$Html_Attributes$type_('text'),
 																		_1: {
 																			ctor: '::',
-																			_0: _elm_lang$html$Html_Attributes$class('formRow__input artwork-container__input--price'),
+																			_0: _elm_lang$html$Html_Attributes$class('formRow__input artwork-container__input--dimensions'),
 																			_1: {
 																				ctor: '::',
-																				_0: _elm_lang$html$Html_Attributes$placeholder('price'),
+																				_0: _elm_lang$html$Html_Attributes$placeholder('dimensions (eg 72 x 20)'),
 																				_1: {
 																					ctor: '::',
-																					_0: _elm_lang$html$Html_Attributes$value(model.price),
+																					_0: _elm_lang$html$Html_Attributes$value(model.dimensions),
 																					_1: {
 																						ctor: '::',
-																						_0: _elm_lang$html$Html_Events$onInput(_user$project$AddArtwork$PriceInput),
+																						_0: _elm_lang$html$Html_Events$onInput(_user$project$AddArtwork$DimensionsInput),
 																						_1: {ctor: '[]'}
 																					}
 																				}
@@ -10815,7 +10853,7 @@
 																		{
 																			ctor: '::',
 																			_0: _elm_lang$html$Html$text(
-																				A2(_elm_lang$core$Maybe$withDefault, '', model.priceError)),
+																				A2(_elm_lang$core$Maybe$withDefault, '', model.dimensionsError)),
 																			_1: {ctor: '[]'}
 																		}),
 																	_1: {
@@ -10824,19 +10862,19 @@
 																			_elm_lang$html$Html$input,
 																			{
 																				ctor: '::',
-																				_0: _elm_lang$html$Html_Attributes$type_('file'),
+																				_0: _elm_lang$html$Html_Attributes$type_('text'),
 																				_1: {
 																					ctor: '::',
-																					_0: _elm_lang$html$Html_Attributes$class('formRow__input artwork-container__input--artworkImageFile'),
+																					_0: _elm_lang$html$Html_Attributes$class('formRow__input artwork-container__input--price'),
 																					_1: {
 																						ctor: '::',
-																						_0: _elm_lang$html$Html_Attributes$placeholder('artwork image file'),
+																						_0: _elm_lang$html$Html_Attributes$placeholder('price'),
 																						_1: {
 																							ctor: '::',
-																							_0: _elm_lang$html$Html_Attributes$id('cloudinary-input'),
+																							_0: _elm_lang$html$Html_Attributes$value(model.price),
 																							_1: {
 																								ctor: '::',
-																								_0: _user$project$AddArtwork$onChange(_user$project$AddArtwork$FetchImageFile),
+																								_0: _elm_lang$html$Html_Events$onInput(_user$project$AddArtwork$PriceInput),
 																								_1: {ctor: '[]'}
 																							}
 																						}
@@ -10856,38 +10894,81 @@
 																				{
 																					ctor: '::',
 																					_0: _elm_lang$html$Html$text(
-																						A2(_elm_lang$core$Maybe$withDefault, '', model.artworkImageFileError)),
+																						A2(_elm_lang$core$Maybe$withDefault, '', model.priceError)),
 																					_1: {ctor: '[]'}
 																				}),
 																			_1: {
 																				ctor: '::',
 																				_0: A2(
-																					_elm_lang$html$Html$img,
+																					_elm_lang$html$Html$input,
 																					{
 																						ctor: '::',
-																						_0: _elm_lang$html$Html_Attributes$src(model.artworkImageFile),
-																						_1: {ctor: '[]'}
+																						_0: _elm_lang$html$Html_Attributes$type_('file'),
+																						_1: {
+																							ctor: '::',
+																							_0: _elm_lang$html$Html_Attributes$class('formRow__input artwork-container__input--artworkImageFile'),
+																							_1: {
+																								ctor: '::',
+																								_0: _elm_lang$html$Html_Attributes$placeholder('artwork image file'),
+																								_1: {
+																									ctor: '::',
+																									_0: _elm_lang$html$Html_Attributes$id('cloudinary-input'),
+																									_1: {
+																										ctor: '::',
+																										_0: _user$project$AddArtwork$onChange(_user$project$AddArtwork$FetchImageFile),
+																										_1: {ctor: '[]'}
+																									}
+																								}
+																							}
+																						}
 																					},
 																					{ctor: '[]'}),
 																				_1: {
 																					ctor: '::',
 																					_0: A2(
-																						_elm_lang$html$Html$button,
+																						_elm_lang$html$Html$p,
 																						{
 																							ctor: '::',
-																							_0: _elm_lang$html$Html_Attributes$type_('submit'),
-																							_1: {
-																								ctor: '::',
-																								_0: _elm_lang$html$Html_Attributes$class('btn btn--white formRow--btn'),
-																								_1: {ctor: '[]'}
-																							}
+																							_0: _elm_lang$html$Html_Attributes$class('formRow__p--error'),
+																							_1: {ctor: '[]'}
 																						},
 																						{
 																							ctor: '::',
-																							_0: _elm_lang$html$Html$text('add artwork'),
+																							_0: _elm_lang$html$Html$text(
+																								A2(_elm_lang$core$Maybe$withDefault, '', model.artworkImageFileError)),
 																							_1: {ctor: '[]'}
 																						}),
-																					_1: {ctor: '[]'}
+																					_1: {
+																						ctor: '::',
+																						_0: A2(
+																							_elm_lang$html$Html$img,
+																							{
+																								ctor: '::',
+																								_0: _elm_lang$html$Html_Attributes$src(model.artworkImageFile),
+																								_1: {ctor: '[]'}
+																							},
+																							{ctor: '[]'}),
+																						_1: {
+																							ctor: '::',
+																							_0: A2(
+																								_elm_lang$html$Html$button,
+																								{
+																									ctor: '::',
+																									_0: _elm_lang$html$Html_Attributes$type_('submit'),
+																									_1: {
+																										ctor: '::',
+																										_0: _elm_lang$html$Html_Attributes$class('btn btn--white formRow--btn'),
+																										_1: {ctor: '[]'}
+																									}
+																								},
+																								{
+																									ctor: '::',
+																									_0: _elm_lang$html$Html$text('add artwork'),
+																									_1: {ctor: '[]'}
+																								}),
+																							_1: {ctor: '[]'}
+																						}
+																					}
 																				}
 																			}
 																		}
@@ -11294,7 +11375,7 @@
 			'change',
 			A2(_elm_lang$core$Json_Decode$map, tagger, _elm_lang$html$Html_Events$targetValue));
 	};
-	var _user$project$Artwork$initArtwork = {artworkId: '', artist: '', title: '', medium: '', year: '', price: '', artworkImageFile: '', oldArtworkImageFile: ''};
+	var _user$project$Artwork$initArtwork = {artworkId: '', artist: '', title: '', medium: '', year: '', dimensions: '', price: '', artworkImageFile: '', oldArtworkImageFile: ''};
 	var _user$project$Artwork$initModel = {error: _elm_lang$core$Maybe$Nothing, active: false, artwork: _user$project$Artwork$initArtwork, isEditing: false, isFetching: true};
 	var _user$project$Artwork$init = {ctor: '_Tuple2', _0: _user$project$Artwork$initModel, _1: _elm_lang$core$Platform_Cmd$none};
 	var _user$project$Artwork$fetchingArtwork = _elm_lang$core$Native_Platform.incomingPort('fetchingArtwork', _elm_lang$core$Json_Decode$string);
@@ -11314,9 +11395,9 @@
 		function (a, b, c, d, e) {
 			return {error: a, active: b, artwork: c, isEditing: d, isFetching: e};
 		});
-	var _user$project$Artwork$Artwork = F8(
-		function (a, b, c, d, e, f, g, h) {
-			return {artworkId: a, artist: b, title: c, medium: d, year: e, price: f, artworkImageFile: g, oldArtworkImageFile: h};
+	var _user$project$Artwork$Artwork = F9(
+		function (a, b, c, d, e, f, g, h, i) {
+			return {artworkId: a, artist: b, title: c, medium: d, year: e, dimensions: f, price: g, artworkImageFile: h, oldArtworkImageFile: i};
 		});
 	var _user$project$Artwork$decodeArtworkItem = A3(
 		_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$required,
@@ -11332,25 +11413,29 @@
 				_elm_lang$core$Json_Decode$string,
 				A3(
 					_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$required,
-					'year',
+					'dimensions',
 					_elm_lang$core$Json_Decode$string,
 					A3(
 						_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$required,
-						'medium',
+						'year',
 						_elm_lang$core$Json_Decode$string,
 						A3(
 							_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$required,
-							'title',
+							'medium',
 							_elm_lang$core$Json_Decode$string,
 							A3(
 								_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$required,
-								'artist',
+								'title',
 								_elm_lang$core$Json_Decode$string,
 								A3(
 									_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$required,
-									'artworkId',
+									'artist',
 									_elm_lang$core$Json_Decode$string,
-									_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$decode(_user$project$Artwork$Artwork)))))))));
+									A3(
+										_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$required,
+										'artworkId',
+										_elm_lang$core$Json_Decode$string,
+										_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$decode(_user$project$Artwork$Artwork))))))))));
 	var _user$project$Artwork$decodeJson = F2(
 		function (jsonArtwork, model) {
 			var _p1 = A2(_elm_lang$core$Json_Decode$decodeString, _user$project$Artwork$decodeArtworkItem, jsonArtwork);
@@ -11377,6 +11462,9 @@
 							artwork: _elm_lang$core$Native_Utils.update(
 								_p2,
 								{year: _p2.year}),
+							artwork: _elm_lang$core$Native_Utils.update(
+								_p2,
+								{dimensions: _p2.dimensions}),
 							artwork: _elm_lang$core$Native_Utils.update(
 								_p2,
 								{price: _p2.price}),
@@ -11481,6 +11569,18 @@
 							}),
 						_1: _elm_lang$core$Platform_Cmd$none
 					};
+				case 'DimensionsEditInput':
+					return {
+						ctor: '_Tuple2',
+						_0: _elm_lang$core$Native_Utils.update(
+							model,
+							{
+								artwork: _elm_lang$core$Native_Utils.update(
+									artwork,
+									{dimensions: _p3._0})
+							}),
+						_1: _elm_lang$core$Platform_Cmd$none
+					};
 				case 'PriceEditInput':
 					return {
 						ctor: '_Tuple2',
@@ -11561,31 +11661,39 @@
 													ctor: '::',
 													_0: {
 														ctor: '_Tuple2',
-														_0: 'price',
-														_1: _elm_lang$core$Json_Encode$string(model.artwork.price)
+														_0: 'dimensions',
+														_1: _elm_lang$core$Json_Encode$string(model.artwork.dimensions)
 													},
 													_1: {
 														ctor: '::',
 														_0: {
 															ctor: '_Tuple2',
-															_0: 'artworkImage',
-															_1: _elm_lang$core$Json_Encode$string(model.artwork.artworkImageFile)
+															_0: 'price',
+															_1: _elm_lang$core$Json_Encode$string(model.artwork.price)
 														},
 														_1: {
 															ctor: '::',
 															_0: {
 																ctor: '_Tuple2',
-																_0: 'oldArtworkImageFile',
-																_1: _elm_lang$core$Json_Encode$string(model.artwork.oldArtworkImageFile)
+																_0: 'artworkImage',
+																_1: _elm_lang$core$Json_Encode$string(model.artwork.artworkImageFile)
 															},
 															_1: {
 																ctor: '::',
 																_0: {
 																	ctor: '_Tuple2',
-																	_0: 'uid',
-																	_1: _elm_lang$core$Json_Encode$string(uid)
+																	_0: 'oldArtworkImageFile',
+																	_1: _elm_lang$core$Json_Encode$string(model.artwork.oldArtworkImageFile)
 																},
-																_1: {ctor: '[]'}
+																_1: {
+																	ctor: '::',
+																	_0: {
+																		ctor: '_Tuple2',
+																		_0: 'uid',
+																		_1: _elm_lang$core$Json_Encode$string(uid)
+																	},
+																	_1: {ctor: '[]'}
+																}
 															}
 														}
 													}
@@ -11632,6 +11740,9 @@
 	};
 	var _user$project$Artwork$PriceEditInput = function (a) {
 		return {ctor: 'PriceEditInput', _0: a};
+	};
+	var _user$project$Artwork$DimensionsEditInput = function (a) {
+		return {ctor: 'DimensionsEditInput', _0: a};
 	};
 	var _user$project$Artwork$YearEditInput = function (a) {
 		return {ctor: 'YearEditInput', _0: a};
@@ -11808,13 +11919,13 @@
 																			_0: _elm_lang$html$Html_Attributes$type_('text'),
 																			_1: {
 																				ctor: '::',
-																				_0: _elm_lang$html$Html_Attributes$class('formRow__input artwork-container__input--price'),
+																				_0: _elm_lang$html$Html_Attributes$class('formRow__input artwork-container__input--dimensions'),
 																				_1: {
 																					ctor: '::',
-																					_0: _elm_lang$html$Html_Attributes$value(model.artwork.price),
+																					_0: _elm_lang$html$Html_Attributes$value(model.artwork.dimensions),
 																					_1: {
 																						ctor: '::',
-																						_0: _elm_lang$html$Html_Events$onInput(_user$project$Artwork$PriceEditInput),
+																						_0: _elm_lang$html$Html_Events$onInput(_user$project$Artwork$DimensionsEditInput),
 																						_1: {ctor: '[]'}
 																					}
 																				}
@@ -11827,16 +11938,16 @@
 																			_elm_lang$html$Html$input,
 																			{
 																				ctor: '::',
-																				_0: _elm_lang$html$Html_Attributes$type_('file'),
+																				_0: _elm_lang$html$Html_Attributes$type_('text'),
 																				_1: {
 																					ctor: '::',
-																					_0: _elm_lang$html$Html_Attributes$class('formRow__input artwork-container__input--artworkImageFile'),
+																					_0: _elm_lang$html$Html_Attributes$class('formRow__input artwork-container__input--price'),
 																					_1: {
 																						ctor: '::',
-																						_0: _elm_lang$html$Html_Attributes$id('cloudinary-input'),
+																						_0: _elm_lang$html$Html_Attributes$value(model.artwork.price),
 																						_1: {
 																							ctor: '::',
-																							_0: _user$project$Artwork$onChange(_user$project$Artwork$FetchImageFileEdit),
+																							_0: _elm_lang$html$Html_Events$onInput(_user$project$Artwork$PriceEditInput),
 																							_1: {ctor: '[]'}
 																						}
 																					}
@@ -11846,22 +11957,45 @@
 																		_1: {
 																			ctor: '::',
 																			_0: A2(
-																				_elm_lang$html$Html$button,
+																				_elm_lang$html$Html$input,
 																				{
 																					ctor: '::',
-																					_0: _elm_lang$html$Html_Attributes$class('btn btn--white formRow--btn'),
+																					_0: _elm_lang$html$Html_Attributes$type_('file'),
 																					_1: {
 																						ctor: '::',
-																						_0: _elm_lang$html$Html_Events$onClick(_user$project$Artwork$SubmitEditedArtwork),
-																						_1: {ctor: '[]'}
+																						_0: _elm_lang$html$Html_Attributes$class('formRow__input artwork-container__input--artworkImageFile'),
+																						_1: {
+																							ctor: '::',
+																							_0: _elm_lang$html$Html_Attributes$id('cloudinary-input'),
+																							_1: {
+																								ctor: '::',
+																								_0: _user$project$Artwork$onChange(_user$project$Artwork$FetchImageFileEdit),
+																								_1: {ctor: '[]'}
+																							}
+																						}
 																					}
 																				},
-																				{
-																					ctor: '::',
-																					_0: _elm_lang$html$Html$text('submit edited artwork'),
-																					_1: {ctor: '[]'}
-																				}),
-																			_1: {ctor: '[]'}
+																				{ctor: '[]'}),
+																			_1: {
+																				ctor: '::',
+																				_0: A2(
+																					_elm_lang$html$Html$button,
+																					{
+																						ctor: '::',
+																						_0: _elm_lang$html$Html_Attributes$class('btn btn--white formRow--btn'),
+																						_1: {
+																							ctor: '::',
+																							_0: _elm_lang$html$Html_Events$onClick(_user$project$Artwork$SubmitEditedArtwork),
+																							_1: {ctor: '[]'}
+																						}
+																					},
+																					{
+																						ctor: '::',
+																						_0: _elm_lang$html$Html$text('submit edited artwork'),
+																						_1: {ctor: '[]'}
+																					}),
+																				_1: {ctor: '[]'}
+																			}
 																		}
 																	}
 																}
@@ -12018,34 +12152,49 @@
 															_elm_lang$html$Html$p,
 															{
 																ctor: '::',
-																_0: _elm_lang$html$Html_Attributes$class('align-middle artwork-container__artwork-details__price'),
+																_0: _elm_lang$html$Html_Attributes$class('artwork-container__artwork-details__dimensions'),
 																_1: {ctor: '[]'}
 															},
 															{
 																ctor: '::',
-																_0: _elm_lang$html$Html$text(
-																	A2(_elm_lang$core$Basics_ops['++'], '$', model.artwork.price)),
+																_0: _elm_lang$html$Html$text(model.artwork.dimensions),
 																_1: {ctor: '[]'}
 															}),
 														_1: {
 															ctor: '::',
 															_0: A2(
-																_elm_lang$html$Html$button,
+																_elm_lang$html$Html$p,
 																{
 																	ctor: '::',
-																	_0: _elm_lang$html$Html_Attributes$class('btn btn--green'),
-																	_1: {
-																		ctor: '::',
-																		_0: _elm_lang$html$Html_Events$onClick(_user$project$Artwork$EditArtwork),
-																		_1: {ctor: '[]'}
-																	}
+																	_0: _elm_lang$html$Html_Attributes$class('align-middle artwork-container__artwork-details__price'),
+																	_1: {ctor: '[]'}
 																},
 																{
 																	ctor: '::',
-																	_0: _elm_lang$html$Html$text('edit artwork'),
+																	_0: _elm_lang$html$Html$text(
+																		A2(_elm_lang$core$Basics_ops['++'], '$', model.artwork.price)),
 																	_1: {ctor: '[]'}
 																}),
-															_1: {ctor: '[]'}
+															_1: {
+																ctor: '::',
+																_0: A2(
+																	_elm_lang$html$Html$button,
+																	{
+																		ctor: '::',
+																		_0: _elm_lang$html$Html_Attributes$class('btn btn--green'),
+																		_1: {
+																			ctor: '::',
+																			_0: _elm_lang$html$Html_Events$onClick(_user$project$Artwork$EditArtwork),
+																			_1: {ctor: '[]'}
+																		}
+																	},
+																	{
+																		ctor: '::',
+																		_0: _elm_lang$html$Html$text('edit artwork'),
+																		_1: {ctor: '[]'}
+																	}),
+																_1: {ctor: '[]'}
+															}
 														}
 													}
 												}
@@ -12201,9 +12350,9 @@
 		function (a, b, c, d, e) {
 			return {error: a, gallery: b, active: c, routeParam: d, isFetching: e};
 		});
-	var _user$project$Gallery$GalleryItem = F7(
-		function (a, b, c, d, e, f, g) {
-			return {artworkId: a, artist: b, title: c, medium: d, year: e, price: f, artworkImageFile: g};
+	var _user$project$Gallery$GalleryItem = F8(
+		function (a, b, c, d, e, f, g, h) {
+			return {artworkId: a, artist: b, title: c, medium: d, year: e, dimensions: f, price: g, artworkImageFile: h};
 		});
 	var _user$project$Gallery$decodeGalleryItem = A3(
 		_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$required,
@@ -12215,25 +12364,29 @@
 			_elm_lang$core$Json_Decode$string,
 			A3(
 				_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$required,
-				'year',
+				'dimensions',
 				_elm_lang$core$Json_Decode$string,
 				A3(
 					_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$required,
-					'medium',
+					'year',
 					_elm_lang$core$Json_Decode$string,
 					A3(
 						_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$required,
-						'title',
+						'medium',
 						_elm_lang$core$Json_Decode$string,
 						A3(
 							_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$required,
-							'artist',
+							'title',
 							_elm_lang$core$Json_Decode$string,
 							A3(
 								_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$required,
-								'artworkId',
+								'artist',
 								_elm_lang$core$Json_Decode$string,
-								_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$decode(_user$project$Gallery$GalleryItem))))))));
+								A3(
+									_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$required,
+									'artworkId',
+									_elm_lang$core$Json_Decode$string,
+									_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$decode(_user$project$Gallery$GalleryItem)))))))));
 	var _user$project$Gallery$decodeJson = F2(
 		function (jsonGallery, model) {
 			var _p1 = A2(_elm_lang$core$Json_Decode$decodeString, _user$project$Gallery$decodeGalleryItem, jsonGallery);
@@ -12427,35 +12580,50 @@
 															_elm_lang$html$Html$p,
 															{
 																ctor: '::',
-																_0: _elm_lang$html$Html_Attributes$class('align-middle artwork-container__artwork-details__price'),
+																_0: _elm_lang$html$Html_Attributes$class('artwork-container__artwork-details__dimensions'),
 																_1: {ctor: '[]'}
 															},
 															{
 																ctor: '::',
-																_0: _elm_lang$html$Html$text(
-																	A2(_elm_lang$core$Basics_ops['++'], '$', _p5.price)),
+																_0: _elm_lang$html$Html$text(_p5.dimensions),
 																_1: {ctor: '[]'}
 															}),
 														_1: {
 															ctor: '::',
 															_0: A2(
-																_elm_lang$html$Html$button,
+																_elm_lang$html$Html$p,
 																{
 																	ctor: '::',
-																	_0: _elm_lang$html$Html_Attributes$class('btn btn--green'),
-																	_1: {
-																		ctor: '::',
-																		_0: _elm_lang$html$Html_Events$onClick(
-																			_user$project$Gallery$ArtworkPage(_p5.artworkId)),
-																		_1: {ctor: '[]'}
-																	}
+																	_0: _elm_lang$html$Html_Attributes$class('align-middle artwork-container__artwork-details__price'),
+																	_1: {ctor: '[]'}
 																},
 																{
 																	ctor: '::',
-																	_0: _elm_lang$html$Html$text('view artwork'),
+																	_0: _elm_lang$html$Html$text(
+																		A2(_elm_lang$core$Basics_ops['++'], '$', _p5.price)),
 																	_1: {ctor: '[]'}
 																}),
-															_1: {ctor: '[]'}
+															_1: {
+																ctor: '::',
+																_0: A2(
+																	_elm_lang$html$Html$button,
+																	{
+																		ctor: '::',
+																		_0: _elm_lang$html$Html_Attributes$class('btn btn--green'),
+																		_1: {
+																			ctor: '::',
+																			_0: _elm_lang$html$Html_Events$onClick(
+																				_user$project$Gallery$ArtworkPage(_p5.artworkId)),
+																			_1: {ctor: '[]'}
+																		}
+																	},
+																	{
+																		ctor: '::',
+																		_0: _elm_lang$html$Html$text('view artwork'),
+																		_1: {ctor: '[]'}
+																	}),
+																_1: {ctor: '[]'}
+															}
 														}
 													}
 												}
@@ -13728,44 +13896,29 @@
 						_1: {
 							ctor: '::',
 							_0: A2(
-								_elm_lang$html$Html$div,
+								_elm_lang$html$Html$ul,
 								{
 									ctor: '::',
-									_0: _elm_lang$html$Html_Attributes$class('navbar'),
-									_1: {
-										ctor: '::',
-										_0: _elm_lang$html$Html_Attributes$id('myNavbar'),
-										_1: {ctor: '[]'}
-									}
+									_0: _elm_lang$html$Html_Attributes$class('nav navbar-nav navbar-right'),
+									_1: {ctor: '[]'}
 								},
 								{
 									ctor: '::',
 									_0: A2(
-										_elm_lang$html$Html$ul,
-										{
-											ctor: '::',
-											_0: _elm_lang$html$Html_Attributes$class('nav navbar-nav navbar-right'),
-											_1: {ctor: '[]'}
-										},
+										_elm_lang$html$Html$li,
+										{ctor: '[]'},
 										{
 											ctor: '::',
 											_0: A2(
-												_elm_lang$html$Html$li,
-												{ctor: '[]'},
+												_elm_lang$html$Html$a,
 												{
 													ctor: '::',
-													_0: A2(
-														_elm_lang$html$Html$a,
-														{
-															ctor: '::',
-															_0: _elm_lang$html$Html_Events$onClick(_user$project$Main$Logout),
-															_1: {ctor: '[]'}
-														},
-														{
-															ctor: '::',
-															_0: _elm_lang$html$Html$text('Logout'),
-															_1: {ctor: '[]'}
-														}),
+													_0: _elm_lang$html$Html_Events$onClick(_user$project$Main$Logout),
+													_1: {ctor: '[]'}
+												},
+												{
+													ctor: '::',
+													_0: _elm_lang$html$Html$text('Logout'),
 													_1: {ctor: '[]'}
 												}),
 											_1: {ctor: '[]'}
