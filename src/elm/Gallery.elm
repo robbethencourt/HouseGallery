@@ -196,12 +196,15 @@ galleryTableView { gallery } =
 
 
 paintingTableView : GalleryItem -> Html Msg
-paintingTableView { artist, title, year, artworkImageFile, artworkId } =
+paintingTableView { artist, title, medium, year, dimensions, price, artworkImageFile, artworkId } =
     tr []
         [ td [] [ img [ src artworkImageFile, class "thumbnail" ] [] ]
         , td [] [ text artist ]
         , td [] [ a [ onClick (ArtworkPage artworkId) ] [ text title ] ]
         , td [] [ text year ]
+        , td [] [ text medium ]
+        , td [] [ text dimensions ]
+        , td [] [ text ("$" ++ price) ]
         ]
 
 
@@ -213,6 +216,9 @@ galleryTableHeader =
             , th [] [ text "Artist" ]
             , th [] [ text "Title" ]
             , th [] [ text "Year" ]
+            , th [] [ text "Medium" ]
+            , th [] [ text "Dimensions" ]
+            , th [] [ text "Price" ]
             ]
         ]
 
