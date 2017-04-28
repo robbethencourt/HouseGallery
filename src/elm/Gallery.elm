@@ -145,16 +145,15 @@ view model =
         div [ class "main main--gallery" ]
             [ errorPanel model.error
             , div []
-                [ ul []
-                    [ li [ onClick ListView ] [ text "List View" ]
-                    , li [ onClick TableView ] [ text "Table View" ]
-                    ]
+                [ span [ class "glyphicon glyphicon-th-large glyphicon--custom-table", onClick ListView ] []
+                , span [ class "glyphicon glyphicon-th-list glyphicon--custom-table", onClick TableView ] []
                 ]
             , galleryHeader
             , if model.listView then
                 galleryListView model
               else
-                galleryTableView model
+                div [ class "container" ]
+                    [ div [ class "table-responsive" ] [ galleryTableView model ] ]
             ]
 
 
@@ -190,9 +189,9 @@ galleryTableView : Model -> Html Msg
 galleryTableView { gallery } =
     gallery
         |> List.map paintingTableView
-        |> tbody []
+        |> tbody [ class "main--gallery--table" ]
         |> (\g -> galleryTableHeader :: [ g ])
-        |> table [ class "table table-striped" ]
+        |> table [ class "table table-striped table--custom" ]
 
 
 paintingTableView : GalleryItem -> Html Msg
@@ -210,7 +209,7 @@ paintingTableView { artist, title, medium, year, dimensions, price, artworkImage
 
 galleryTableHeader : Html Msg
 galleryTableHeader =
-    thead []
+    thead [ class "table-head--custom" ]
         [ tr []
             [ th [] [ text "Artwork" ]
             , th [] [ text "Artist" ]

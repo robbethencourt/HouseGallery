@@ -9,7 +9,7 @@
 
 /* artwork container */
 .artwork-container {
-  margin-top: 100px;
+  margin-top: 50px;
   margin-bottom: 100px;
   overflow: hidden;
   box-shadow: 0px 35px 46px lighten($dark_blue, 20%);
@@ -52,7 +52,6 @@
   color: $gray;
 }
 
-
 .main--gallery {
   padding-bottom: 50px;
   background: #eeeeee; /* Old browsers */
@@ -60,4 +59,21 @@
   background: -webkit-linear-gradient(45deg, #eeeeee 0%,#f1f1f1 50%,#e1e1e1 50%,#f6f6f6 100%); /* Chrome10-25,Safari5.1-6 */
   background: linear-gradient(45deg, #eeeeee 0%,#f1f1f1 50%,#e1e1e1 50%,#f6f6f6 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
   filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#eeeeee', endColorstr='#f6f6f6',GradientType=1 ); /* IE6-9 fallback on horizontal gradient */
+}
+
+
+/* media querries */
+
+@media only screen and (min-width : 768px) {
+
+  /* artwork container */
+  .artwork-container {
+    margin-top: 100px;
+  }
+
+  /* gallery table */
+  .main--gallery--table td:nth-of-type(4), .main--gallery--table td:nth-of-type(5), .main--gallery--table td:nth-of-type(6), .main--gallery--table td:nth-of-type(7), .main--gallery--table th:nth-of-type(4), .main--gallery--table th:nth-of-type(5), .main--gallery--table th:nth-of-type(6), .main--gallery--table th:nth-of-type(7) {
+
+  }
+
 }
