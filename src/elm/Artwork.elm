@@ -260,6 +260,7 @@ editArtwork model =
                         [ input
                             [ type_ "text"
                             , class "formRow__input artwork-container__input--artist"
+                            , placeholder "artist"
                             , value model.artwork.artist
                             , onInput ArtistEditInput
                             ]
@@ -267,6 +268,7 @@ editArtwork model =
                         , input
                             [ type_ "text"
                             , class "formRow__input artwork-container__input--title"
+                            , placeholder "title"
                             , value model.artwork.title
                             , onInput TitleEditInput
                             ]
@@ -274,6 +276,7 @@ editArtwork model =
                         , input
                             [ type_ "text"
                             , class "formRow__input artwork-container__input--medium"
+                            , placeholder "medium"
                             , value model.artwork.medium
                             , onInput MediumEditInput
                             ]
@@ -281,6 +284,7 @@ editArtwork model =
                         , input
                             [ type_ "text"
                             , class "formRow__input artwork-container__input--year"
+                            , placeholder "year"
                             , value model.artwork.year
                             , onInput YearEditInput
                             ]
@@ -288,6 +292,7 @@ editArtwork model =
                         , input
                             [ type_ "text"
                             , class "formRow__input artwork-container__input--dimensions"
+                            , placeholder "dimensions (eg 72 x 20)"
                             , value model.artwork.dimensions
                             , onInput DimensionsEditInput
                             ]
@@ -295,6 +300,7 @@ editArtwork model =
                         , input
                             [ type_ "text"
                             , class "formRow__input artwork-container__input--price"
+                            , placeholder "price"
                             , value model.artwork.price
                             , onInput PriceEditInput
                             ]
@@ -302,6 +308,7 @@ editArtwork model =
                         , input
                             [ type_ "file"
                             , class "formRow__input artwork-container__input--artworkImageFile"
+                            , placeholder "artwork image file"
                             , id "cloudinary-input"
                             , onChange FetchImageFileEdit
                             ]

@@ -25,5 +25,6 @@
 }
 
 .artwork-container__input--artworkImageFile {
+  color: lighten($dark_blue, 25%);
   background-color: lighten($dark_green, 30%);
 }

@@ -3,6 +3,7 @@ port module AddArtwork exposing (..)
 import Html exposing (..)
 import Html.Events exposing (..)
 import Html.Attributes exposing (..)
+import Regex exposing (..)
 import Json.Decode as JD
 import Json.Encode as JE
 import Navigation
@@ -164,46 +165,52 @@ onChange tagger =
 
 yearInputCheck : Model -> String -> ( Model, Cmd Msg )
 yearInputCheck model year =
-    let
-        yearInt =
-            year
-                |> String.toInt
-                |> Result.withDefault 0
+    if year == "" then
+        ( { model | year = year }, Cmd.none )
+    else
+        let
+            yearInt =
+                year
+                    |> String.toInt
+                    |> Result.withDefault 0
 
-        yearError =
-            if yearInt <= 0 then
-                Just "Enter a positive number"
-            else
-                Nothing
-    in
-        ( { model
-            | year = year
-            , yearError = yearError
-          }
-        , Cmd.none
-        )
+            yearError =
+                if yearInt <= -1 then
+                    Just "Enter a positive number"
+                else
+                    Nothing
+        in
+            ( { model
+                | year = year
+                , yearError = yearError
+              }
+            , Cmd.none
+            )
 
 
 priceInputCheck : Model -> String -> ( Model, Cmd Msg )
 priceInputCheck model price =
-    let
-        priceInt =
-            price
-                |> String.toFloat
-                |> Result.withDefault 0
+    if price == "" then
+        ( { model | price = price }, Cmd.none )
+    else
+        let
+            priceInt =
+                price
+                    |> String.toFloat
+                    |> Result.withDefault 0
 
-        priceError =
-            if priceInt <= 0 then
-                Just "Enter a positive number"
-            else
-                Nothing
-    in
-        ( { model
-            | price = price
-            , priceError = priceError
-          }
-        , Cmd.none
-        )
+            priceError =
+                if priceInt <= 0 then
+                    Just "Enter a positive number"
+                else
+                    Nothing
+        in
+            ( { model
+                | price = price
+                , priceError = priceError
+              }
+            , Cmd.none
+            )
 
 
 isValid : Model -> Bool
@@ -238,68 +245,75 @@ validate model =
 
 validateArtist : Model -> Model
 validateArtist model =
-    if String.isEmpty model.artist then
-        { model | artistError = Just "An Artist is Required" }
+    if Regex.contains (Regex.regex "[!@#$%^&*(){}[]]*$") model.artist == True then
+        { model | artistError = Just "only alphanumeric characters" }
     else
         { model | artistError = Nothing }
 
 
 validateTitle : Model -> Model
 validateTitle model =
-    if String.isEmpty model.title then
-        { model | titleError = Just "A Title is Required" }
+    if Regex.contains (Regex.regex "[!@#$%^&*(){}[]]*$") model.title == True then
+        { model | titleError = Just "only alphanumeric characters" }
     else
         { model | titleError = Nothing }
 
 
 validateMedium : Model -> Model
 validateMedium model =
-    if String.isEmpty model.medium then
-        { model | mediumError = Just "A Medium is Required" }
+    if Regex.contains (Regex.regex "[!@#$%^&*(){}[]]*$") model.medium == True then
+        { model | mediumError = Just "only alphanumeric characters" }
     else
         { model | mediumError = Nothing }
 
 
 validateYear : Model -> Model
 validateYear model =
-    let
-        yearInt =
-            model.year
-                |> String.toInt
-                |> Result.withDefault 0
-    in
-        if yearInt <= 0 then
-            { model | yearError = Just "A Year is Required" }
-        else
-            { model | yearError = Nothing }
+    if model.year == "" then
+        { model | yearError = Nothing }
+    else
+        let
+            yearInt =
+                model.year
+                    |> String.toInt
+                    |> Result.withDefault 0
+        in
+            if yearInt <= 0 then
+                { model | yearError = Just "only numbers allowed" }
+            else
+                { model | yearError = Nothing }
 
 
 validateDimensions : Model -> Model
 validateDimensions model =
-    if String.isEmpty model.dimensions then
-        { model | dimensionsError = Just "Dimensions are Required" }
+    if Regex.contains (Regex.regex "[!@#$%^&*(){}[]]*$") model.dimensions == True then
+        { model | dimensionsError = Just "only alphanumeric characters" }
     else
         { model | dimensionsError = Nothing }
 
 
 validatePrice : Model -> Model
 validatePrice model =
-    let
-        priceFloat =
-            model.year
-                |> String.toFloat
-                |> Result.withDefault 0
-    in
-        if priceFloat <= 0 then
-            { model | priceError = Just "A Price is Required" }
-        else
-            { model | priceError = Nothing }
+    if model.price == "" then
+        { model | priceError = Nothing }
+    else
+        let
+            priceFloat =
+                model.year
+                    |> String.toFloat
+                    |> Result.withDefault 0
+        in
+            if priceFloat <= 0 then
+                { model | priceError = Just "only numbers are allowed" }
+            else
+                { model | priceError = Nothing }
 
 
 validateArtworkImage : Model -> Model
 validateArtworkImage model =
     if String.isEmpty model.artworkImageFile then
-        { model | artworkImageFileError = Just "An Image is Required" }
+        -- leaving this here as I should add a real check on the file elm side
+        { model | artworkImageFileError = Nothing }
     else
         { model | artworkImageFileError = Nothing }
 

@@ -93,7 +93,7 @@ a:focus {
 .formRow__form {
   width: 300px;
   /* this needs to be in a media query */
-  margin: 80px auto;
+  margin: 20px auto;
   box-shadow: 1px 3px 10px lighten($dark_blue, 20%);
 }
 
@@ -168,16 +168,16 @@ a:focus {
 
 /* placeholder text styles */
 ::-webkit-input-placeholder, .form-control::-webkit-input-placeholder { /* Chrome/Opera/Safari */
-  color: lighten($dark_green, 45%);
+  color: lighten($dark_blue, 25%);
 }
 ::-moz-placeholder, .form-control::-moz-input-placeholder { /* Firefox 19+ */
-  color: lighten($dark_green, 45%);
+  color: lighten($dark_blue, 25%);
 }
 :-ms-input-placeholder, .form-control:-ms-input-placeholder { /* IE 10+ */
-  color: lighten($dark_green, 45%);
+  color: lighten($dark_blue, 25%);
 }
 :-moz-placeholder, .form-control:-moz-input-placeholder { /* Firefox 18- */
-  color: lighten($dark_green, 45%);
+  color: lighten($dark_blue, 25%);
 }
 
 
