@@ -18,6 +18,8 @@ type alias Model =
     , active : Bool
     , routeParam : String
     , isFetching : Bool
+    , listView : Bool
+    , tableView : Bool
     }
 
 
@@ -40,6 +42,8 @@ initModel =
     , active = False
     , routeParam = ""
     , isFetching = True
+    , listView = True
+    , tableView = False
     }
 
 
@@ -57,6 +61,8 @@ type Msg
     | ArtworkPage String
     | UsersGallery String
     | ClearGallery
+    | ListView
+    | TableView
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -80,6 +86,22 @@ update msg model =
 
         ClearGallery ->
             ( initModel, Cmd.none )
+
+        ListView ->
+            ( { model
+                | listView = True
+                , tableView = False
+              }
+            , Cmd.none
+            )
+
+        TableView ->
+            ( { model
+                | listView = False
+                , tableView = True
+              }
+            , Cmd.none
+            )
 
 
 decodeJson : String -> Model -> ( Model, Cmd Msg )
@@ -122,20 +144,28 @@ view model =
     else
         div [ class "main main--gallery" ]
             [ errorPanel model.error
+            , div []
+                [ span [ class "glyphicon glyphicon-th-large glyphicon--custom-table", onClick ListView ] []
+                , span [ class "glyphicon glyphicon-th-list glyphicon--custom-table", onClick TableView ] []
+                ]
             , galleryHeader
-            , gallery model
+            , if model.listView then
+                galleryListView model
+              else
+                div [ class "container" ]
+                    [ div [ class "table-responsive" ] [ galleryTableView model ] ]
             ]
 
 
-gallery : Model -> Html Msg
-gallery { gallery } =
+galleryListView : Model -> Html Msg
+galleryListView { gallery } =
     gallery
-        |> List.map painting
+        |> List.map paintingListView
         |> div [ class "container" ]
 
 
-painting : GalleryItem -> Html Msg
-painting { artist, title, medium, year, dimensions, price, artworkImageFile, artworkId } =
+paintingListView : GalleryItem -> Html Msg
+paintingListView { artist, title, medium, year, dimensions, price, artworkImageFile, artworkId } =
     div [ class "row" ]
         [ div [ class "artwork-container vertical-align" ]
             [ div [ class "col-sm-6 artwork-container__col-sm-6" ]
@@ -151,6 +181,43 @@ painting { artist, title, medium, year, dimensions, price, artworkImageFile, art
                     , button [ class "btn btn--green", onClick (ArtworkPage artworkId) ] [ text "view artwork" ]
                     ]
                 ]
+            ]
+        ]
+
+
+galleryTableView : Model -> Html Msg
+galleryTableView { gallery } =
+    gallery
+        |> List.map paintingTableView
+        |> tbody [ class "main--gallery--table" ]
+        |> (\g -> galleryTableHeader :: [ g ])
+        |> table [ class "table table-striped table--custom" ]
+
+
+paintingTableView : GalleryItem -> Html Msg
+paintingTableView { artist, title, medium, year, dimensions, price, artworkImageFile, artworkId } =
+    tr []
+        [ td [] [ img [ src artworkImageFile, class "thumbnail" ] [] ]
+        , td [] [ text artist ]
+        , td [] [ a [ onClick (ArtworkPage artworkId) ] [ text title ] ]
+        , td [] [ text year ]
+        , td [] [ text medium ]
+        , td [] [ text dimensions ]
+        , td [] [ text ("$" ++ price) ]
+        ]
+
+
+galleryTableHeader : Html Msg
+galleryTableHeader =
+    thead [ class "table-head--custom" ]
+        [ tr []
+            [ th [] [ text "Artwork" ]
+            , th [] [ text "Artist" ]
+            , th [] [ text "Title" ]
+            , th [] [ text "Year" ]
+            , th [] [ text "Medium" ]
+            , th [] [ text "Dimensions" ]
+            , th [] [ text "Price" ]
             ]
         ]
 
