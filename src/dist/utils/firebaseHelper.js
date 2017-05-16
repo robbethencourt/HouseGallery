@@ -7,7 +7,7 @@ const database = fbApp.database()
 const firebaseHelper = {
   fetchUser: function (userToFetch) {
     console.log(userToFetch)
-    return database.ref('/users/' + userToFetch).once('value')
+    return database.ref('/userDisplayNames/' + userToFetch).once('value')
   },
   addUser: function (usersDataToSave) {
     return fbAuth.createUserWithEmailAndPassword(usersDataToSave.email, usersDataToSave.password)
@@ -25,6 +25,12 @@ const firebaseHelper = {
     })
       .then(function () {
         console.log('display name saved')
+        fbApp.database()
+          .ref('userDisplayNames')
+          .set({[displayNameToSave]: {
+            displayName: displayNameToSave,
+            userId: user.uid
+          }})
       }, function (error) {
         console.log(`woops, display name not saved: ${error}`)
       })
