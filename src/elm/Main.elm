@@ -27,6 +27,7 @@ type alias Model =
     , fbLoggedIn : Maybe String
     , uid : Maybe String
     , loggedIn : Bool
+    , searchDisplay : Bool
     , search : String
     }
 
@@ -82,6 +83,7 @@ init flags location =
             , fbLoggedIn = flags.fbLoggedIn
             , uid = Nothing
             , loggedIn = loggedIn
+            , searchDisplay = False
             , search = ""
             }
 
@@ -113,6 +115,8 @@ type Msg
     | AddArtworkMsg AddArtwork.Msg
     | ArtworkMsg Artwork.Msg
     | Logout
+    | SearchDisplay
+    | SearchHide
     | SearchInput String
 
 
@@ -279,6 +283,12 @@ update msg model =
                 ]
             )
 
+        SearchDisplay ->
+            ( { model | searchDisplay = True }, Cmd.none )
+
+        SearchHide ->
+            ( { model | searchDisplay = False }, Cmd.none )
+
         SearchInput search ->
             ( { model | search = search }, Cmd.none )
 
@@ -335,10 +345,17 @@ view model =
                             [ text "Page Not Found!" ]
                         ]
     in
-        div []
-            [ pageHeader model
-            , page
-            ]
+        if model.searchDisplay then
+            div []
+                [ pageHeader model
+                , searchResults model
+                , page
+                ]
+        else
+            div []
+                [ pageHeader model
+                , page
+                ]
 
 
 pageHeader : Model -> Html Msg
@@ -363,6 +380,7 @@ pageHeader model =
                             [ type_ "text"
                             , class "formRow__input formRow__input--email"
                             , placeholder "search"
+                            , onFocus SearchDisplay
                             , Html.Attributes.value model.search
                             , onInput SearchInput
                             ]
@@ -391,6 +409,7 @@ pageHeader model =
                                 [ type_ "text"
                                 , class "formRow__input formRow__input--email"
                                 , placeholder "search"
+                                , onFocus SearchDisplay
                                 , Html.Attributes.value model.search
                                 , onInput SearchInput
                                 ]
@@ -405,6 +424,14 @@ pageHeader model =
                 ]
             , p [] [ text (toString model) ]
             ]
+
+
+searchResults : Model -> Html Msg
+searchResults model =
+    div []
+        [ p [ onClick SearchHide ] [ text "X" ]
+        , p [] [ text "this is the search page" ]
+        ]
 
 
 
