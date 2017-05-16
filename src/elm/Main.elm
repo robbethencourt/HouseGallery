@@ -27,6 +27,7 @@ type alias Model =
     , fbLoggedIn : Maybe String
     , uid : Maybe String
     , loggedIn : Bool
+    , search : String
     }
 
 
@@ -81,6 +82,7 @@ init flags location =
             , fbLoggedIn = flags.fbLoggedIn
             , uid = Nothing
             , loggedIn = loggedIn
+            , search = ""
             }
 
         cmds =
@@ -111,6 +113,7 @@ type Msg
     | AddArtworkMsg AddArtwork.Msg
     | ArtworkMsg Artwork.Msg
     | Logout
+    | SearchInput String
 
 
 authPages : List Page
@@ -276,6 +279,9 @@ update msg model =
                 ]
             )
 
+        SearchInput search ->
+            ( { model | search = search }, Cmd.none )
+
 
 authForPage : Page -> Bool -> Bool
 authForPage page loggedIn =
@@ -353,10 +359,20 @@ pageHeader model =
                     ]
                 , ul [ class "nav navbar-nav navbar-right" ]
                     [ li []
+                        [ input
+                            [ type_ "text"
+                            , class "formRow__input formRow__input--email"
+                            , placeholder "search"
+                            , Html.Attributes.value model.search
+                            , onInput SearchInput
+                            ]
+                            []
+                        ]
+                    , li []
                         [ a [ onClick Logout ] [ text "Logout" ] ]
                     ]
                 ]
-              -- , p [] [ text (toString model) ]
+            , p [] [ text (toString model) ]
             ]
     else
         header [ class "container-fluid" ]
@@ -371,13 +387,23 @@ pageHeader model =
                 , div [ class "navbar", id "myNavbar" ]
                     [ ul [ class "nav navbar-nav navbar-right" ]
                         [ li []
+                            [ input
+                                [ type_ "text"
+                                , class "formRow__input formRow__input--email"
+                                , placeholder "search"
+                                , Html.Attributes.value model.search
+                                , onInput SearchInput
+                                ]
+                                []
+                            ]
+                        , li []
                             [ a [ onClick (Navigate LoginPage) ] [ text "Login" ] ]
                         , li []
                             [ a [ onClick (Navigate SignupPage) ] [ text "Signup" ] ]
                         ]
                     ]
                 ]
-              -- , p [] [ text (toString model) ]
+            , p [] [ text (toString model) ]
             ]
 
 
