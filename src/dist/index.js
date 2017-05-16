@@ -20,11 +20,19 @@ firebase.auth().onAuthStateChanged(function (user) {
 
 // Subscriptions from Elm
 
+// Main
+app.ports.fetchingUsers.subscribe(elmSearchInput => {
+  firebaseHelper.fetchUser(elmSearchInput)
+    .then(function (fbResponse) {
+      console.log(fbResponse)
+    })
+})
+
 // Signup
 app.ports.saveUser.subscribe(function (elmUserRecord) {
   const jsonParsedElmRecord = JSON.parse(elmUserRecord)
   const userToSave = {
-    username: jsonParsedElmRecord.username,
+    displayName: jsonParsedElmRecord.username,
     email: jsonParsedElmRecord.email,
     password: jsonParsedElmRecord.password
   }
@@ -32,6 +40,7 @@ app.ports.saveUser.subscribe(function (elmUserRecord) {
   firebaseHelper.addUser(userToSave)
     .then(function (fbResponse) {
       console.log(fbResponse)
+      firebaseHelper.updateUser(userToSave.displayName)
       localStorage.setItem('fbLoggedIn', 'True')
       app.ports.userSaved.send(JSON.stringify({
         uid: fbResponse.uid,

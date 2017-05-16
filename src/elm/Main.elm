@@ -290,7 +290,7 @@ update msg model =
             ( { model | searchDisplay = False }, Cmd.none )
 
         SearchInput search ->
-            ( { model | search = search }, Cmd.none )
+            ( { model | search = search }, fetchingUsers search )
 
 
 authForPage : Page -> Bool -> Bool
@@ -428,7 +428,7 @@ pageHeader model =
 
 searchResults : Model -> Html Msg
 searchResults model =
-    div []
+    div [ class "container-fluid" ]
         [ p [ onClick SearchHide ] [ text "X" ]
         , p [] [ text "this is the search page" ]
         ]
@@ -553,3 +553,6 @@ main =
 
 
 port logout : () -> Cmd msg
+
+
+port fetchingUsers : String -> Cmd msg

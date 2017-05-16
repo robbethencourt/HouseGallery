@@ -1,23 +1,40 @@
+/* global firebase */
 const config = require('../../../keys').firebase
 var fbApp = firebase.initializeApp(config)
 const fbAuth = firebase.auth()
 const database = fbApp.database()
 
 const firebaseHelper = {
+  fetchUser: function (userToFetch) {
+    console.log(userToFetch)
+    return database.ref('/users/' + userToFetch).once('value')
+  },
   addUser: function (usersDataToSave) {
     return fbAuth.createUserWithEmailAndPassword(usersDataToSave.email, usersDataToSave.password)
       .catch(function (error) {
         var errorCode = error.code
         var errorMessage = error.message
-        if (error) `Error Code: {errorCode} | Error Message: {errorMessage}`
+        if (error) `Error Code: ${errorCode} | Error Message: ${errorMessage}`
       })
   }, // end addUser()
+  updateUser: function (displayNameToSave) {
+    var user = firebase.auth().currentUser
+    console.log(user, displayNameToSave)
+    user.updateProfile({
+      displayName: displayNameToSave
+    })
+      .then(function () {
+        console.log('display name saved')
+      }, function (error) {
+        console.log(`woops, display name not saved: ${error}`)
+      })
+  }, // end updateUser()
   checkUser: function (userToCheck) {
     return fbAuth.signInWithEmailAndPassword(userToCheck.email, userToCheck.password)
       .catch(function (error) {
         var errorCode = error.code
         var errorMessage = error.message
-        if (error) `Error Code: {errorCode} | Error Message: {errorMessage}`
+        if (error) `Error Code: ${errorCode} | Error Message: ${errorMessage}`
       })
   }, // end checkUser
   addArtwork: function (artworkToAdd) {
