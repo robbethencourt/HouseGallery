@@ -11,6 +11,7 @@ import Login
 import AddArtwork
 import Artwork
 import Json.Decode as JD exposing (..)
+import Json.Decode.Pipeline as JDP
 
 
 -- model
@@ -29,6 +30,14 @@ type alias Model =
     , loggedIn : Bool
     , searchDisplay : Bool
     , search : String
+    , searchContent : UserLink
+    , searchError : Maybe String
+    }
+
+
+type alias UserLink =
+    { displayName : String
+    , userId : String
     }
 
 
@@ -72,6 +81,11 @@ init flags location =
         ( artworkInitModel, artworkCmd ) =
             Artwork.init
 
+        initSearchContent =
+            { displayName = ""
+            , userId = ""
+            }
+
         initModel =
             { page = updatedPage
             , home = homeInitModel
@@ -85,6 +99,8 @@ init flags location =
             , loggedIn = loggedIn
             , searchDisplay = False
             , search = ""
+            , searchContent = initSearchContent
+            , searchError = Nothing
             }
 
         cmds =
@@ -118,6 +134,7 @@ type Msg
     | SearchDisplay
     | SearchHide
     | SearchInput String
+    | UserFetched String
 
 
 authPages : List Page
@@ -292,6 +309,9 @@ update msg model =
         SearchInput search ->
             ( { model | search = search }, fetchingUsers search )
 
+        UserFetched jsonUser ->
+            decodeJson jsonUser model
+
 
 authForPage : Page -> Bool -> Bool
 authForPage page loggedIn =
@@ -304,6 +324,28 @@ authedRedirect page loggedIn =
         ( page, Cmd.none )
     else
         ( LoginPage, Navigation.modifyUrl <| pageToHash LoginPage )
+
+
+decodeJson : String -> Model -> ( Model, Cmd Msg )
+decodeJson stringifiedUser model =
+    case JD.decodeString decodeUser stringifiedUser of
+        Ok user ->
+            ( { model
+                | searchContent = { user | displayName = user.displayName }
+                , searchContent = { user | userId = user.userId }
+              }
+            , Cmd.none
+            )
+
+        Err err ->
+            ( { model | searchError = Just err }, Cmd.none )
+
+
+decodeUser : JD.Decoder UserLink
+decodeUser =
+    JDP.decode UserLink
+        |> JDP.required "displayName" JD.string
+        |> JDP.required "userId" JD.string
 
 
 
@@ -430,7 +472,7 @@ searchResults : Model -> Html Msg
 searchResults model =
     div [ class "container-fluid" ]
         [ p [ onClick SearchHide ] [ text "X" ]
-        , p [] [ text "this is the search page" ]
+        , p [] [ text (toString model.searchContent) ]
         ]
 
 
@@ -466,6 +508,7 @@ subscriptions model =
             , Sub.map LoginMsg loginSub
             , Sub.map AddArtworkMsg addArtworkSub
             , Sub.map ArtworkMsg artworkSub
+            , userFetched UserFetched
             ]
 
 
@@ -556,3 +599,6 @@ port logout : () -> Cmd msg
 
 
 port fetchingUsers : String -> Cmd msg
+
+
+port userFetched : (String -> msg) -> Sub msg
