@@ -135,12 +135,13 @@ type Msg
     | SearchHide
     | SearchInput String
     | UserFetched String
+    | FetchSearchUserGallery
 
 
 authPages : List Page
 authPages =
-    [ GalleryPage
-    , AddArtworkPage
+    [ AddArtworkPage
+      -- , GalleryPage
     , ArtworkPage
     ]
 
@@ -312,6 +313,9 @@ update msg model =
         UserFetched jsonUser ->
             decodeJson jsonUser model
 
+        FetchSearchUserGallery ->
+            ( model, fetchingSearchUserGallery model.searchContent.userId )
+
 
 authForPage : Page -> Bool -> Bool
 authForPage page loggedIn =
@@ -472,7 +476,7 @@ searchResults : Model -> Html Msg
 searchResults model =
     div [ class "container-fluid" ]
         [ p [ onClick SearchHide ] [ text "X" ]
-        , p [] [ text (toString model.searchContent) ]
+        , p [ onClick FetchSearchUserGallery ] [ a [ href "#/gallery" ] [ text model.searchContent.displayName ] ]
         ]
 
 
@@ -602,3 +606,6 @@ port fetchingUsers : String -> Cmd msg
 
 
 port userFetched : (String -> msg) -> Sub msg
+
+
+port fetchingSearchUserGallery : String -> Cmd msg

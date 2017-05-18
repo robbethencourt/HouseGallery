@@ -29,6 +29,10 @@ app.ports.fetchingUsers.subscribe(elmSearchInput => {
     })
 })
 
+app.ports.fetchingSearchUserGallery.subscribe(function (elmUserSearchId) {
+  getUserAndGallery(elmUserSearchId)
+})
+
 // Signup
 app.ports.saveUser.subscribe(function (elmUserRecord) {
   const jsonParsedElmRecord = JSON.parse(elmUserRecord)
@@ -165,6 +169,7 @@ app.ports.fetchImageFileEdit.subscribe(function (id) {
 // gallery
 // call to firebase to get list of artwork for the user's gallery
 function getUserAndGallery (uid) {
+  app.ports.clearGallery.send(null)
   firebaseHelper.getUsersGallery(uid)
     .then(function (fbGalleryResponse) {
       const fbGalleryObject = fbGalleryResponse.val()
