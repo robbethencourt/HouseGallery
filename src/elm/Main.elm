@@ -12,6 +12,7 @@ import AddArtwork
 import Artwork
 import Json.Decode as JD exposing (..)
 import Json.Decode.Pipeline as JDP
+import Json.Encode as JE
 
 
 -- model
@@ -314,7 +315,25 @@ update msg model =
             decodeJson jsonUser model
 
         FetchSearchUserGallery ->
-            ( model, fetchingSearchUserGallery model.searchContent.userId )
+            let
+                body =
+                    JE.object
+                        [ ( "userId", JE.string (fromJust model.uid) )
+                        , ( "searchId", JE.string model.searchContent.userId )
+                        ]
+                        |> JE.encode 4
+            in
+                ( model, fetchingSearchUserGallery body )
+
+
+fromJust : Maybe String -> String
+fromJust just =
+    case just of
+        Nothing ->
+            "there was nothing in that maybe"
+
+        Just val ->
+            val
 
 
 authForPage : Page -> Bool -> Bool

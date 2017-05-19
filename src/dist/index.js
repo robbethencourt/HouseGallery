@@ -30,7 +30,10 @@ app.ports.fetchingUsers.subscribe(elmSearchInput => {
 })
 
 app.ports.fetchingSearchUserGallery.subscribe(function (elmUserSearchId) {
-  getUserAndGallery(elmUserSearchId)
+  const jsonParsedElmUserSearchId = JSON.parse(elmUserSearchId)
+  console.log(jsonParsedElmUserSearchId)
+  // this is the only place we pass 2 arguments as we're handling the default value to the second argument in the fun dec
+  getUserAndGallery(jsonParsedElmUserSearchId.searchId, jsonParsedElmUserSearchId.userId)
 })
 
 // Signup
@@ -126,7 +129,11 @@ app.ports.addArtworkToFb.subscribe(function (elmArtworkToAdd) {
               app.ports.artworkAdded.send('all items added')
 
               // clear out the elm gallery model before calling for the artwork again
-              app.ports.clearGallery.send(null)
+              const clearGalleryIds = {
+                userId: uidAndArtworkId.uid,
+                searchId: ''
+              }
+              app.ports.clearGallery.send(clearGalleryIds)
               getUserAndGallery(jsonParsedElmArtworkRecord.uid)
             }, function (errorInner) {
               if (errorInner) console.log(`Error: {errorInner}`)
@@ -168,8 +175,13 @@ app.ports.fetchImageFileEdit.subscribe(function (id) {
 
 // gallery
 // call to firebase to get list of artwork for the user's gallery
-function getUserAndGallery (uid) {
-  app.ports.clearGallery.send(null)
+// only when the two arguments match is the user viewing their own gallery. Otherwise a second argument will be sent from elm and the defaul will not be needed. this way we can check the two and determine if to display editing capabilities for each artwork being displayed
+function getUserAndGallery (uid, searchId = uid) {
+  const clearGalleryIds = {
+    userId: uid,
+    searchId: searchId
+  }
+  app.ports.clearGallery.send(JSON.stringify(clearGalleryIds))
   firebaseHelper.getUsersGallery(uid)
     .then(function (fbGalleryResponse) {
       const fbGalleryObject = fbGalleryResponse.val()
@@ -199,7 +211,9 @@ function getUserAndGallery (uid) {
               year: artwork.artworkObj.year,
               dimensions: artwork.artworkObj.dimensions,
               price: artwork.artworkObj.price,
-              artworkImageFile: artwork.artworkObj.artworkImageFile
+              artworkImageFile: artwork.artworkObj.artworkImageFile,
+              userId: clearGalleryIds.userId,
+              searchId: clearGalleryIds.searchId
             }))
           })
       })
@@ -295,7 +309,11 @@ app.ports.submitEditedArtwork.subscribe(function (artworkToEdit) {
         firebaseHelper.editArtwork(artworkId, artworkFbObject)
           .then(function (fbEditArtworkResponse) {
             // clear out the elm gallery model before calling for the artwork again
-            app.ports.clearGallery.send(null)
+            const clearGalleryIds = {
+              userId: jsonParsedElmArtworkToEditRecord.uid,
+              searchId: ''
+            }
+            app.ports.clearGallery.send(clearGalleryIds)
             getUserAndGallery(artworkFbObject.uid)
           })
       })
@@ -315,7 +333,11 @@ app.ports.submitEditedArtwork.subscribe(function (artworkToEdit) {
     firebaseHelper.editArtwork(artworkId, artworkFbObject)
       .then(function (fbEditArtworkResponse) {
         // clear out the elm gallery model before calling for the artwork again
-        app.ports.clearGallery.send(null)
+        const clearGalleryIds = {
+          userId: jsonParsedElmArtworkToEditRecord.uid,
+          searchId: ''
+        }
+        app.ports.clearGallery.send(clearGalleryIds)
         getUserAndGallery(artworkFbObject.uid)
       })
   }
