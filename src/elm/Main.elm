@@ -137,12 +137,12 @@ type Msg
     | SearchInput String
     | UserFetched String
     | FetchSearchUserGallery
+    | FetchLoggedInUserGallery
 
 
 authPages : List Page
 authPages =
     [ AddArtworkPage
-      -- , GalleryPage
     , ArtworkPage
     ]
 
@@ -325,6 +325,17 @@ update msg model =
             in
                 ( model, fetchingSearchUserGallery body )
 
+        FetchLoggedInUserGallery ->
+            let
+                body =
+                    JE.object
+                        [ ( "userId", JE.string (fromJust model.uid) )
+                        , ( "searchId", JE.string (fromJust model.uid) )
+                        ]
+                        |> JE.encode 4
+            in
+                ( model, fetchingSearchUserGallery body )
+
 
 fromJust : Maybe String -> String
 fromJust just =
@@ -455,7 +466,7 @@ pageHeader model =
                         [ a [ onClick Logout ] [ text "Logout" ] ]
                     ]
                 ]
-            , p [] [ text (toString model) ]
+              -- , p [] [ text (toString model) ]
             ]
     else
         header [ class "container-fluid" ]
@@ -487,14 +498,17 @@ pageHeader model =
                         ]
                     ]
                 ]
-            , p [] [ text (toString model) ]
+              -- , p [] [ text (toString model) ]
             ]
 
 
 searchResults : Model -> Html Msg
 searchResults model =
     div [ class "container-fluid" ]
-        [ p [ onClick SearchHide ] [ text "X" ]
+        [ if model.loggedIn then
+            p [ onClick FetchLoggedInUserGallery ] [ text "Return to my Gallery" ]
+          else
+            p [ onClick SearchHide ] [ text "Close" ]
         , p [ onClick FetchSearchUserGallery ] [ a [ href "#/gallery" ] [ text model.searchContent.displayName ] ]
         ]
 
