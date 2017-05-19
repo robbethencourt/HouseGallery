@@ -1,5 +1,19 @@
 /* Signup */
 
+/* login and signup container */
+.login-signup {
+  padding-bottom: 300px;
+}
+
+/* Small Devices, Tablets */
+@media only screen and (min-width : 768px) {
+
+  .login-signup {
+    padding-top: 200px;
+  }
+
+}
+
 /* signup and login inputs */
 .formRow__input--username {
   background-color: lighten($dark_green, 10%);
