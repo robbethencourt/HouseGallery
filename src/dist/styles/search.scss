@@ -7,7 +7,7 @@
 
 .search-results {
   width: 100%;
-  background-color: $gray;
+  background-color: lighten($dark_blue, 35%);
 }
 
 .search-results__search-header {
