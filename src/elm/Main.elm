@@ -135,6 +135,7 @@ type Msg
     | SearchDisplay
     | SearchHide
     | SearchInput String
+    | NoUserFetched String
     | UserFetched String
     | FetchSearchUserGallery
     | FetchLoggedInUserGallery
@@ -311,6 +312,9 @@ update msg model =
         SearchInput search ->
             ( { model | search = search }, fetchingUsers search )
 
+        NoUserFetched noJsonUser ->
+            decodeJson noJsonUser model
+
         UserFetched jsonUser ->
             decodeJson jsonUser model
 
@@ -334,7 +338,7 @@ update msg model =
                         ]
                         |> JE.encode 4
             in
-                ( model, fetchingSearchUserGallery body )
+                ( { model | searchDisplay = False }, fetchingSearchUserGallery body )
 
 
 fromJust : Maybe String -> String
@@ -452,18 +456,10 @@ pageHeader model =
                     ]
                 , ul [ class "nav navbar-nav navbar-right" ]
                     [ li []
-                        [ input
-                            [ type_ "text"
-                            , class "formRow__input formRow__input--email"
-                            , placeholder "search"
-                            , onFocus SearchDisplay
-                            , Html.Attributes.value model.search
-                            , onInput SearchInput
-                            ]
-                            []
-                        ]
-                    , li []
                         [ a [ onClick Logout ] [ text "Logout" ] ]
+                    , li []
+                        [ span [ onClick SearchDisplay, class "glyphicon glyphicon-search navbar__search-icon" ] []
+                        ]
                     ]
                 ]
               -- , p [] [ text (toString model) ]
@@ -481,20 +477,12 @@ pageHeader model =
                 , div [ class "navbar", id "myNavbar" ]
                     [ ul [ class "nav navbar-nav navbar-right" ]
                         [ li []
-                            [ input
-                                [ type_ "text"
-                                , class "formRow__input formRow__input--email"
-                                , placeholder "search"
-                                , onFocus SearchDisplay
-                                , Html.Attributes.value model.search
-                                , onInput SearchInput
-                                ]
-                                []
-                            ]
-                        , li []
                             [ a [ onClick (Navigate LoginPage) ] [ text "Login" ] ]
                         , li []
                             [ a [ onClick (Navigate SignupPage) ] [ text "Signup" ] ]
+                        , li []
+                            [ span [ onClick SearchDisplay, class "glyphicon glyphicon-search navbar__search-icon" ] []
+                            ]
                         ]
                     ]
                 ]
@@ -504,12 +492,28 @@ pageHeader model =
 
 searchResults : Model -> Html Msg
 searchResults model =
-    div [ class "container-fluid" ]
+    div [ class "search-results" ]
         [ if model.loggedIn then
-            p [ onClick FetchLoggedInUserGallery ] [ text "Return to my Gallery" ]
+            div [ class "search-results__search-header" ]
+                [ p [ class "search-results__search-header__close-search", onClick FetchLoggedInUserGallery ] [ text "Return to my Gallery" ]
+                ]
           else
-            p [ onClick SearchHide ] [ text "Close" ]
-        , p [ onClick FetchSearchUserGallery ] [ a [ href "#/gallery" ] [ text model.searchContent.displayName ] ]
+            div [ class "search-results__search-header" ]
+                [ p [ class "search-results__search-header__close-search", onClick SearchHide ] [ text "Close" ]
+                ]
+        , input
+            [ type_ "text"
+            , class "formRow__input formRow__input--search"
+            , placeholder "search for users"
+            , onFocus SearchDisplay
+            , Html.Attributes.value model.search
+            , onInput SearchInput
+            ]
+            []
+        , if model.searchContent.userId == "" then
+            p [ class "search-results__search-header__search-content" ] [ text model.searchContent.displayName ]
+          else
+            p [ class "search-results__search-header__search-content", onClick FetchSearchUserGallery ] [ a [ class "search-results__search-header__search-content__a", href "#/gallery" ] [ text model.searchContent.displayName ] ]
         ]
 
 
@@ -545,6 +549,7 @@ subscriptions model =
             , Sub.map LoginMsg loginSub
             , Sub.map AddArtworkMsg addArtworkSub
             , Sub.map ArtworkMsg artworkSub
+            , noUserFetched NoUserFetched
             , userFetched UserFetched
             ]
 
@@ -636,6 +641,9 @@ port logout : () -> Cmd msg
 
 
 port fetchingUsers : String -> Cmd msg
+
+
+port noUserFetched : (String -> msg) -> Sub msg
 
 
 port userFetched : (String -> msg) -> Sub msg

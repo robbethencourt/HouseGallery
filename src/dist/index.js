@@ -25,7 +25,15 @@ app.ports.fetchingUsers.subscribe(elmSearchInput => {
   firebaseHelper.fetchUser(elmSearchInput)
     .then(function (fbResponse) {
       console.log(fbResponse.val())
-      app.ports.userFetched.send(JSON.stringify(fbResponse.val()))
+      if (fbResponse.val() === null) {
+        const noUser = {
+          displayName: '...searching',
+          userId: ''
+        }
+        app.ports.noUserFetched.send(JSON.stringify(noUser))
+      } else {
+        app.ports.userFetched.send(JSON.stringify(fbResponse.val()))
+      }
     })
 })
 
