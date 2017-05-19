@@ -2,6 +2,7 @@
 
 .navbar__search-icon {
   padding: 1.2em;
+  cursor: pointer;
   color: $dark_green;
 }
 
@@ -12,11 +13,11 @@
 
 .search-results__search-header {
   padding: 20px 1em 10px 1em;
-  background-color: #eee;
+  background-color: lighten($dark_blue, 70%);
 }
 
 .search-results__search-header__close-search {
-  // text-align: right;
+  cursor: pointer;
   color: #fff;
   font-weight: bold;
 }
@@ -36,5 +37,5 @@
 .search-results__search-header__search-content {
   margin-bottom: 0;
   padding: 20px 1em;
-  background-color: #eee;
+  background-color: lighten($dark_blue, 70%);
 }

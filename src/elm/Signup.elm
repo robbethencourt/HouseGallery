@@ -97,7 +97,7 @@ view model =
 
 signupForm : Model -> Html Msg
 signupForm model =
-    div [ class "row formRow" ]
+    div [ class "row formRow login-signup" ]
         [ div [ class "col-md-6 col-md-offset-3" ]
             [ Html.form [ class "formRow__form", onSubmit Submit ]
                 [ input

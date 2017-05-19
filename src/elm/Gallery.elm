@@ -38,6 +38,12 @@ type alias GalleryItem =
     }
 
 
+type alias ClearGalleryReturnValue =
+    { searchId : String
+    , userId : String
+    }
+
+
 initModel : Model
 initModel =
     { error = Nothing
@@ -89,13 +95,7 @@ update msg model =
             decodeJson jsonGallery model
 
         ClearGallery ids ->
-            ( { model
-                | searchId = ids
-                , userId = ids
-                , gallery = []
-              }
-            , Cmd.none
-            )
+            jsonDecodeClearGallery ids model
 
         ListView ->
             ( { model
@@ -112,6 +112,28 @@ update msg model =
               }
             , Cmd.none
             )
+
+
+jsonDecodeClearGallery : String -> Model -> ( Model, Cmd Msg )
+jsonDecodeClearGallery ids model =
+    case JD.decodeString decodedClearGallery ids of
+        Ok clearGalleryRecord ->
+            ( { model
+                | searchId = clearGalleryRecord.searchId
+                , userId = clearGalleryRecord.userId
+              }
+            , Cmd.none
+            )
+
+        Err err ->
+            ( { model | error = Just err }, Cmd.none )
+
+
+decodedClearGallery : JD.Decoder ClearGalleryReturnValue
+decodedClearGallery =
+    JDP.decode ClearGalleryReturnValue
+        |> JDP.required "searchId" JD.string
+        |> JDP.required "userId" JD.string
 
 
 decodeJson : String -> Model -> ( Model, Cmd Msg )
@@ -160,7 +182,7 @@ view model =
                 [ span [ class "glyphicon glyphicon-th-large glyphicon--custom-table", onClick ListView ] []
                 , span [ class "glyphicon glyphicon-th-list glyphicon--custom-table", onClick TableView ] []
                 ]
-            , galleryHeader
+            , galleryHeader model
             , if model.listView then
                 galleryListView model
               else
@@ -242,9 +264,12 @@ galleryTableHeader =
         ]
 
 
-galleryHeader : Html Msg
-galleryHeader =
-    h2 [ class "text-center gallery-header" ] [ text "Your Gallery" ]
+galleryHeader : Model -> Html Msg
+galleryHeader model =
+    if model.userId == model.searchId then
+        h2 [ class "text-center gallery-header" ] [ text "Your Gallery" ]
+    else
+        div [] []
 
 
 errorPanel : Maybe String -> Html a
