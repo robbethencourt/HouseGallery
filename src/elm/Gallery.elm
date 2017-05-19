@@ -15,7 +15,8 @@ import Loading
 type alias Model =
     { error : Maybe String
     , gallery : List GalleryItem
-    , active : Bool
+    , searchId : String
+    , userId : String
     , routeParam : String
     , isFetching : Bool
     , listView : Bool
@@ -32,6 +33,8 @@ type alias GalleryItem =
     , dimensions : String
     , price : String
     , artworkImageFile : String
+    , userId : String
+    , searchId : String
     }
 
 
@@ -39,7 +42,8 @@ initModel : Model
 initModel =
     { error = Nothing
     , gallery = []
-    , active = False
+    , searchId = ""
+    , userId = ""
     , routeParam = ""
     , isFetching = True
     , listView = True
@@ -60,7 +64,7 @@ type Msg
     = Error String
     | ArtworkPage String
     | UsersGallery String
-    | ClearGallery
+    | ClearGallery String
     | ListView
     | TableView
 
@@ -84,8 +88,14 @@ update msg model =
         UsersGallery jsonGallery ->
             decodeJson jsonGallery model
 
-        ClearGallery ->
-            ( initModel, Cmd.none )
+        ClearGallery ids ->
+            ( { model
+                | searchId = ids
+                , userId = ids
+                , gallery = []
+              }
+            , Cmd.none
+            )
 
         ListView ->
             ( { model
@@ -130,6 +140,8 @@ decodeGalleryItem =
         |> JDP.required "dimensions" JD.string
         |> JDP.required "price" JD.string
         |> JDP.required "artworkImageFile" JD.string
+        |> JDP.required "userId" JD.string
+        |> JDP.required "searchId" JD.string
 
 
 
@@ -158,19 +170,18 @@ view model =
 
 
 galleryListView : Model -> Html Msg
-galleryListView { gallery } =
-    gallery
+galleryListView model =
+    model.gallery
         |> List.map paintingListView
         |> div [ class "container" ]
 
 
 paintingListView : GalleryItem -> Html Msg
-paintingListView { artist, title, medium, year, dimensions, price, artworkImageFile, artworkId } =
+paintingListView { artist, title, medium, year, dimensions, price, artworkImageFile, artworkId, userId, searchId } =
     div [ class "row" ]
         [ div [ class "artwork-container vertical-align" ]
             [ div [ class "col-sm-6 artwork-container__col-sm-6" ]
-                [ img [ src artworkImageFile ] []
-                ]
+                [ img [ src artworkImageFile ] [] ]
             , div [ class "col-sm-6 artwork-container__col-sm-6" ]
                 [ div [ class "text-center artwork-container__artwork-details" ]
                     [ h2 [ class "artwork-container__artwork-details__artist" ] [ text artist ]
@@ -178,7 +189,10 @@ paintingListView { artist, title, medium, year, dimensions, price, artworkImageF
                     , p [ class "artwork-container__artwork-details__medium" ] [ text medium ]
                     , p [ class "artwork-container__artwork-details__dimensions" ] [ text dimensions ]
                     , p [ class "align-middle artwork-container__artwork-details__price" ] [ text ("$" ++ price) ]
-                    , button [ class "btn btn--green", onClick (ArtworkPage artworkId) ] [ text "view artwork" ]
+                    , if userId == searchId then
+                        button [ class "btn btn--green", onClick (ArtworkPage artworkId) ] [ text "view artwork" ]
+                      else
+                        p [] []
                     ]
                 ]
             ]
@@ -195,11 +209,17 @@ galleryTableView { gallery } =
 
 
 paintingTableView : GalleryItem -> Html Msg
-paintingTableView { artist, title, medium, year, dimensions, price, artworkImageFile, artworkId } =
+paintingTableView { artist, title, medium, year, dimensions, price, artworkImageFile, artworkId, userId, searchId } =
     tr []
-        [ td [] [ img [ src artworkImageFile, class "thumbnail" ] [] ]
+        [ if userId == searchId then
+            td [] [ img [ src artworkImageFile, class "thumbnail", onClick (ArtworkPage artworkId) ] [] ]
+          else
+            td [] [ img [ src artworkImageFile, class "thumbnail" ] [] ]
         , td [] [ text artist ]
-        , td [] [ a [ onClick (ArtworkPage artworkId) ] [ text title ] ]
+        , if userId == searchId then
+            td [] [ a [ onClick (ArtworkPage artworkId) ] [ text title ] ]
+          else
+            td [] [ text title ]
         , td [] [ text year ]
         , td [] [ text medium ]
         , td [] [ text dimensions ]
@@ -246,14 +266,14 @@ subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
         [ usersGallery UsersGallery
-        , clearGallery (always ClearGallery)
+        , clearGallery ClearGallery
         ]
 
 
 port usersGallery : (String -> msg) -> Sub msg
 
 
-port clearGallery : (() -> msg) -> Sub msg
+port clearGallery : (String -> msg) -> Sub msg
 
 
 port getOneArtwork : String -> Cmd msg

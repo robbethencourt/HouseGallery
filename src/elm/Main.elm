@@ -11,6 +11,8 @@ import Login
 import AddArtwork
 import Artwork
 import Json.Decode as JD exposing (..)
+import Json.Decode.Pipeline as JDP
+import Json.Encode as JE
 
 
 -- model
@@ -27,6 +29,16 @@ type alias Model =
     , fbLoggedIn : Maybe String
     , uid : Maybe String
     , loggedIn : Bool
+    , searchDisplay : Bool
+    , search : String
+    , searchContent : UserLink
+    , searchError : Maybe String
+    }
+
+
+type alias UserLink =
+    { displayName : String
+    , userId : String
     }
 
 
@@ -70,6 +82,11 @@ init flags location =
         ( artworkInitModel, artworkCmd ) =
             Artwork.init
 
+        initSearchContent =
+            { displayName = ""
+            , userId = ""
+            }
+
         initModel =
             { page = updatedPage
             , home = homeInitModel
@@ -81,6 +98,10 @@ init flags location =
             , fbLoggedIn = flags.fbLoggedIn
             , uid = Nothing
             , loggedIn = loggedIn
+            , searchDisplay = False
+            , search = ""
+            , searchContent = initSearchContent
+            , searchError = Nothing
             }
 
         cmds =
@@ -111,12 +132,18 @@ type Msg
     | AddArtworkMsg AddArtwork.Msg
     | ArtworkMsg Artwork.Msg
     | Logout
+    | SearchDisplay
+    | SearchHide
+    | SearchInput String
+    | NoUserFetched String
+    | UserFetched String
+    | FetchSearchUserGallery
+    | FetchLoggedInUserGallery
 
 
 authPages : List Page
 authPages =
-    [ GalleryPage
-    , AddArtworkPage
+    [ AddArtworkPage
     , ArtworkPage
     ]
 
@@ -276,6 +303,53 @@ update msg model =
                 ]
             )
 
+        SearchDisplay ->
+            ( { model | searchDisplay = True }, Cmd.none )
+
+        SearchHide ->
+            ( { model | searchDisplay = False }, Cmd.none )
+
+        SearchInput search ->
+            ( { model | search = search }, fetchingUsers search )
+
+        NoUserFetched noJsonUser ->
+            decodeJson noJsonUser model
+
+        UserFetched jsonUser ->
+            decodeJson jsonUser model
+
+        FetchSearchUserGallery ->
+            let
+                body =
+                    JE.object
+                        [ ( "userId", JE.string (fromJust model.uid) )
+                        , ( "searchId", JE.string model.searchContent.userId )
+                        ]
+                        |> JE.encode 4
+            in
+                ( model, fetchingSearchUserGallery body )
+
+        FetchLoggedInUserGallery ->
+            let
+                body =
+                    JE.object
+                        [ ( "userId", JE.string (fromJust model.uid) )
+                        , ( "searchId", JE.string (fromJust model.uid) )
+                        ]
+                        |> JE.encode 4
+            in
+                ( { model | searchDisplay = False }, fetchingSearchUserGallery body )
+
+
+fromJust : Maybe String -> String
+fromJust just =
+    case just of
+        Nothing ->
+            "there was nothing in that maybe"
+
+        Just val ->
+            val
+
 
 authForPage : Page -> Bool -> Bool
 authForPage page loggedIn =
@@ -288,6 +362,28 @@ authedRedirect page loggedIn =
         ( page, Cmd.none )
     else
         ( LoginPage, Navigation.modifyUrl <| pageToHash LoginPage )
+
+
+decodeJson : String -> Model -> ( Model, Cmd Msg )
+decodeJson stringifiedUser model =
+    case JD.decodeString decodeUser stringifiedUser of
+        Ok user ->
+            ( { model
+                | searchContent = { user | displayName = user.displayName }
+                , searchContent = { user | userId = user.userId }
+              }
+            , Cmd.none
+            )
+
+        Err err ->
+            ( { model | searchError = Just err }, Cmd.none )
+
+
+decodeUser : JD.Decoder UserLink
+decodeUser =
+    JDP.decode UserLink
+        |> JDP.required "displayName" JD.string
+        |> JDP.required "userId" JD.string
 
 
 
@@ -329,10 +425,17 @@ view model =
                             [ text "Page Not Found!" ]
                         ]
     in
-        div []
-            [ pageHeader model
-            , page
-            ]
+        if model.searchDisplay then
+            div []
+                [ pageHeader model
+                , searchResults model
+                , page
+                ]
+        else
+            div []
+                [ pageHeader model
+                , page
+                ]
 
 
 pageHeader : Model -> Html Msg
@@ -354,6 +457,9 @@ pageHeader model =
                 , ul [ class "nav navbar-nav navbar-right" ]
                     [ li []
                         [ a [ onClick Logout ] [ text "Logout" ] ]
+                    , li []
+                        [ span [ onClick SearchDisplay, class "glyphicon glyphicon-search navbar__search-icon" ] []
+                        ]
                     ]
                 ]
               -- , p [] [ text (toString model) ]
@@ -374,11 +480,41 @@ pageHeader model =
                             [ a [ onClick (Navigate LoginPage) ] [ text "Login" ] ]
                         , li []
                             [ a [ onClick (Navigate SignupPage) ] [ text "Signup" ] ]
+                        , li []
+                            [ span [ onClick SearchDisplay, class "glyphicon glyphicon-search navbar__search-icon" ] []
+                            ]
                         ]
                     ]
                 ]
               -- , p [] [ text (toString model) ]
             ]
+
+
+searchResults : Model -> Html Msg
+searchResults model =
+    div [ class "search-results" ]
+        [ if model.loggedIn then
+            div [ class "search-results__search-header" ]
+                [ p [ class "search-results__search-header__close-search", onClick FetchLoggedInUserGallery ] [ text "Return to my Gallery" ]
+                ]
+          else
+            div [ class "search-results__search-header" ]
+                [ p [ class "search-results__search-header__close-search", onClick SearchHide ] [ text "Close" ]
+                ]
+        , input
+            [ type_ "text"
+            , class "formRow__input formRow__input--search"
+            , placeholder "search for users"
+            , onFocus SearchDisplay
+            , Html.Attributes.value model.search
+            , onInput SearchInput
+            ]
+            []
+        , if model.searchContent.userId == "" then
+            p [ class "search-results__search-header__search-content" ] [ text model.searchContent.displayName ]
+          else
+            p [ class "search-results__search-header__search-content", onClick FetchSearchUserGallery ] [ a [ class "search-results__search-header__search-content__a", href "#/gallery" ] [ text model.searchContent.displayName ] ]
+        ]
 
 
 
@@ -413,6 +549,8 @@ subscriptions model =
             , Sub.map LoginMsg loginSub
             , Sub.map AddArtworkMsg addArtworkSub
             , Sub.map ArtworkMsg artworkSub
+            , noUserFetched NoUserFetched
+            , userFetched UserFetched
             ]
 
 
@@ -500,3 +638,15 @@ main =
 
 
 port logout : () -> Cmd msg
+
+
+port fetchingUsers : String -> Cmd msg
+
+
+port noUserFetched : (String -> msg) -> Sub msg
+
+
+port userFetched : (String -> msg) -> Sub msg
+
+
+port fetchingSearchUserGallery : String -> Cmd msg
