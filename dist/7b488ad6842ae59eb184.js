@@ -12576,18 +12576,23 @@
 				});
 		}
 	};
-	var _user$project$Gallery$galleryHeader = A2(
-		_elm_lang$html$Html$h2,
-		{
-			ctor: '::',
-			_0: _elm_lang$html$Html_Attributes$class('text-center gallery-header'),
-			_1: {ctor: '[]'}
-		},
-		{
-			ctor: '::',
-			_0: _elm_lang$html$Html$text('Your Gallery'),
-			_1: {ctor: '[]'}
-		});
+	var _user$project$Gallery$galleryHeader = function (model) {
+		return _elm_lang$core$Native_Utils.eq(model.userId, model.searchId) ? A2(
+			_elm_lang$html$Html$h2,
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html_Attributes$class('text-center gallery-header'),
+				_1: {ctor: '[]'}
+			},
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html$text('Your Gallery'),
+				_1: {ctor: '[]'}
+			}) : A2(
+			_elm_lang$html$Html$div,
+			{ctor: '[]'},
+			{ctor: '[]'});
+	};
 	var _user$project$Gallery$galleryTableHeader = A2(
 		_elm_lang$html$Html$thead,
 		{
@@ -12790,21 +12795,58 @@
 				};
 			}
 		});
+	var _user$project$Gallery$ClearGalleryReturnValue = F2(
+		function (a, b) {
+			return {searchId: a, userId: b};
+		});
+	var _user$project$Gallery$decodedClearGallery = A3(
+		_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$required,
+		'userId',
+		_elm_lang$core$Json_Decode$string,
+		A3(
+			_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$required,
+			'searchId',
+			_elm_lang$core$Json_Decode$string,
+			_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$decode(_user$project$Gallery$ClearGalleryReturnValue)));
+	var _user$project$Gallery$jsonDecodeClearGallery = F2(
+		function (ids, model) {
+			var _p2 = A2(_elm_lang$core$Json_Decode$decodeString, _user$project$Gallery$decodedClearGallery, ids);
+			if (_p2.ctor === 'Ok') {
+				var _p3 = _p2._0;
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{searchId: _p3.searchId, userId: _p3.userId}),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
+			} else {
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{
+							error: _elm_lang$core$Maybe$Just(_p2._0)
+						}),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
+			}
+		});
 	var _user$project$Gallery$update = F2(
 		function (msg, model) {
-			var _p2 = msg;
-			switch (_p2.ctor) {
+			var _p4 = msg;
+			switch (_p4.ctor) {
 				case 'ArtworkPage':
-					var _p3 = _p2._0;
+					var _p5 = _p4._0;
 					return {
 						ctor: '_Tuple2',
 						_0: _elm_lang$core$Native_Utils.update(
 							model,
-							{routeParam: _p3}),
+							{routeParam: _p5}),
 						_1: _elm_lang$core$Platform_Cmd$batch(
 							{
 								ctor: '::',
-								_0: _user$project$Gallery$getOneArtwork(_p3),
+								_0: _user$project$Gallery$getOneArtwork(_p5),
 								_1: {
 									ctor: '::',
 									_0: _elm_lang$navigation$Navigation$newUrl('#/artwork'),
@@ -12818,25 +12860,14 @@
 						_0: _elm_lang$core$Native_Utils.update(
 							model,
 							{
-								error: _elm_lang$core$Maybe$Just(_p2._0)
+								error: _elm_lang$core$Maybe$Just(_p4._0)
 							}),
 						_1: _elm_lang$core$Platform_Cmd$none
 					};
 				case 'UsersGallery':
-					return A2(_user$project$Gallery$decodeJson, _p2._0, model);
+					return A2(_user$project$Gallery$decodeJson, _p4._0, model);
 				case 'ClearGallery':
-					var _p4 = _p2._0;
-					return {
-						ctor: '_Tuple2',
-						_0: _elm_lang$core$Native_Utils.update(
-							model,
-							{
-								searchId: _p4,
-								userId: _p4,
-								gallery: {ctor: '[]'}
-							}),
-						_1: _elm_lang$core$Platform_Cmd$none
-					};
+					return A2(_user$project$Gallery$jsonDecodeClearGallery, _p4._0, model);
 				case 'ListView':
 					return {
 						ctor: '_Tuple2',
@@ -12878,8 +12909,8 @@
 	var _user$project$Gallery$ArtworkPage = function (a) {
 		return {ctor: 'ArtworkPage', _0: a};
 	};
-	var _user$project$Gallery$paintingListView = function (_p5) {
-		var _p6 = _p5;
+	var _user$project$Gallery$paintingListView = function (_p6) {
+		var _p7 = _p6;
 		return A2(
 			_elm_lang$html$Html$div,
 			{
@@ -12911,7 +12942,7 @@
 									_elm_lang$html$Html$img,
 									{
 										ctor: '::',
-										_0: _elm_lang$html$Html_Attributes$src(_p6.artworkImageFile),
+										_0: _elm_lang$html$Html_Attributes$src(_p7.artworkImageFile),
 										_1: {ctor: '[]'}
 									},
 									{ctor: '[]'}),
@@ -12946,7 +12977,7 @@
 												},
 												{
 													ctor: '::',
-													_0: _elm_lang$html$Html$text(_p6.artist),
+													_0: _elm_lang$html$Html$text(_p7.artist),
 													_1: {ctor: '[]'}
 												}),
 											_1: {
@@ -12963,8 +12994,8 @@
 														_0: _elm_lang$html$Html$text(
 															A2(
 																_elm_lang$core$Basics_ops['++'],
-																_p6.title,
-																A2(_elm_lang$core$Basics_ops['++'], ', ', _p6.year))),
+																_p7.title,
+																A2(_elm_lang$core$Basics_ops['++'], ', ', _p7.year))),
 														_1: {ctor: '[]'}
 													}),
 												_1: {
@@ -12978,7 +13009,7 @@
 														},
 														{
 															ctor: '::',
-															_0: _elm_lang$html$Html$text(_p6.medium),
+															_0: _elm_lang$html$Html$text(_p7.medium),
 															_1: {ctor: '[]'}
 														}),
 													_1: {
@@ -12992,7 +13023,7 @@
 															},
 															{
 																ctor: '::',
-																_0: _elm_lang$html$Html$text(_p6.dimensions),
+																_0: _elm_lang$html$Html$text(_p7.dimensions),
 																_1: {ctor: '[]'}
 															}),
 														_1: {
@@ -13007,12 +13038,12 @@
 																{
 																	ctor: '::',
 																	_0: _elm_lang$html$Html$text(
-																		A2(_elm_lang$core$Basics_ops['++'], '$', _p6.price)),
+																		A2(_elm_lang$core$Basics_ops['++'], '$', _p7.price)),
 																	_1: {ctor: '[]'}
 																}),
 															_1: {
 																ctor: '::',
-																_0: _elm_lang$core$Native_Utils.eq(_p6.userId, _p6.searchId) ? A2(
+																_0: _elm_lang$core$Native_Utils.eq(_p7.userId, _p7.searchId) ? A2(
 																	_elm_lang$html$Html$button,
 																	{
 																		ctor: '::',
@@ -13020,7 +13051,7 @@
 																		_1: {
 																			ctor: '::',
 																			_0: _elm_lang$html$Html_Events$onClick(
-																				_user$project$Gallery$ArtworkPage(_p6.artworkId)),
+																				_user$project$Gallery$ArtworkPage(_p7.artworkId)),
 																			_1: {ctor: '[]'}
 																		}
 																	},
@@ -13057,19 +13088,19 @@
 			},
 			A2(_elm_lang$core$List$map, _user$project$Gallery$paintingListView, model.gallery));
 	};
-	var _user$project$Gallery$paintingTableView = function (_p7) {
-		var _p8 = _p7;
-		var _p13 = _p8.userId;
-		var _p12 = _p8.title;
-		var _p11 = _p8.searchId;
-		var _p10 = _p8.artworkImageFile;
-		var _p9 = _p8.artworkId;
+	var _user$project$Gallery$paintingTableView = function (_p8) {
+		var _p9 = _p8;
+		var _p14 = _p9.userId;
+		var _p13 = _p9.title;
+		var _p12 = _p9.searchId;
+		var _p11 = _p9.artworkImageFile;
+		var _p10 = _p9.artworkId;
 		return A2(
 			_elm_lang$html$Html$tr,
 			{ctor: '[]'},
 			{
 				ctor: '::',
-				_0: _elm_lang$core$Native_Utils.eq(_p13, _p11) ? A2(
+				_0: _elm_lang$core$Native_Utils.eq(_p14, _p12) ? A2(
 					_elm_lang$html$Html$td,
 					{ctor: '[]'},
 					{
@@ -13078,14 +13109,14 @@
 							_elm_lang$html$Html$img,
 							{
 								ctor: '::',
-								_0: _elm_lang$html$Html_Attributes$src(_p10),
+								_0: _elm_lang$html$Html_Attributes$src(_p11),
 								_1: {
 									ctor: '::',
 									_0: _elm_lang$html$Html_Attributes$class('thumbnail'),
 									_1: {
 										ctor: '::',
 										_0: _elm_lang$html$Html_Events$onClick(
-											_user$project$Gallery$ArtworkPage(_p9)),
+											_user$project$Gallery$ArtworkPage(_p10)),
 										_1: {ctor: '[]'}
 									}
 								}
@@ -13101,7 +13132,7 @@
 							_elm_lang$html$Html$img,
 							{
 								ctor: '::',
-								_0: _elm_lang$html$Html_Attributes$src(_p10),
+								_0: _elm_lang$html$Html_Attributes$src(_p11),
 								_1: {
 									ctor: '::',
 									_0: _elm_lang$html$Html_Attributes$class('thumbnail'),
@@ -13118,12 +13149,12 @@
 						{ctor: '[]'},
 						{
 							ctor: '::',
-							_0: _elm_lang$html$Html$text(_p8.artist),
+							_0: _elm_lang$html$Html$text(_p9.artist),
 							_1: {ctor: '[]'}
 						}),
 					_1: {
 						ctor: '::',
-						_0: _elm_lang$core$Native_Utils.eq(_p13, _p11) ? A2(
+						_0: _elm_lang$core$Native_Utils.eq(_p14, _p12) ? A2(
 							_elm_lang$html$Html$td,
 							{ctor: '[]'},
 							{
@@ -13133,12 +13164,12 @@
 									{
 										ctor: '::',
 										_0: _elm_lang$html$Html_Events$onClick(
-											_user$project$Gallery$ArtworkPage(_p9)),
+											_user$project$Gallery$ArtworkPage(_p10)),
 										_1: {ctor: '[]'}
 									},
 									{
 										ctor: '::',
-										_0: _elm_lang$html$Html$text(_p12),
+										_0: _elm_lang$html$Html$text(_p13),
 										_1: {ctor: '[]'}
 									}),
 								_1: {ctor: '[]'}
@@ -13147,7 +13178,7 @@
 							{ctor: '[]'},
 							{
 								ctor: '::',
-								_0: _elm_lang$html$Html$text(_p12),
+								_0: _elm_lang$html$Html$text(_p13),
 								_1: {ctor: '[]'}
 							}),
 						_1: {
@@ -13157,7 +13188,7 @@
 								{ctor: '[]'},
 								{
 									ctor: '::',
-									_0: _elm_lang$html$Html$text(_p8.year),
+									_0: _elm_lang$html$Html$text(_p9.year),
 									_1: {ctor: '[]'}
 								}),
 							_1: {
@@ -13167,7 +13198,7 @@
 									{ctor: '[]'},
 									{
 										ctor: '::',
-										_0: _elm_lang$html$Html$text(_p8.medium),
+										_0: _elm_lang$html$Html$text(_p9.medium),
 										_1: {ctor: '[]'}
 									}),
 								_1: {
@@ -13177,7 +13208,7 @@
 										{ctor: '[]'},
 										{
 											ctor: '::',
-											_0: _elm_lang$html$Html$text(_p8.dimensions),
+											_0: _elm_lang$html$Html$text(_p9.dimensions),
 											_1: {ctor: '[]'}
 										}),
 									_1: {
@@ -13188,7 +13219,7 @@
 											{
 												ctor: '::',
 												_0: _elm_lang$html$Html$text(
-													A2(_elm_lang$core$Basics_ops['++'], '$', _p8.price)),
+													A2(_elm_lang$core$Basics_ops['++'], '$', _p9.price)),
 												_1: {ctor: '[]'}
 											}),
 										_1: {ctor: '[]'}
@@ -13200,8 +13231,8 @@
 				}
 			});
 	};
-	var _user$project$Gallery$galleryTableView = function (_p14) {
-		var _p15 = _p14;
+	var _user$project$Gallery$galleryTableView = function (_p15) {
+		var _p16 = _p15;
 		return A2(
 			_elm_lang$html$Html$table,
 			{
@@ -13227,7 +13258,7 @@
 						_0: _elm_lang$html$Html_Attributes$class('main--gallery--table'),
 						_1: {ctor: '[]'}
 					},
-					A2(_elm_lang$core$List$map, _user$project$Gallery$paintingTableView, _p15.gallery))));
+					A2(_elm_lang$core$List$map, _user$project$Gallery$paintingTableView, _p16.gallery))));
 	};
 	var _user$project$Gallery$view = function (model) {
 		return model.isFetching ? A2(
@@ -13289,7 +13320,7 @@
 						}),
 					_1: {
 						ctor: '::',
-						_0: _user$project$Gallery$galleryHeader,
+						_0: _user$project$Gallery$galleryHeader(model),
 						_1: {
 							ctor: '::',
 							_0: model.listView ? _user$project$Gallery$galleryListView(model) : A2(
@@ -13553,7 +13584,7 @@
 			_elm_lang$html$Html$div,
 			{
 				ctor: '::',
-				_0: _elm_lang$html$Html_Attributes$class('row formRow'),
+				_0: _elm_lang$html$Html_Attributes$class('row formRow login-signup'),
 				_1: {ctor: '[]'}
 			},
 			{
@@ -13839,7 +13870,7 @@
 			_elm_lang$html$Html$div,
 			{
 				ctor: '::',
-				_0: _elm_lang$html$Html_Attributes$class('row formRow'),
+				_0: _elm_lang$html$Html_Attributes$class('row formRow login-signup'),
 				_1: {ctor: '[]'}
 			},
 			{
@@ -14978,26 +15009,57 @@
 						_1: {
 							ctor: '::',
 							_0: A2(
-								_elm_lang$html$Html$div,
+								_elm_lang$html$Html$ul,
 								{
 									ctor: '::',
-									_0: _elm_lang$html$Html_Attributes$class('navbar'),
-									_1: {
-										ctor: '::',
-										_0: _elm_lang$html$Html_Attributes$id('myNavbar'),
-										_1: {ctor: '[]'}
-									}
+									_0: _elm_lang$html$Html_Attributes$class('nav navbar-nav navbar-right'),
+									_1: {ctor: '[]'}
 								},
 								{
 									ctor: '::',
 									_0: A2(
-										_elm_lang$html$Html$ul,
+										_elm_lang$html$Html$li,
+										{ctor: '[]'},
 										{
 											ctor: '::',
-											_0: _elm_lang$html$Html_Attributes$class('nav navbar-nav navbar-right'),
+											_0: A2(
+												_elm_lang$html$Html$a,
+												{
+													ctor: '::',
+													_0: _elm_lang$html$Html_Events$onClick(
+														_user$project$Main$Navigate(_user$project$Main$LoginPage)),
+													_1: {ctor: '[]'}
+												},
+												{
+													ctor: '::',
+													_0: _elm_lang$html$Html$text('Login'),
+													_1: {ctor: '[]'}
+												}),
 											_1: {ctor: '[]'}
-										},
-										{
+										}),
+									_1: {
+										ctor: '::',
+										_0: A2(
+											_elm_lang$html$Html$li,
+											{ctor: '[]'},
+											{
+												ctor: '::',
+												_0: A2(
+													_elm_lang$html$Html$a,
+													{
+														ctor: '::',
+														_0: _elm_lang$html$Html_Events$onClick(
+															_user$project$Main$Navigate(_user$project$Main$SignupPage)),
+														_1: {ctor: '[]'}
+													},
+													{
+														ctor: '::',
+														_0: _elm_lang$html$Html$text('Signup'),
+														_1: {ctor: '[]'}
+													}),
+												_1: {ctor: '[]'}
+											}),
+										_1: {
 											ctor: '::',
 											_0: A2(
 												_elm_lang$html$Html$li,
@@ -15005,68 +15067,22 @@
 												{
 													ctor: '::',
 													_0: A2(
-														_elm_lang$html$Html$a,
+														_elm_lang$html$Html$span,
 														{
 															ctor: '::',
-															_0: _elm_lang$html$Html_Events$onClick(
-																_user$project$Main$Navigate(_user$project$Main$LoginPage)),
-															_1: {ctor: '[]'}
+															_0: _elm_lang$html$Html_Events$onClick(_user$project$Main$SearchDisplay),
+															_1: {
+																ctor: '::',
+																_0: _elm_lang$html$Html_Attributes$class('glyphicon glyphicon-search navbar__search-icon'),
+																_1: {ctor: '[]'}
+															}
 														},
-														{
-															ctor: '::',
-															_0: _elm_lang$html$Html$text('Login'),
-															_1: {ctor: '[]'}
-														}),
+														{ctor: '[]'}),
 													_1: {ctor: '[]'}
 												}),
-											_1: {
-												ctor: '::',
-												_0: A2(
-													_elm_lang$html$Html$li,
-													{ctor: '[]'},
-													{
-														ctor: '::',
-														_0: A2(
-															_elm_lang$html$Html$a,
-															{
-																ctor: '::',
-																_0: _elm_lang$html$Html_Events$onClick(
-																	_user$project$Main$Navigate(_user$project$Main$SignupPage)),
-																_1: {ctor: '[]'}
-															},
-															{
-																ctor: '::',
-																_0: _elm_lang$html$Html$text('Signup'),
-																_1: {ctor: '[]'}
-															}),
-														_1: {ctor: '[]'}
-													}),
-												_1: {
-													ctor: '::',
-													_0: A2(
-														_elm_lang$html$Html$li,
-														{ctor: '[]'},
-														{
-															ctor: '::',
-															_0: A2(
-																_elm_lang$html$Html$span,
-																{
-																	ctor: '::',
-																	_0: _elm_lang$html$Html_Events$onClick(_user$project$Main$SearchDisplay),
-																	_1: {
-																		ctor: '::',
-																		_0: _elm_lang$html$Html_Attributes$class('glyphicon glyphicon-search navbar__search-icon'),
-																		_1: {ctor: '[]'}
-																	}
-																},
-																{ctor: '[]'}),
-															_1: {ctor: '[]'}
-														}),
-													_1: {ctor: '[]'}
-												}
-											}
-										}),
-									_1: {ctor: '[]'}
+											_1: {ctor: '[]'}
+										}
+									}
 								}),
 							_1: {ctor: '[]'}
 						}
