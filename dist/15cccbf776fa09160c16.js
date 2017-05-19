@@ -66,11 +66,35 @@
 	
 	// Subscriptions from Elm
 	
+	// Main
+	app.ports.fetchingUsers.subscribe(elmSearchInput => {
+	  firebaseHelper.fetchUser(elmSearchInput)
+	    .then(function (fbResponse) {
+	      console.log(fbResponse.val())
+	      if (fbResponse.val() === null) {
+	        const noUser = {
+	          displayName: '...searching',
+	          userId: ''
+	        }
+	        app.ports.noUserFetched.send(JSON.stringify(noUser))
+	      } else {
+	        app.ports.userFetched.send(JSON.stringify(fbResponse.val()))
+	      }
+	    })
+	})
+	
+	app.ports.fetchingSearchUserGallery.subscribe(function (elmUserSearchId) {
+	  const jsonParsedElmUserSearchId = JSON.parse(elmUserSearchId)
+	  console.log(jsonParsedElmUserSearchId)
+	  // this is the only place we pass 2 arguments as we're handling the default value to the second argument in the fun dec
+	  getUserAndGallery(jsonParsedElmUserSearchId.searchId, jsonParsedElmUserSearchId.userId)
+	})
+	
 	// Signup
 	app.ports.saveUser.subscribe(function (elmUserRecord) {
 	  const jsonParsedElmRecord = JSON.parse(elmUserRecord)
 	  const userToSave = {
-	    username: jsonParsedElmRecord.username,
+	    displayName: jsonParsedElmRecord.username,
 	    email: jsonParsedElmRecord.email,
 	    password: jsonParsedElmRecord.password
 	  }
@@ -78,6 +102,7 @@
 	  firebaseHelper.addUser(userToSave)
 	    .then(function (fbResponse) {
 	      console.log(fbResponse)
+	      firebaseHelper.updateUser(userToSave.displayName)
 	      localStorage.setItem('fbLoggedIn', 'True')
 	      app.ports.userSaved.send(JSON.stringify({
 	        uid: fbResponse.uid,
@@ -158,7 +183,11 @@
 	              app.ports.artworkAdded.send('all items added')
 	
 	              // clear out the elm gallery model before calling for the artwork again
-	              app.ports.clearGallery.send(null)
+	              const clearGalleryIds = {
+	                userId: uidAndArtworkId.uid,
+	                searchId: ''
+	              }
+	              app.ports.clearGallery.send(clearGalleryIds)
 	              getUserAndGallery(jsonParsedElmArtworkRecord.uid)
 	            }, function (errorInner) {
 	              if (errorInner) console.log(`Error: {errorInner}`)
@@ -200,7 +229,13 @@
 	
 	// gallery
 	// call to firebase to get list of artwork for the user's gallery
-	function getUserAndGallery (uid) {
+	// only when the two arguments match is the user viewing their own gallery. Otherwise a second argument will be sent from elm and the defaul will not be needed. this way we can check the two and determine if to display editing capabilities for each artwork being displayed
+	function getUserAndGallery (uid, searchId = uid) {
+	  const clearGalleryIds = {
+	    userId: uid,
+	    searchId: searchId
+	  }
+	  app.ports.clearGallery.send(JSON.stringify(clearGalleryIds))
 	  firebaseHelper.getUsersGallery(uid)
 	    .then(function (fbGalleryResponse) {
 	      const fbGalleryObject = fbGalleryResponse.val()
@@ -230,7 +265,9 @@
 	              year: artwork.artworkObj.year,
 	              dimensions: artwork.artworkObj.dimensions,
 	              price: artwork.artworkObj.price,
-	              artworkImageFile: artwork.artworkObj.artworkImageFile
+	              artworkImageFile: artwork.artworkObj.artworkImageFile,
+	              userId: clearGalleryIds.userId,
+	              searchId: clearGalleryIds.searchId
 	            }))
 	          })
 	      })
@@ -326,7 +363,11 @@
 	        firebaseHelper.editArtwork(artworkId, artworkFbObject)
 	          .then(function (fbEditArtworkResponse) {
 	            // clear out the elm gallery model before calling for the artwork again
-	            app.ports.clearGallery.send(null)
+	            const clearGalleryIds = {
+	              userId: jsonParsedElmArtworkToEditRecord.uid,
+	              searchId: ''
+	            }
+	            app.ports.clearGallery.send(clearGalleryIds)
 	            getUserAndGallery(artworkFbObject.uid)
 	          })
 	      })
@@ -346,7 +387,11 @@
 	    firebaseHelper.editArtwork(artworkId, artworkFbObject)
 	      .then(function (fbEditArtworkResponse) {
 	        // clear out the elm gallery model before calling for the artwork again
-	        app.ports.clearGallery.send(null)
+	        const clearGalleryIds = {
+	          userId: jsonParsedElmArtworkToEditRecord.uid,
+	          searchId: ''
+	        }
+	        app.ports.clearGallery.send(clearGalleryIds)
 	        getUserAndGallery(artworkFbObject.uid)
 	      })
 	  }
@@ -12638,7 +12683,8 @@
 	var _user$project$Gallery$initModel = {
 		error: _elm_lang$core$Maybe$Nothing,
 		gallery: {ctor: '[]'},
-		active: false,
+		searchId: '',
+		userId: '',
 		routeParam: '',
 		isFetching: true,
 		listView: true,
@@ -12646,56 +12692,78 @@
 	};
 	var _user$project$Gallery$init = {ctor: '_Tuple2', _0: _user$project$Gallery$initModel, _1: _elm_lang$core$Platform_Cmd$none};
 	var _user$project$Gallery$usersGallery = _elm_lang$core$Native_Platform.incomingPort('usersGallery', _elm_lang$core$Json_Decode$string);
-	var _user$project$Gallery$clearGallery = _elm_lang$core$Native_Platform.incomingPort(
-		'clearGallery',
-		_elm_lang$core$Json_Decode$null(
-			{ctor: '_Tuple0'}));
+	var _user$project$Gallery$clearGallery = _elm_lang$core$Native_Platform.incomingPort('clearGallery', _elm_lang$core$Json_Decode$string);
 	var _user$project$Gallery$getOneArtwork = _elm_lang$core$Native_Platform.outgoingPort(
 		'getOneArtwork',
 		function (v) {
 			return v;
 		});
-	var _user$project$Gallery$Model = F7(
-		function (a, b, c, d, e, f, g) {
-			return {error: a, gallery: b, active: c, routeParam: d, isFetching: e, listView: f, tableView: g};
-		});
-	var _user$project$Gallery$GalleryItem = F8(
+	var _user$project$Gallery$Model = F8(
 		function (a, b, c, d, e, f, g, h) {
-			return {artworkId: a, artist: b, title: c, medium: d, year: e, dimensions: f, price: g, artworkImageFile: h};
+			return {error: a, gallery: b, searchId: c, userId: d, routeParam: e, isFetching: f, listView: g, tableView: h};
 		});
+	var _user$project$Gallery$GalleryItem = function (a) {
+		return function (b) {
+			return function (c) {
+				return function (d) {
+					return function (e) {
+						return function (f) {
+							return function (g) {
+								return function (h) {
+									return function (i) {
+										return function (j) {
+											return {artworkId: a, artist: b, title: c, medium: d, year: e, dimensions: f, price: g, artworkImageFile: h, userId: i, searchId: j};
+										};
+									};
+								};
+							};
+						};
+					};
+				};
+			};
+		};
+	};
 	var _user$project$Gallery$decodeGalleryItem = A3(
 		_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$required,
-		'artworkImageFile',
+		'searchId',
 		_elm_lang$core$Json_Decode$string,
 		A3(
 			_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$required,
-			'price',
+			'userId',
 			_elm_lang$core$Json_Decode$string,
 			A3(
 				_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$required,
-				'dimensions',
+				'artworkImageFile',
 				_elm_lang$core$Json_Decode$string,
 				A3(
 					_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$required,
-					'year',
+					'price',
 					_elm_lang$core$Json_Decode$string,
 					A3(
 						_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$required,
-						'medium',
+						'dimensions',
 						_elm_lang$core$Json_Decode$string,
 						A3(
 							_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$required,
-							'title',
+							'year',
 							_elm_lang$core$Json_Decode$string,
 							A3(
 								_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$required,
-								'artist',
+								'medium',
 								_elm_lang$core$Json_Decode$string,
 								A3(
 									_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$required,
-									'artworkId',
+									'title',
 									_elm_lang$core$Json_Decode$string,
-									_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$decode(_user$project$Gallery$GalleryItem)))))))));
+									A3(
+										_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$required,
+										'artist',
+										_elm_lang$core$Json_Decode$string,
+										A3(
+											_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$required,
+											'artworkId',
+											_elm_lang$core$Json_Decode$string,
+											_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$decode(_user$project$Gallery$GalleryItem)))))))))));
 	var _user$project$Gallery$decodeJson = F2(
 		function (jsonGallery, model) {
 			var _p1 = A2(_elm_lang$core$Json_Decode$decodeString, _user$project$Gallery$decodeGalleryItem, jsonGallery);
@@ -12757,7 +12825,18 @@
 				case 'UsersGallery':
 					return A2(_user$project$Gallery$decodeJson, _p2._0, model);
 				case 'ClearGallery':
-					return {ctor: '_Tuple2', _0: _user$project$Gallery$initModel, _1: _elm_lang$core$Platform_Cmd$none};
+					var _p4 = _p2._0;
+					return {
+						ctor: '_Tuple2',
+						_0: _elm_lang$core$Native_Utils.update(
+							model,
+							{
+								searchId: _p4,
+								userId: _p4,
+								gallery: {ctor: '[]'}
+							}),
+						_1: _elm_lang$core$Platform_Cmd$none
+					};
 				case 'ListView':
 					return {
 						ctor: '_Tuple2',
@@ -12778,7 +12857,9 @@
 		});
 	var _user$project$Gallery$TableView = {ctor: 'TableView'};
 	var _user$project$Gallery$ListView = {ctor: 'ListView'};
-	var _user$project$Gallery$ClearGallery = {ctor: 'ClearGallery'};
+	var _user$project$Gallery$ClearGallery = function (a) {
+		return {ctor: 'ClearGallery', _0: a};
+	};
 	var _user$project$Gallery$UsersGallery = function (a) {
 		return {ctor: 'UsersGallery', _0: a};
 	};
@@ -12789,8 +12870,7 @@
 				_0: _user$project$Gallery$usersGallery(_user$project$Gallery$UsersGallery),
 				_1: {
 					ctor: '::',
-					_0: _user$project$Gallery$clearGallery(
-						_elm_lang$core$Basics$always(_user$project$Gallery$ClearGallery)),
+					_0: _user$project$Gallery$clearGallery(_user$project$Gallery$ClearGallery),
 					_1: {ctor: '[]'}
 				}
 			});
@@ -12798,8 +12878,8 @@
 	var _user$project$Gallery$ArtworkPage = function (a) {
 		return {ctor: 'ArtworkPage', _0: a};
 	};
-	var _user$project$Gallery$paintingListView = function (_p4) {
-		var _p5 = _p4;
+	var _user$project$Gallery$paintingListView = function (_p5) {
+		var _p6 = _p5;
 		return A2(
 			_elm_lang$html$Html$div,
 			{
@@ -12831,7 +12911,7 @@
 									_elm_lang$html$Html$img,
 									{
 										ctor: '::',
-										_0: _elm_lang$html$Html_Attributes$src(_p5.artworkImageFile),
+										_0: _elm_lang$html$Html_Attributes$src(_p6.artworkImageFile),
 										_1: {ctor: '[]'}
 									},
 									{ctor: '[]'}),
@@ -12866,7 +12946,7 @@
 												},
 												{
 													ctor: '::',
-													_0: _elm_lang$html$Html$text(_p5.artist),
+													_0: _elm_lang$html$Html$text(_p6.artist),
 													_1: {ctor: '[]'}
 												}),
 											_1: {
@@ -12883,8 +12963,8 @@
 														_0: _elm_lang$html$Html$text(
 															A2(
 																_elm_lang$core$Basics_ops['++'],
-																_p5.title,
-																A2(_elm_lang$core$Basics_ops['++'], ', ', _p5.year))),
+																_p6.title,
+																A2(_elm_lang$core$Basics_ops['++'], ', ', _p6.year))),
 														_1: {ctor: '[]'}
 													}),
 												_1: {
@@ -12898,7 +12978,7 @@
 														},
 														{
 															ctor: '::',
-															_0: _elm_lang$html$Html$text(_p5.medium),
+															_0: _elm_lang$html$Html$text(_p6.medium),
 															_1: {ctor: '[]'}
 														}),
 													_1: {
@@ -12912,7 +12992,7 @@
 															},
 															{
 																ctor: '::',
-																_0: _elm_lang$html$Html$text(_p5.dimensions),
+																_0: _elm_lang$html$Html$text(_p6.dimensions),
 																_1: {ctor: '[]'}
 															}),
 														_1: {
@@ -12927,12 +13007,12 @@
 																{
 																	ctor: '::',
 																	_0: _elm_lang$html$Html$text(
-																		A2(_elm_lang$core$Basics_ops['++'], '$', _p5.price)),
+																		A2(_elm_lang$core$Basics_ops['++'], '$', _p6.price)),
 																	_1: {ctor: '[]'}
 																}),
 															_1: {
 																ctor: '::',
-																_0: A2(
+																_0: _elm_lang$core$Native_Utils.eq(_p6.userId, _p6.searchId) ? A2(
 																	_elm_lang$html$Html$button,
 																	{
 																		ctor: '::',
@@ -12940,7 +13020,7 @@
 																		_1: {
 																			ctor: '::',
 																			_0: _elm_lang$html$Html_Events$onClick(
-																				_user$project$Gallery$ArtworkPage(_p5.artworkId)),
+																				_user$project$Gallery$ArtworkPage(_p6.artworkId)),
 																			_1: {ctor: '[]'}
 																		}
 																	},
@@ -12948,7 +13028,10 @@
 																		ctor: '::',
 																		_0: _elm_lang$html$Html$text('view artwork'),
 																		_1: {ctor: '[]'}
-																	}),
+																	}) : A2(
+																	_elm_lang$html$Html$p,
+																	{ctor: '[]'},
+																	{ctor: '[]'}),
 																_1: {ctor: '[]'}
 															}
 														}
@@ -12964,8 +13047,7 @@
 				_1: {ctor: '[]'}
 			});
 	};
-	var _user$project$Gallery$galleryListView = function (_p6) {
-		var _p7 = _p6;
+	var _user$project$Gallery$galleryListView = function (model) {
 		return A2(
 			_elm_lang$html$Html$div,
 			{
@@ -12973,16 +13055,21 @@
 				_0: _elm_lang$html$Html_Attributes$class('container'),
 				_1: {ctor: '[]'}
 			},
-			A2(_elm_lang$core$List$map, _user$project$Gallery$paintingListView, _p7.gallery));
+			A2(_elm_lang$core$List$map, _user$project$Gallery$paintingListView, model.gallery));
 	};
-	var _user$project$Gallery$paintingTableView = function (_p8) {
-		var _p9 = _p8;
+	var _user$project$Gallery$paintingTableView = function (_p7) {
+		var _p8 = _p7;
+		var _p13 = _p8.userId;
+		var _p12 = _p8.title;
+		var _p11 = _p8.searchId;
+		var _p10 = _p8.artworkImageFile;
+		var _p9 = _p8.artworkId;
 		return A2(
 			_elm_lang$html$Html$tr,
 			{ctor: '[]'},
 			{
 				ctor: '::',
-				_0: A2(
+				_0: _elm_lang$core$Native_Utils.eq(_p13, _p11) ? A2(
 					_elm_lang$html$Html$td,
 					{ctor: '[]'},
 					{
@@ -12991,7 +13078,30 @@
 							_elm_lang$html$Html$img,
 							{
 								ctor: '::',
-								_0: _elm_lang$html$Html_Attributes$src(_p9.artworkImageFile),
+								_0: _elm_lang$html$Html_Attributes$src(_p10),
+								_1: {
+									ctor: '::',
+									_0: _elm_lang$html$Html_Attributes$class('thumbnail'),
+									_1: {
+										ctor: '::',
+										_0: _elm_lang$html$Html_Events$onClick(
+											_user$project$Gallery$ArtworkPage(_p9)),
+										_1: {ctor: '[]'}
+									}
+								}
+							},
+							{ctor: '[]'}),
+						_1: {ctor: '[]'}
+					}) : A2(
+					_elm_lang$html$Html$td,
+					{ctor: '[]'},
+					{
+						ctor: '::',
+						_0: A2(
+							_elm_lang$html$Html$img,
+							{
+								ctor: '::',
+								_0: _elm_lang$html$Html_Attributes$src(_p10),
 								_1: {
 									ctor: '::',
 									_0: _elm_lang$html$Html_Attributes$class('thumbnail'),
@@ -13008,12 +13118,12 @@
 						{ctor: '[]'},
 						{
 							ctor: '::',
-							_0: _elm_lang$html$Html$text(_p9.artist),
+							_0: _elm_lang$html$Html$text(_p8.artist),
 							_1: {ctor: '[]'}
 						}),
 					_1: {
 						ctor: '::',
-						_0: A2(
+						_0: _elm_lang$core$Native_Utils.eq(_p13, _p11) ? A2(
 							_elm_lang$html$Html$td,
 							{ctor: '[]'},
 							{
@@ -13023,14 +13133,21 @@
 									{
 										ctor: '::',
 										_0: _elm_lang$html$Html_Events$onClick(
-											_user$project$Gallery$ArtworkPage(_p9.artworkId)),
+											_user$project$Gallery$ArtworkPage(_p9)),
 										_1: {ctor: '[]'}
 									},
 									{
 										ctor: '::',
-										_0: _elm_lang$html$Html$text(_p9.title),
+										_0: _elm_lang$html$Html$text(_p12),
 										_1: {ctor: '[]'}
 									}),
+								_1: {ctor: '[]'}
+							}) : A2(
+							_elm_lang$html$Html$td,
+							{ctor: '[]'},
+							{
+								ctor: '::',
+								_0: _elm_lang$html$Html$text(_p12),
 								_1: {ctor: '[]'}
 							}),
 						_1: {
@@ -13040,7 +13157,7 @@
 								{ctor: '[]'},
 								{
 									ctor: '::',
-									_0: _elm_lang$html$Html$text(_p9.year),
+									_0: _elm_lang$html$Html$text(_p8.year),
 									_1: {ctor: '[]'}
 								}),
 							_1: {
@@ -13050,7 +13167,7 @@
 									{ctor: '[]'},
 									{
 										ctor: '::',
-										_0: _elm_lang$html$Html$text(_p9.medium),
+										_0: _elm_lang$html$Html$text(_p8.medium),
 										_1: {ctor: '[]'}
 									}),
 								_1: {
@@ -13060,7 +13177,7 @@
 										{ctor: '[]'},
 										{
 											ctor: '::',
-											_0: _elm_lang$html$Html$text(_p9.dimensions),
+											_0: _elm_lang$html$Html$text(_p8.dimensions),
 											_1: {ctor: '[]'}
 										}),
 									_1: {
@@ -13071,7 +13188,7 @@
 											{
 												ctor: '::',
 												_0: _elm_lang$html$Html$text(
-													A2(_elm_lang$core$Basics_ops['++'], '$', _p9.price)),
+													A2(_elm_lang$core$Basics_ops['++'], '$', _p8.price)),
 												_1: {ctor: '[]'}
 											}),
 										_1: {ctor: '[]'}
@@ -13083,8 +13200,8 @@
 				}
 			});
 	};
-	var _user$project$Gallery$galleryTableView = function (_p10) {
-		var _p11 = _p10;
+	var _user$project$Gallery$galleryTableView = function (_p14) {
+		var _p15 = _p14;
 		return A2(
 			_elm_lang$html$Html$table,
 			{
@@ -13110,7 +13227,7 @@
 						_0: _elm_lang$html$Html_Attributes$class('main--gallery--table'),
 						_1: {ctor: '[]'}
 					},
-					A2(_elm_lang$core$List$map, _user$project$Gallery$paintingTableView, _p11.gallery))));
+					A2(_elm_lang$core$List$map, _user$project$Gallery$paintingTableView, _p15.gallery))));
 	};
 	var _user$project$Gallery$view = function (model) {
 		return model.isFetching ? A2(
@@ -13916,10 +14033,30 @@
 				return '#notFound';
 		}
 	};
+	var _user$project$Main$fromJust = function (just) {
+		var _p1 = just;
+		if (_p1.ctor === 'Nothing') {
+			return 'there was nothing in that maybe';
+		} else {
+			return _p1._0;
+		}
+	};
 	var _user$project$Main$logout = _elm_lang$core$Native_Platform.outgoingPort(
 		'logout',
 		function (v) {
 			return null;
+		});
+	var _user$project$Main$fetchingUsers = _elm_lang$core$Native_Platform.outgoingPort(
+		'fetchingUsers',
+		function (v) {
+			return v;
+		});
+	var _user$project$Main$noUserFetched = _elm_lang$core$Native_Platform.incomingPort('noUserFetched', _elm_lang$core$Json_Decode$string);
+	var _user$project$Main$userFetched = _elm_lang$core$Native_Platform.incomingPort('userFetched', _elm_lang$core$Json_Decode$string);
+	var _user$project$Main$fetchingSearchUserGallery = _elm_lang$core$Native_Platform.outgoingPort(
+		'fetchingSearchUserGallery',
+		function (v) {
+			return v;
 		});
 	var _user$project$Main$Model = function (a) {
 		return function (b) {
@@ -13931,7 +14068,15 @@
 								return function (h) {
 									return function (i) {
 										return function (j) {
-											return {page: a, home: b, signup: c, gallery: d, login: e, addArtwork: f, artwork: g, fbLoggedIn: h, uid: i, loggedIn: j};
+											return function (k) {
+												return function (l) {
+													return function (m) {
+														return function (n) {
+															return {page: a, home: b, signup: c, gallery: d, login: e, addArtwork: f, artwork: g, fbLoggedIn: h, uid: i, loggedIn: j, searchDisplay: k, search: l, searchContent: m, searchError: n};
+														};
+													};
+												};
+											};
 										};
 									};
 								};
@@ -13942,30 +14087,69 @@
 			};
 		};
 	};
+	var _user$project$Main$UserLink = F2(
+		function (a, b) {
+			return {displayName: a, userId: b};
+		});
+	var _user$project$Main$decodeUser = A3(
+		_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$required,
+		'userId',
+		_elm_lang$core$Json_Decode$string,
+		A3(
+			_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$required,
+			'displayName',
+			_elm_lang$core$Json_Decode$string,
+			_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$decode(_user$project$Main$UserLink)));
+	var _user$project$Main$decodeJson = F2(
+		function (stringifiedUser, model) {
+			var _p2 = A2(_elm_lang$core$Json_Decode$decodeString, _user$project$Main$decodeUser, stringifiedUser);
+			if (_p2.ctor === 'Ok') {
+				var _p3 = _p2._0;
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{
+							searchContent: _elm_lang$core$Native_Utils.update(
+								_p3,
+								{displayName: _p3.displayName}),
+							searchContent: _elm_lang$core$Native_Utils.update(
+								_p3,
+								{userId: _p3.userId})
+						}),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
+			} else {
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{
+							searchError: _elm_lang$core$Maybe$Just(_p2._0)
+						}),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
+			}
+		});
 	var _user$project$Main$Flags = function (a) {
 		return {fbLoggedIn: a};
 	};
 	var _user$project$Main$ArtworkPage = {ctor: 'ArtworkPage'};
 	var _user$project$Main$AddArtworkPage = {ctor: 'AddArtworkPage'};
-	var _user$project$Main$LoginPage = {ctor: 'LoginPage'};
-	var _user$project$Main$GalleryPage = {ctor: 'GalleryPage'};
 	var _user$project$Main$authPages = {
 		ctor: '::',
-		_0: _user$project$Main$GalleryPage,
+		_0: _user$project$Main$AddArtworkPage,
 		_1: {
 			ctor: '::',
-			_0: _user$project$Main$AddArtworkPage,
-			_1: {
-				ctor: '::',
-				_0: _user$project$Main$ArtworkPage,
-				_1: {ctor: '[]'}
-			}
+			_0: _user$project$Main$ArtworkPage,
+			_1: {ctor: '[]'}
 		}
 	};
 	var _user$project$Main$authForPage = F2(
 		function (page, loggedIn) {
 			return loggedIn || (!A2(_elm_lang$core$List$member, page, _user$project$Main$authPages));
 		});
+	var _user$project$Main$LoginPage = {ctor: 'LoginPage'};
 	var _user$project$Main$authedRedirect = F2(
 		function (page, loggedIn) {
 			return A2(_user$project$Main$authForPage, page, loggedIn) ? {ctor: '_Tuple2', _0: page, _1: _elm_lang$core$Platform_Cmd$none} : {
@@ -13975,12 +14159,13 @@
 					_user$project$Main$pageToHash(_user$project$Main$LoginPage))
 			};
 		});
+	var _user$project$Main$GalleryPage = {ctor: 'GalleryPage'};
 	var _user$project$Main$SignupPage = {ctor: 'SignupPage'};
 	var _user$project$Main$HomePage = {ctor: 'HomePage'};
 	var _user$project$Main$NotFound = {ctor: 'NotFound'};
 	var _user$project$Main$hashToPage = function (hash) {
-		var _p1 = hash;
-		switch (_p1) {
+		var _p4 = hash;
+		switch (_p4) {
 			case '#/':
 				return _user$project$Main$HomePage;
 			case '':
@@ -13998,6 +14183,161 @@
 			default:
 				return _user$project$Main$NotFound;
 		}
+	};
+	var _user$project$Main$FetchLoggedInUserGallery = {ctor: 'FetchLoggedInUserGallery'};
+	var _user$project$Main$FetchSearchUserGallery = {ctor: 'FetchSearchUserGallery'};
+	var _user$project$Main$UserFetched = function (a) {
+		return {ctor: 'UserFetched', _0: a};
+	};
+	var _user$project$Main$NoUserFetched = function (a) {
+		return {ctor: 'NoUserFetched', _0: a};
+	};
+	var _user$project$Main$SearchInput = function (a) {
+		return {ctor: 'SearchInput', _0: a};
+	};
+	var _user$project$Main$SearchHide = {ctor: 'SearchHide'};
+	var _user$project$Main$SearchDisplay = {ctor: 'SearchDisplay'};
+	var _user$project$Main$searchResults = function (model) {
+		return A2(
+			_elm_lang$html$Html$div,
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html_Attributes$class('search-results'),
+				_1: {ctor: '[]'}
+			},
+			{
+				ctor: '::',
+				_0: model.loggedIn ? A2(
+					_elm_lang$html$Html$div,
+					{
+						ctor: '::',
+						_0: _elm_lang$html$Html_Attributes$class('search-results__search-header'),
+						_1: {ctor: '[]'}
+					},
+					{
+						ctor: '::',
+						_0: A2(
+							_elm_lang$html$Html$p,
+							{
+								ctor: '::',
+								_0: _elm_lang$html$Html_Attributes$class('search-results__search-header__close-search'),
+								_1: {
+									ctor: '::',
+									_0: _elm_lang$html$Html_Events$onClick(_user$project$Main$FetchLoggedInUserGallery),
+									_1: {ctor: '[]'}
+								}
+							},
+							{
+								ctor: '::',
+								_0: _elm_lang$html$Html$text('Return to my Gallery'),
+								_1: {ctor: '[]'}
+							}),
+						_1: {ctor: '[]'}
+					}) : A2(
+					_elm_lang$html$Html$div,
+					{
+						ctor: '::',
+						_0: _elm_lang$html$Html_Attributes$class('search-results__search-header'),
+						_1: {ctor: '[]'}
+					},
+					{
+						ctor: '::',
+						_0: A2(
+							_elm_lang$html$Html$p,
+							{
+								ctor: '::',
+								_0: _elm_lang$html$Html_Attributes$class('search-results__search-header__close-search'),
+								_1: {
+									ctor: '::',
+									_0: _elm_lang$html$Html_Events$onClick(_user$project$Main$SearchHide),
+									_1: {ctor: '[]'}
+								}
+							},
+							{
+								ctor: '::',
+								_0: _elm_lang$html$Html$text('Close'),
+								_1: {ctor: '[]'}
+							}),
+						_1: {ctor: '[]'}
+					}),
+				_1: {
+					ctor: '::',
+					_0: A2(
+						_elm_lang$html$Html$input,
+						{
+							ctor: '::',
+							_0: _elm_lang$html$Html_Attributes$type_('text'),
+							_1: {
+								ctor: '::',
+								_0: _elm_lang$html$Html_Attributes$class('formRow__input formRow__input--search'),
+								_1: {
+									ctor: '::',
+									_0: _elm_lang$html$Html_Attributes$placeholder('search for users'),
+									_1: {
+										ctor: '::',
+										_0: _elm_lang$html$Html_Events$onFocus(_user$project$Main$SearchDisplay),
+										_1: {
+											ctor: '::',
+											_0: _elm_lang$html$Html_Attributes$value(model.search),
+											_1: {
+												ctor: '::',
+												_0: _elm_lang$html$Html_Events$onInput(_user$project$Main$SearchInput),
+												_1: {ctor: '[]'}
+											}
+										}
+									}
+								}
+							}
+						},
+						{ctor: '[]'}),
+					_1: {
+						ctor: '::',
+						_0: _elm_lang$core$Native_Utils.eq(model.searchContent.userId, '') ? A2(
+							_elm_lang$html$Html$p,
+							{
+								ctor: '::',
+								_0: _elm_lang$html$Html_Attributes$class('search-results__search-header__search-content'),
+								_1: {ctor: '[]'}
+							},
+							{
+								ctor: '::',
+								_0: _elm_lang$html$Html$text(model.searchContent.displayName),
+								_1: {ctor: '[]'}
+							}) : A2(
+							_elm_lang$html$Html$p,
+							{
+								ctor: '::',
+								_0: _elm_lang$html$Html_Attributes$class('search-results__search-header__search-content'),
+								_1: {
+									ctor: '::',
+									_0: _elm_lang$html$Html_Events$onClick(_user$project$Main$FetchSearchUserGallery),
+									_1: {ctor: '[]'}
+								}
+							},
+							{
+								ctor: '::',
+								_0: A2(
+									_elm_lang$html$Html$a,
+									{
+										ctor: '::',
+										_0: _elm_lang$html$Html_Attributes$class('search-results__search-header__search-content__a'),
+										_1: {
+											ctor: '::',
+											_0: _elm_lang$html$Html_Attributes$href('#/gallery'),
+											_1: {ctor: '[]'}
+										}
+									},
+									{
+										ctor: '::',
+										_0: _elm_lang$html$Html$text(model.searchContent.displayName),
+										_1: {ctor: '[]'}
+									}),
+								_1: {ctor: '[]'}
+							}),
+						_1: {ctor: '[]'}
+					}
+				}
+			});
 	};
 	var _user$project$Main$Logout = {ctor: 'Logout'};
 	var _user$project$Main$ArtworkMsg = function (a) {
@@ -14020,30 +14360,31 @@
 	};
 	var _user$project$Main$init = F2(
 		function (flags, location) {
-			var _p2 = _user$project$Artwork$init;
-			var artworkInitModel = _p2._0;
-			var artworkCmd = _p2._1;
-			var _p3 = _user$project$AddArtwork$init;
-			var addArtworkInitModel = _p3._0;
-			var addArtworkCmd = _p3._1;
-			var _p4 = _user$project$Login$init;
-			var loginInitModel = _p4._0;
-			var loginCmd = _p4._1;
-			var _p5 = _user$project$Gallery$init;
-			var galleryInitModel = _p5._0;
-			var galleryCmd = _p5._1;
-			var _p6 = _user$project$Signup$init;
-			var signupInitModel = _p6._0;
-			var signupCmd = _p6._1;
-			var _p7 = _user$project$Home$init;
-			var homeInitModel = _p7._0;
-			var homeCmd = _p7._1;
+			var initSearchContent = {displayName: '', userId: ''};
+			var _p5 = _user$project$Artwork$init;
+			var artworkInitModel = _p5._0;
+			var artworkCmd = _p5._1;
+			var _p6 = _user$project$AddArtwork$init;
+			var addArtworkInitModel = _p6._0;
+			var addArtworkCmd = _p6._1;
+			var _p7 = _user$project$Login$init;
+			var loginInitModel = _p7._0;
+			var loginCmd = _p7._1;
+			var _p8 = _user$project$Gallery$init;
+			var galleryInitModel = _p8._0;
+			var galleryCmd = _p8._1;
+			var _p9 = _user$project$Signup$init;
+			var signupInitModel = _p9._0;
+			var signupCmd = _p9._1;
+			var _p10 = _user$project$Home$init;
+			var homeInitModel = _p10._0;
+			var homeCmd = _p10._1;
 			var loggedIn = !_elm_lang$core$Native_Utils.eq(flags.fbLoggedIn, _elm_lang$core$Maybe$Nothing);
 			var page = _user$project$Main$hashToPage(location.hash);
-			var _p8 = A2(_user$project$Main$authedRedirect, page, loggedIn);
-			var updatedPage = _p8._0;
-			var cmd = _p8._1;
-			var initModel = {page: updatedPage, home: homeInitModel, signup: signupInitModel, gallery: galleryInitModel, login: loginInitModel, addArtwork: addArtworkInitModel, artwork: artworkInitModel, fbLoggedIn: flags.fbLoggedIn, uid: _elm_lang$core$Maybe$Nothing, loggedIn: loggedIn};
+			var _p11 = A2(_user$project$Main$authedRedirect, page, loggedIn);
+			var updatedPage = _p11._0;
+			var cmd = _p11._1;
+			var initModel = {page: updatedPage, home: homeInitModel, signup: signupInitModel, gallery: galleryInitModel, login: loginInitModel, addArtwork: addArtworkInitModel, artwork: artworkInitModel, fbLoggedIn: flags.fbLoggedIn, uid: _elm_lang$core$Maybe$Nothing, loggedIn: loggedIn, searchDisplay: false, search: '', searchContent: initSearchContent, searchError: _elm_lang$core$Maybe$Nothing};
 			var cmds = _elm_lang$core$Platform_Cmd$batch(
 				{
 					ctor: '::',
@@ -14078,22 +14419,22 @@
 		});
 	var _user$project$Main$update = F2(
 		function (msg, model) {
-			var _p9 = msg;
-			switch (_p9.ctor) {
+			var _p12 = msg;
+			switch (_p12.ctor) {
 				case 'Navigate':
-					var _p10 = _p9._0;
+					var _p13 = _p12._0;
 					return {
 						ctor: '_Tuple2',
 						_0: _elm_lang$core$Native_Utils.update(
 							model,
-							{page: _p10}),
+							{page: _p13}),
 						_1: _elm_lang$navigation$Navigation$newUrl(
-							_user$project$Main$pageToHash(_p10))
+							_user$project$Main$pageToHash(_p13))
 					};
 				case 'ChangePage':
-					var _p11 = A2(_user$project$Main$authedRedirect, _p9._0, model.loggedIn);
-					var updatedPage = _p11._0;
-					var cmd = _p11._1;
+					var _p14 = A2(_user$project$Main$authedRedirect, _p12._0, model.loggedIn);
+					var updatedPage = _p14._0;
+					var cmd = _p14._1;
 					return {
 						ctor: '_Tuple2',
 						_0: _elm_lang$core$Native_Utils.update(
@@ -14102,9 +14443,9 @@
 						_1: cmd
 					};
 				case 'HomeMsg':
-					var _p12 = A2(_user$project$Home$update, _p9._0, model.home);
-					var homeModel = _p12._0;
-					var cmd = _p12._1;
+					var _p15 = A2(_user$project$Home$update, _p12._0, model.home);
+					var homeModel = _p15._0;
+					var cmd = _p15._1;
 					return {
 						ctor: '_Tuple2',
 						_0: _elm_lang$core$Native_Utils.update(
@@ -14113,17 +14454,17 @@
 						_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$Main$HomeMsg, cmd)
 					};
 				case 'SignupMsg':
-					var _p13 = A2(_user$project$Signup$update, _p9._0, model.signup);
-					var signupModel = _p13._0;
-					var cmd = _p13._1;
-					var fbData = _p13._2;
+					var _p16 = A2(_user$project$Signup$update, _p12._0, model.signup);
+					var signupModel = _p16._0;
+					var cmd = _p16._1;
+					var fbData = _p16._2;
 					var loggedIn = !_elm_lang$core$Native_Utils.eq(fbData, _elm_lang$core$Maybe$Nothing);
 					var uidDecoded = function () {
-						var _p14 = fbData;
-						if (_p14.ctor === 'Just') {
-							var _p15 = A2(_user$project$Main$decoder, _p14._0, 'uid');
-							if (_p15.ctor === 'Ok') {
-								return _elm_lang$core$Maybe$Just(_p15._0);
+						var _p17 = fbData;
+						if (_p17.ctor === 'Just') {
+							var _p18 = A2(_user$project$Main$decoder, _p17._0, 'uid');
+							if (_p18.ctor === 'Ok') {
+								return _elm_lang$core$Maybe$Just(_p18._0);
 							} else {
 								return _elm_lang$core$Maybe$Just('uid error');
 							}
@@ -14132,11 +14473,11 @@
 						}
 					}();
 					var fbLoggedInDecoded = function () {
-						var _p16 = fbData;
-						if (_p16.ctor === 'Just') {
-							var _p17 = A2(_user$project$Main$decoder, _p16._0, 'fbLoggedIn');
-							if (_p17.ctor === 'Ok') {
-								return _elm_lang$core$Maybe$Just(_p17._0);
+						var _p19 = fbData;
+						if (_p19.ctor === 'Just') {
+							var _p20 = A2(_user$project$Main$decoder, _p19._0, 'fbLoggedIn');
+							if (_p20.ctor === 'Ok') {
+								return _elm_lang$core$Maybe$Just(_p20._0);
 							} else {
 								return _elm_lang$core$Maybe$Just('fbLoggedIn error');
 							}
@@ -14157,9 +14498,9 @@
 							})
 					};
 				case 'GalleryMsg':
-					var _p18 = A2(_user$project$Gallery$update, _p9._0, model.gallery);
-					var galleryModel = _p18._0;
-					var cmd = _p18._1;
+					var _p21 = A2(_user$project$Gallery$update, _p12._0, model.gallery);
+					var galleryModel = _p21._0;
+					var cmd = _p21._1;
 					return {
 						ctor: '_Tuple2',
 						_0: _elm_lang$core$Native_Utils.update(
@@ -14168,17 +14509,17 @@
 						_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$Main$GalleryMsg, cmd)
 					};
 				case 'LoginMsg':
-					var _p19 = A2(_user$project$Login$update, _p9._0, model.login);
-					var loginModel = _p19._0;
-					var cmd = _p19._1;
-					var fbData = _p19._2;
+					var _p22 = A2(_user$project$Login$update, _p12._0, model.login);
+					var loginModel = _p22._0;
+					var cmd = _p22._1;
+					var fbData = _p22._2;
 					var loggedIn = !_elm_lang$core$Native_Utils.eq(fbData, _elm_lang$core$Maybe$Nothing);
 					var uidDecoded = function () {
-						var _p20 = fbData;
-						if (_p20.ctor === 'Just') {
-							var _p21 = A2(_user$project$Main$decoder, _p20._0, 'uid');
-							if (_p21.ctor === 'Ok') {
-								return _elm_lang$core$Maybe$Just(_p21._0);
+						var _p23 = fbData;
+						if (_p23.ctor === 'Just') {
+							var _p24 = A2(_user$project$Main$decoder, _p23._0, 'uid');
+							if (_p24.ctor === 'Ok') {
+								return _elm_lang$core$Maybe$Just(_p24._0);
 							} else {
 								return _elm_lang$core$Maybe$Just('uid error');
 							}
@@ -14187,11 +14528,11 @@
 						}
 					}();
 					var fbLoggedInDecoded = function () {
-						var _p22 = fbData;
-						if (_p22.ctor === 'Just') {
-							var _p23 = A2(_user$project$Main$decoder, _p22._0, 'fbLoggedIn');
-							if (_p23.ctor === 'Ok') {
-								return _elm_lang$core$Maybe$Just(_p23._0);
+						var _p25 = fbData;
+						if (_p25.ctor === 'Just') {
+							var _p26 = A2(_user$project$Main$decoder, _p25._0, 'fbLoggedIn');
+							if (_p26.ctor === 'Ok') {
+								return _elm_lang$core$Maybe$Just(_p26._0);
 							} else {
 								return _elm_lang$core$Maybe$Just('fbLoggedIn error');
 							}
@@ -14212,13 +14553,13 @@
 							})
 					};
 				case 'AddArtworkMsg':
-					var _p24 = A3(
+					var _p27 = A3(
 						_user$project$AddArtwork$update,
 						A2(_elm_lang$core$Maybe$withDefault, '', model.uid),
-						_p9._0,
+						_p12._0,
 						model.addArtwork);
-					var addArtworkModel = _p24._0;
-					var cmd = _p24._1;
+					var addArtworkModel = _p27._0;
+					var cmd = _p27._1;
 					return {
 						ctor: '_Tuple2',
 						_0: _elm_lang$core$Native_Utils.update(
@@ -14227,13 +14568,13 @@
 						_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$Main$AddArtworkMsg, cmd)
 					};
 				case 'ArtworkMsg':
-					var _p25 = A3(
+					var _p28 = A3(
 						_user$project$Artwork$update,
 						A2(_elm_lang$core$Maybe$withDefault, '', model.uid),
-						_p9._0,
+						_p12._0,
 						model.artwork);
-					var artworkModel = _p25._0;
-					var cmd = _p25._1;
+					var artworkModel = _p28._0;
+					var cmd = _p28._1;
 					return {
 						ctor: '_Tuple2',
 						_0: _elm_lang$core$Native_Utils.update(
@@ -14241,7 +14582,7 @@
 							{artwork: artworkModel}),
 						_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$Main$ArtworkMsg, cmd)
 					};
-				default:
+				case 'Logout':
 					return {
 						ctor: '_Tuple2',
 						_0: _elm_lang$core$Native_Utils.update(
@@ -14258,6 +14599,94 @@
 									_1: {ctor: '[]'}
 								}
 							})
+					};
+				case 'SearchDisplay':
+					return {
+						ctor: '_Tuple2',
+						_0: _elm_lang$core$Native_Utils.update(
+							model,
+							{searchDisplay: true}),
+						_1: _elm_lang$core$Platform_Cmd$none
+					};
+				case 'SearchHide':
+					return {
+						ctor: '_Tuple2',
+						_0: _elm_lang$core$Native_Utils.update(
+							model,
+							{searchDisplay: false}),
+						_1: _elm_lang$core$Platform_Cmd$none
+					};
+				case 'SearchInput':
+					var _p29 = _p12._0;
+					return {
+						ctor: '_Tuple2',
+						_0: _elm_lang$core$Native_Utils.update(
+							model,
+							{search: _p29}),
+						_1: _user$project$Main$fetchingUsers(_p29)
+					};
+				case 'NoUserFetched':
+					return A2(_user$project$Main$decodeJson, _p12._0, model);
+				case 'UserFetched':
+					return A2(_user$project$Main$decodeJson, _p12._0, model);
+				case 'FetchSearchUserGallery':
+					var body = A2(
+						_elm_lang$core$Json_Encode$encode,
+						4,
+						_elm_lang$core$Json_Encode$object(
+							{
+								ctor: '::',
+								_0: {
+									ctor: '_Tuple2',
+									_0: 'userId',
+									_1: _elm_lang$core$Json_Encode$string(
+										_user$project$Main$fromJust(model.uid))
+								},
+								_1: {
+									ctor: '::',
+									_0: {
+										ctor: '_Tuple2',
+										_0: 'searchId',
+										_1: _elm_lang$core$Json_Encode$string(model.searchContent.userId)
+									},
+									_1: {ctor: '[]'}
+								}
+							}));
+					return {
+						ctor: '_Tuple2',
+						_0: model,
+						_1: _user$project$Main$fetchingSearchUserGallery(body)
+					};
+				default:
+					var body = A2(
+						_elm_lang$core$Json_Encode$encode,
+						4,
+						_elm_lang$core$Json_Encode$object(
+							{
+								ctor: '::',
+								_0: {
+									ctor: '_Tuple2',
+									_0: 'userId',
+									_1: _elm_lang$core$Json_Encode$string(
+										_user$project$Main$fromJust(model.uid))
+								},
+								_1: {
+									ctor: '::',
+									_0: {
+										ctor: '_Tuple2',
+										_0: 'searchId',
+										_1: _elm_lang$core$Json_Encode$string(
+											_user$project$Main$fromJust(model.uid))
+									},
+									_1: {ctor: '[]'}
+								}
+							}));
+					return {
+						ctor: '_Tuple2',
+						_0: _elm_lang$core$Native_Utils.update(
+							model,
+							{searchDisplay: false}),
+						_1: _user$project$Main$fetchingSearchUserGallery(body)
 					};
 			}
 		});
@@ -14287,7 +14716,15 @@
 								_1: {
 									ctor: '::',
 									_0: A2(_elm_lang$core$Platform_Sub$map, _user$project$Main$ArtworkMsg, artworkSub),
-									_1: {ctor: '[]'}
+									_1: {
+										ctor: '::',
+										_0: _user$project$Main$noUserFetched(_user$project$Main$NoUserFetched),
+										_1: {
+											ctor: '::',
+											_0: _user$project$Main$userFetched(_user$project$Main$UserFetched),
+											_1: {ctor: '[]'}
+										}
+									}
 								}
 							}
 						}
@@ -14446,7 +14883,29 @@
 												}),
 											_1: {ctor: '[]'}
 										}),
-									_1: {ctor: '[]'}
+									_1: {
+										ctor: '::',
+										_0: A2(
+											_elm_lang$html$Html$li,
+											{ctor: '[]'},
+											{
+												ctor: '::',
+												_0: A2(
+													_elm_lang$html$Html$span,
+													{
+														ctor: '::',
+														_0: _elm_lang$html$Html_Events$onClick(_user$project$Main$SearchDisplay),
+														_1: {
+															ctor: '::',
+															_0: _elm_lang$html$Html_Attributes$class('glyphicon glyphicon-search navbar__search-icon'),
+															_1: {ctor: '[]'}
+														}
+													},
+													{ctor: '[]'}),
+												_1: {ctor: '[]'}
+											}),
+										_1: {ctor: '[]'}
+									}
 								}),
 							_1: {ctor: '[]'}
 						}
@@ -14582,7 +15041,29 @@
 															}),
 														_1: {ctor: '[]'}
 													}),
-												_1: {ctor: '[]'}
+												_1: {
+													ctor: '::',
+													_0: A2(
+														_elm_lang$html$Html$li,
+														{ctor: '[]'},
+														{
+															ctor: '::',
+															_0: A2(
+																_elm_lang$html$Html$span,
+																{
+																	ctor: '::',
+																	_0: _elm_lang$html$Html_Events$onClick(_user$project$Main$SearchDisplay),
+																	_1: {
+																		ctor: '::',
+																		_0: _elm_lang$html$Html_Attributes$class('glyphicon glyphicon-search navbar__search-icon'),
+																		_1: {ctor: '[]'}
+																	}
+																},
+																{ctor: '[]'}),
+															_1: {ctor: '[]'}
+														}),
+													_1: {ctor: '[]'}
+												}
 											}
 										}),
 									_1: {ctor: '[]'}
@@ -14595,8 +15076,8 @@
 	};
 	var _user$project$Main$view = function (model) {
 		var page = function () {
-			var _p26 = model.page;
-			switch (_p26.ctor) {
+			var _p30 = model.page;
+			switch (_p30.ctor) {
 				case 'HomePage':
 					return A2(
 						_elm_lang$html$Html$map,
@@ -14649,7 +15130,22 @@
 						});
 			}
 		}();
-		return A2(
+		return model.searchDisplay ? A2(
+			_elm_lang$html$Html$div,
+			{ctor: '[]'},
+			{
+				ctor: '::',
+				_0: _user$project$Main$pageHeader(model),
+				_1: {
+					ctor: '::',
+					_0: _user$project$Main$searchResults(model),
+					_1: {
+						ctor: '::',
+						_0: page,
+						_1: {ctor: '[]'}
+					}
+				}
+			}) : A2(
 			_elm_lang$html$Html$div,
 			{ctor: '[]'},
 			{
@@ -16528,26 +17024,49 @@
 /* 12 */
 /***/ function(module, exports, __webpack_require__) {
 
+	/* global firebase */
 	const config = __webpack_require__(2).firebase
 	var fbApp = firebase.initializeApp(config)
 	const fbAuth = firebase.auth()
 	const database = fbApp.database()
 	
 	const firebaseHelper = {
+	  fetchUser: function (userToFetch) {
+	    console.log(userToFetch)
+	    return database.ref('/userDisplayNames/' + userToFetch.toLowerCase()).once('value')
+	  },
 	  addUser: function (usersDataToSave) {
 	    return fbAuth.createUserWithEmailAndPassword(usersDataToSave.email, usersDataToSave.password)
 	      .catch(function (error) {
 	        var errorCode = error.code
 	        var errorMessage = error.message
-	        if (error) `Error Code: {errorCode} | Error Message: {errorMessage}`
+	        if (error) `Error Code: ${errorCode} | Error Message: ${errorMessage}`
 	      })
 	  }, // end addUser()
+	  updateUser: function (displayNameToSave) {
+	    var user = firebase.auth().currentUser
+	    console.log(user, displayNameToSave)
+	    user.updateProfile({
+	      displayName: displayNameToSave
+	    })
+	      .then(function () {
+	        console.log('display name saved')
+	        fbApp.database()
+	          .ref('userDisplayNames/' + displayNameToSave.toLowerCase())
+	          .set({
+	            displayName: displayNameToSave,
+	            userId: user.uid
+	          })
+	      }, function (error) {
+	        console.log(`woops, display name not saved: ${error}`)
+	      })
+	  }, // end updateUser()
 	  checkUser: function (userToCheck) {
 	    return fbAuth.signInWithEmailAndPassword(userToCheck.email, userToCheck.password)
 	      .catch(function (error) {
 	        var errorCode = error.code
 	        var errorMessage = error.message
-	        if (error) `Error Code: {errorCode} | Error Message: {errorMessage}`
+	        if (error) `Error Code: ${errorCode} | Error Message: ${errorMessage}`
 	      })
 	  }, // end checkUser
 	  addArtwork: function (artworkToAdd) {
