@@ -28,3 +28,13 @@
   color: lighten($dark_blue, 25%);
   background-color: lighten($dark_green, 30%);
 }
+
+/* delete artwork module */
+.delete-module {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  background-color: $dark_blue;
+}

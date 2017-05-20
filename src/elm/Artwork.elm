@@ -19,6 +19,7 @@ type alias Model =
     , artwork : Artwork
     , isEditing : Bool
     , isFetching : Bool
+    , deleteModule : Bool
     }
 
 
@@ -56,6 +57,7 @@ initModel =
     , artwork = initArtwork
     , isEditing = False
     , isFetching = True
+    , deleteModule = False
     }
 
 
@@ -82,6 +84,8 @@ type Msg
     | ArtworkImageFileEditInput String
     | FetchImageFileEdit String
     | SubmitEditedArtwork
+    | DeleteArtworkModule
+    | CancelDeleteArtwork
     | DeleteArtwork
     | ArtworkDeleted String
     | Error String
@@ -156,6 +160,12 @@ update uid msg model =
                       }
                     , cmd
                     )
+
+            DeleteArtworkModule ->
+                ( { model | deleteModule = True }, Cmd.none )
+
+            CancelDeleteArtwork ->
+                ( { model | deleteModule = False }, Cmd.none )
 
             DeleteArtwork ->
                 ( model, deleteArtwork model.artwork.artworkId )
@@ -232,6 +242,10 @@ view model =
                 [ errorPanel model.error
                 , artwork model
                 ]
+            , if model.deleteModule then
+                deleteModuleView
+              else
+                div [] []
             ]
 
 
@@ -254,7 +268,7 @@ artwork model =
                 ]
             ]
         , div [ class "text-center" ]
-            [ button [ class "btn btn-danger", onClick DeleteArtwork ] [ text "delete artwork" ] ]
+            [ button [ class "btn btn-danger", onClick DeleteArtworkModule ] [ text "delete artwork" ] ]
         ]
 
 
@@ -335,6 +349,14 @@ editArtwork model =
             ]
         , div [ class "text-center div__btn--center" ]
             [ button [ class "btn btn--white btn--center", onClick ViewArtwork ] [ text "return to artwork view" ] ]
+        ]
+
+
+deleteModuleView : Html Msg
+deleteModuleView =
+    div [ class "delete-module" ]
+        [ button [ onClick CancelDeleteArtwork ] [ text "NO delete" ]
+        , button [ onClick DeleteArtwork ] [ text "delete" ]
         ]
 
 
