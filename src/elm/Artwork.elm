@@ -3,6 +3,7 @@ port module Artwork exposing (..)
 import Html exposing (..)
 import Html.Events exposing (..)
 import Html.Attributes exposing (..)
+import Navigation
 import Json.Encode as JE
 import Json.Decode as JD
 import Json.Decode.Pipeline as JDP
@@ -81,6 +82,8 @@ type Msg
     | ArtworkImageFileEditInput String
     | FetchImageFileEdit String
     | SubmitEditedArtwork
+    | DeleteArtwork
+    | ArtworkDeleted String
     | Error String
 
 
@@ -153,6 +156,12 @@ update uid msg model =
                       }
                     , cmd
                     )
+
+            DeleteArtwork ->
+                ( model, deleteArtwork model.artwork.artworkId )
+
+            ArtworkDeleted deletedMsg ->
+                ( initModel, Navigation.newUrl "#/gallery" )
 
             Error error ->
                 ( { model | error = Just error }, Cmd.none )
@@ -244,6 +253,8 @@ artwork model =
                     ]
                 ]
             ]
+        , div [ class "text-center" ]
+            [ button [ class "btn btn-danger", onClick DeleteArtwork ] [ text "delete artwork" ] ]
         ]
 
 
@@ -348,6 +359,7 @@ subscriptions model =
         [ fetchingArtwork FetchingArtwork
         , artworkReceived ArtworkReceived
         , imageFileReadEdit ArtworkImageFileEditInput
+        , artworkDeleted ArtworkDeleted
         ]
 
 
@@ -364,3 +376,9 @@ port imageFileReadEdit : (String -> msg) -> Sub msg
 
 
 port submitEditedArtwork : String -> Cmd msg
+
+
+port deleteArtwork : String -> Cmd msg
+
+
+port artworkDeleted : (String -> msg) -> Sub msg
