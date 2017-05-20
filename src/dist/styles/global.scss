@@ -151,7 +151,7 @@ a:focus {
 
 .table-head--custom {
   color: #fff;
-  background-color: $gray;
+  background-color: lighten($gray, 5%);
 }
 
 .table tbody tr td {
