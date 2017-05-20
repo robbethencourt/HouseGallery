@@ -73,6 +73,8 @@ type Msg
     | ClearGallery String
     | ListView
     | TableView
+    | SortGalleryByArtist
+    | SortGalleryByYear
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -112,6 +114,12 @@ update msg model =
               }
             , Cmd.none
             )
+
+        SortGalleryByArtist ->
+            ( { model | gallery = List.sortBy .artist model.gallery }, Cmd.none )
+
+        SortGalleryByYear ->
+            ( { model | gallery = List.sortBy .year model.gallery }, Cmd.none )
 
 
 jsonDecodeClearGallery : String -> Model -> ( Model, Cmd Msg )
@@ -255,9 +263,9 @@ galleryTableHeader =
     thead [ class "table-head--custom" ]
         [ tr []
             [ th [] [ text "Artwork" ]
-            , th [] [ text "Artist" ]
+            , th [ class "table-sort-link", onClick SortGalleryByArtist ] [ text "Artist" ]
             , th [] [ text "Title" ]
-            , th [] [ text "Year" ]
+            , th [ class "table-sort-link", onClick SortGalleryByYear ] [ text "Year" ]
             , th [] [ text "Medium" ]
             , th [] [ text "Dimensions" ]
             , th [] [ text "Price" ]

@@ -61,6 +61,17 @@
   filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#eeeeee', endColorstr='#f6f6f6',GradientType=1 ); /* IE6-9 fallback on horizontal gradient */
 }
 
+/* table */
+.table-sort-link {
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.table-sort-link:hover, .table-sort-link:focus {
+  // text-decoration: underline;
+  color: lighten($light_green, 30%)
+}
+
 
 /* media querries */
 
