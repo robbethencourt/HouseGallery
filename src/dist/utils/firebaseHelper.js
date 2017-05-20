@@ -65,7 +65,23 @@ const firebaseHelper = {
   editArtwork: function (artworkId, artworkToEdit) {
     console.log(artworkId, artworkToEdit)
     return database.ref('/artwork/' + artworkId).update(artworkToEdit)
-  } // end editArtwork()
+  }, // end editArtwork()
+  deleteArtworkFromFb: function (artworkId) {
+    return database.ref('/artwork/' + artworkId).remove()
+  }, // deleteArtworkFromFb()
+  deleteArtworkFromUserGallery: function (userId, artworkId) {
+    return database.ref('/userGalleries/' + userId)
+      .once('value', function (snapshot) {
+        const fbSnapshot = snapshot.val()
+        const artworkIdToDelete =
+          Object.keys(fbSnapshot).reduce(function (previous, key) {
+            if (fbSnapshot[key] === artworkId) {
+              return key
+            }
+          })
+        return database.ref('/userGalleries/' + userId + '/' + artworkIdToDelete).remove()
+      })
+  } // end deleteArtworkFromUserGallery()
 }
 
 module.exports = firebaseHelper

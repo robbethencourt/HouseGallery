@@ -141,7 +141,7 @@ app.ports.addArtworkToFb.subscribe(function (elmArtworkToAdd) {
                 userId: uidAndArtworkId.uid,
                 searchId: ''
               }
-              app.ports.clearGallery.send(clearGalleryIds)
+              app.ports.clearGallery.send(JSON.stringify(clearGalleryIds))
               getUserAndGallery(jsonParsedElmArtworkRecord.uid)
             }, function (errorInner) {
               if (errorInner) console.log(`Error: {errorInner}`)
@@ -321,7 +321,7 @@ app.ports.submitEditedArtwork.subscribe(function (artworkToEdit) {
               userId: jsonParsedElmArtworkToEditRecord.uid,
               searchId: ''
             }
-            app.ports.clearGallery.send(clearGalleryIds)
+            app.ports.clearGallery.send(JSON.stringify(clearGalleryIds))
             getUserAndGallery(artworkFbObject.uid)
           })
       })
@@ -345,8 +345,32 @@ app.ports.submitEditedArtwork.subscribe(function (artworkToEdit) {
           userId: jsonParsedElmArtworkToEditRecord.uid,
           searchId: ''
         }
-        app.ports.clearGallery.send(clearGalleryIds)
+        app.ports.clearGallery.send(JSON.stringify(clearGalleryIds))
         getUserAndGallery(artworkFbObject.uid)
       })
   }
+})
+
+app.ports.deleteArtwork.subscribe(function (elmArtworkId) {
+  const user = firebase.auth().currentUser
+  firebaseHelper.deleteArtworkFromFb(elmArtworkId)
+    .then(function () {
+      firebaseHelper.deleteArtworkFromUserGallery(user.uid, elmArtworkId)
+        .then(function () {
+          // this is where it returns to elm
+          app.ports.artworkDeleted.send('artwork deleted from both')
+          const clearGalleryIds = {
+            userId: user.uid,
+            searchId: ''
+          }
+          app.ports.clearGallery.send(JSON.stringify(clearGalleryIds))
+          getUserAndGallery(user.uid)
+        })
+        .catch(function (error) {
+          console.log(`Removing artwork from userGallery failed: ${error}`)
+        })
+    })
+    .catch(function (error) {
+      console.log(`Removing artwork from firebase failed: ${error}`)
+    })
 })

@@ -121,6 +121,7 @@ jsonDecodeClearGallery ids model =
             ( { model
                 | searchId = clearGalleryRecord.searchId
                 , userId = clearGalleryRecord.userId
+                , gallery = []
               }
             , Cmd.none
             )

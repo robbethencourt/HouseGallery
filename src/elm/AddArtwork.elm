@@ -7,6 +7,7 @@ import Regex exposing (..)
 import Json.Decode as JD
 import Json.Encode as JE
 import Navigation
+import Loading
 
 
 -- model
@@ -14,6 +15,7 @@ import Navigation
 
 type alias Model =
     { error : Maybe String
+    , isLoading : Bool
     , artist : String
     , artistError : Maybe String
     , title : String
@@ -34,6 +36,7 @@ type alias Model =
 initModel : Model
 initModel =
     { error = Nothing
+    , isLoading = False
     , artist = ""
     , artistError = Nothing
     , title = ""
@@ -147,7 +150,7 @@ update uid msg model =
                     addArtworkToFb body
             in
                 if isValid updatedModel then
-                    ( initModel, cmd )
+                    ( { model | isLoading = True }, cmd )
                 else
                     ( updatedModel, Cmd.none )
 
@@ -324,10 +327,14 @@ validateArtworkImage model =
 
 view : Model -> Html Msg
 view model =
-    div [ class "main" ]
-        [ errorPanel model.error
-        , addArtwork model
-        ]
+    if model.isLoading then
+        div [ class "main" ]
+            [ Loading.loadingSvg ]
+    else
+        div [ class "main" ]
+            [ errorPanel model.error
+            , addArtwork model
+            ]
 
 
 addArtwork : Model -> Html Msg
