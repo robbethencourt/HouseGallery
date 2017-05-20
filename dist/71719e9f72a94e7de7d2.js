@@ -187,7 +187,7 @@
 	                userId: uidAndArtworkId.uid,
 	                searchId: ''
 	              }
-	              app.ports.clearGallery.send(clearGalleryIds)
+	              app.ports.clearGallery.send(JSON.stringify(clearGalleryIds))
 	              getUserAndGallery(jsonParsedElmArtworkRecord.uid)
 	            }, function (errorInner) {
 	              if (errorInner) console.log(`Error: {errorInner}`)
@@ -367,7 +367,7 @@
 	              userId: jsonParsedElmArtworkToEditRecord.uid,
 	              searchId: ''
 	            }
-	            app.ports.clearGallery.send(clearGalleryIds)
+	            app.ports.clearGallery.send(JSON.stringify(clearGalleryIds))
 	            getUserAndGallery(artworkFbObject.uid)
 	          })
 	      })
@@ -391,10 +391,34 @@
 	          userId: jsonParsedElmArtworkToEditRecord.uid,
 	          searchId: ''
 	        }
-	        app.ports.clearGallery.send(clearGalleryIds)
+	        app.ports.clearGallery.send(JSON.stringify(clearGalleryIds))
 	        getUserAndGallery(artworkFbObject.uid)
 	      })
 	  }
+	})
+	
+	app.ports.deleteArtwork.subscribe(function (elmArtworkId) {
+	  const user = firebase.auth().currentUser
+	  firebaseHelper.deleteArtworkFromFb(elmArtworkId)
+	    .then(function () {
+	      firebaseHelper.deleteArtworkFromUserGallery(user.uid, elmArtworkId)
+	        .then(function () {
+	          // this is where it returns to elm
+	          app.ports.artworkDeleted.send('artwork deleted from both')
+	          const clearGalleryIds = {
+	            userId: user.uid,
+	            searchId: ''
+	          }
+	          app.ports.clearGallery.send(JSON.stringify(clearGalleryIds))
+	          getUserAndGallery(user.uid)
+	        })
+	        .catch(function (error) {
+	          console.log(`Removing artwork from userGallery failed: ${error}`)
+	        })
+	    })
+	    .catch(function (error) {
+	      console.log(`Removing artwork from firebase failed: ${error}`)
+	    })
 	})
 
 
@@ -10436,6 +10460,349 @@
 	var _elm_lang$svg$Svg_Attributes$accelerate = _elm_lang$virtual_dom$VirtualDom$attribute('accelerate');
 	var _elm_lang$svg$Svg_Attributes$accentHeight = _elm_lang$virtual_dom$VirtualDom$attribute('accent-height');
 	
+	var _user$project$Loading$loadingSvg = A2(
+		_elm_lang$html$Html$div,
+		{
+			ctor: '::',
+			_0: _elm_lang$svg$Svg_Attributes$class('loading-container'),
+			_1: {ctor: '[]'}
+		},
+		{
+			ctor: '::',
+			_0: A2(
+				_elm_lang$svg$Svg$svg,
+				{
+					ctor: '::',
+					_0: _elm_lang$svg$Svg_Attributes$width('250'),
+					_1: {
+						ctor: '::',
+						_0: _elm_lang$svg$Svg_Attributes$height('125'),
+						_1: {
+							ctor: '::',
+							_0: _elm_lang$svg$Svg_Attributes$viewBox('0 0 300 200'),
+							_1: {ctor: '[]'}
+						}
+					}
+				},
+				{
+					ctor: '::',
+					_0: A2(
+						_elm_lang$svg$Svg$g,
+						{
+							ctor: '::',
+							_0: _elm_lang$svg$Svg_Attributes$id('houseable-loading'),
+							_1: {ctor: '[]'}
+						},
+						{
+							ctor: '::',
+							_0: A2(
+								_elm_lang$svg$Svg$polygon,
+								{
+									ctor: '::',
+									_0: _elm_lang$svg$Svg_Attributes$id('middle-2'),
+									_1: {
+										ctor: '::',
+										_0: _elm_lang$svg$Svg_Attributes$fill('#2A303F'),
+										_1: {
+											ctor: '::',
+											_0: _elm_lang$svg$Svg_Attributes$points('122.333,127.668 94.664,100.001 66.996,72.332 122.333,72.332'),
+											_1: {ctor: '[]'}
+										}
+									}
+								},
+								{ctor: '[]'}),
+							_1: {
+								ctor: '::',
+								_0: A2(
+									_elm_lang$svg$Svg$polygon,
+									{
+										ctor: '::',
+										_0: _elm_lang$svg$Svg_Attributes$id('middle-1'),
+										_1: {
+											ctor: '::',
+											_0: _elm_lang$svg$Svg_Attributes$fill('#2A303F'),
+											_1: {
+												ctor: '::',
+												_0: _elm_lang$svg$Svg_Attributes$points('66.996,72.332 94.664,100.001 122.333,127.67 66.996,127.67'),
+												_1: {ctor: '[]'}
+											}
+										}
+									},
+									{ctor: '[]'}),
+								_1: {
+									ctor: '::',
+									_0: A2(
+										_elm_lang$svg$Svg$polygon,
+										{
+											ctor: '::',
+											_0: _elm_lang$svg$Svg_Attributes$id('middle-4'),
+											_1: {
+												ctor: '::',
+												_0: _elm_lang$svg$Svg_Attributes$fill('#2A303F'),
+												_1: {
+													ctor: '::',
+													_0: _elm_lang$svg$Svg_Attributes$points('177.669,127.668 150.001,100 122.332,72.332 177.669,72.332'),
+													_1: {ctor: '[]'}
+												}
+											}
+										},
+										{ctor: '[]'}),
+									_1: {
+										ctor: '::',
+										_0: A2(
+											_elm_lang$svg$Svg$polygon,
+											{
+												ctor: '::',
+												_0: _elm_lang$svg$Svg_Attributes$id('middle-3'),
+												_1: {
+													ctor: '::',
+													_0: _elm_lang$svg$Svg_Attributes$fill('#2A303F'),
+													_1: {
+														ctor: '::',
+														_0: _elm_lang$svg$Svg_Attributes$points('122.333,72.332 150.001,100.001 177.669,127.67 122.333,127.67'),
+														_1: {ctor: '[]'}
+													}
+												}
+											},
+											{ctor: '[]'}),
+										_1: {
+											ctor: '::',
+											_0: A2(
+												_elm_lang$svg$Svg$polygon,
+												{
+													ctor: '::',
+													_0: _elm_lang$svg$Svg_Attributes$id('middle-6'),
+													_1: {
+														ctor: '::',
+														_0: _elm_lang$svg$Svg_Attributes$fill('#38DDE5'),
+														_1: {
+															ctor: '::',
+															_0: _elm_lang$svg$Svg_Attributes$points('233.005,127.668 205.338,100 177.669,72.332 233.005,72.332'),
+															_1: {ctor: '[]'}
+														}
+													}
+												},
+												{ctor: '[]'}),
+											_1: {
+												ctor: '::',
+												_0: A2(
+													_elm_lang$svg$Svg$polygon,
+													{
+														ctor: '::',
+														_0: _elm_lang$svg$Svg_Attributes$id('middle-5_1'),
+														_1: {
+															ctor: '::',
+															_0: _elm_lang$svg$Svg_Attributes$fill('#29C3D3'),
+															_1: {
+																ctor: '::',
+																_0: _elm_lang$svg$Svg_Attributes$points('177.669,72.332 205.338,100.001 233.005,127.67 177.669,127.67'),
+																_1: {ctor: '[]'}
+															}
+														}
+													},
+													{ctor: '[]'}),
+												_1: {
+													ctor: '::',
+													_0: A2(
+														_elm_lang$svg$Svg$polygon,
+														{
+															ctor: '::',
+															_0: _elm_lang$svg$Svg_Attributes$id('middle-5'),
+															_1: {
+																ctor: '::',
+																_0: _elm_lang$svg$Svg_Attributes$fill('#29C3D3'),
+																_1: {
+																	ctor: '::',
+																	_0: _elm_lang$svg$Svg_Attributes$points('66.997,72.331 94.664,44.663 122.333,16.996 122.333,72.331'),
+																	_1: {ctor: '[]'}
+																}
+															}
+														},
+														{ctor: '[]'}),
+													_1: {
+														ctor: '::',
+														_0: A2(
+															_elm_lang$svg$Svg$polygon,
+															{
+																ctor: '::',
+																_0: _elm_lang$svg$Svg_Attributes$id('top-4'),
+																_1: {
+																	ctor: '::',
+																	_0: _elm_lang$svg$Svg_Attributes$fill('#29C3D3'),
+																	_1: {
+																		ctor: '::',
+																		_0: _elm_lang$svg$Svg_Attributes$points('177.669,72.331 150.001,44.663 122.333,16.995 177.669,16.995'),
+																		_1: {ctor: '[]'}
+																	}
+																}
+															},
+															{ctor: '[]'}),
+														_1: {
+															ctor: '::',
+															_0: A2(
+																_elm_lang$svg$Svg$polygon,
+																{
+																	ctor: '::',
+																	_0: _elm_lang$svg$Svg_Attributes$id('top-3'),
+																	_1: {
+																		ctor: '::',
+																		_0: _elm_lang$svg$Svg_Attributes$fill('#2A303F'),
+																		_1: {
+																			ctor: '::',
+																			_0: _elm_lang$svg$Svg_Attributes$points('122.332,16.996 150.001,44.664 177.669,72.332 122.332,72.332'),
+																			_1: {ctor: '[]'}
+																		}
+																	}
+																},
+																{ctor: '[]'}),
+															_1: {
+																ctor: '::',
+																_0: A2(
+																	_elm_lang$svg$Svg$polygon,
+																	{
+																		ctor: '::',
+																		_0: _elm_lang$svg$Svg_Attributes$id('top-5'),
+																		_1: {
+																			ctor: '::',
+																			_0: _elm_lang$svg$Svg_Attributes$fill('#38E8E8'),
+																			_1: {
+																				ctor: '::',
+																				_0: _elm_lang$svg$Svg_Attributes$points('177.669,16.996 205.338,44.664 233.005,72.332 177.669,72.332'),
+																				_1: {ctor: '[]'}
+																			}
+																		}
+																	},
+																	{ctor: '[]'}),
+																_1: {
+																	ctor: '::',
+																	_0: A2(
+																		_elm_lang$svg$Svg$polygon,
+																		{
+																			ctor: '::',
+																			_0: _elm_lang$svg$Svg_Attributes$id('bottom-1'),
+																			_1: {
+																				ctor: '::',
+																				_0: _elm_lang$svg$Svg_Attributes$fill('#2A303F'),
+																				_1: {
+																					ctor: '::',
+																					_0: _elm_lang$svg$Svg_Attributes$points('66.997,127.67 94.665,155.336 122.333,183.006 66.995,183.006'),
+																					_1: {ctor: '[]'}
+																				}
+																			}
+																		},
+																		{ctor: '[]'}),
+																	_1: {
+																		ctor: '::',
+																		_0: A2(
+																			_elm_lang$svg$Svg$polygon,
+																			{
+																				ctor: '::',
+																				_0: _elm_lang$svg$Svg_Attributes$id('bottom-2'),
+																				_1: {
+																					ctor: '::',
+																					_0: _elm_lang$svg$Svg_Attributes$fill('#2A303F'),
+																					_1: {
+																						ctor: '::',
+																						_0: _elm_lang$svg$Svg_Attributes$points('122.333,183.004 94.665,155.336 66.997,127.668 122.333,127.668'),
+																						_1: {ctor: '[]'}
+																					}
+																				}
+																			},
+																			{ctor: '[]'}),
+																		_1: {
+																			ctor: '::',
+																			_0: A2(
+																				_elm_lang$svg$Svg$polygon,
+																				{
+																					ctor: '::',
+																					_0: _elm_lang$svg$Svg_Attributes$id('bottom-3'),
+																					_1: {
+																						ctor: '::',
+																						_0: _elm_lang$svg$Svg_Attributes$fill('#F9F9F9'),
+																						_1: {
+																							ctor: '::',
+																							_0: _elm_lang$svg$Svg_Attributes$points('122.332,127.67 150,155.336 177.669,183.006 122.332,183.006'),
+																							_1: {ctor: '[]'}
+																						}
+																					}
+																				},
+																				{ctor: '[]'}),
+																			_1: {
+																				ctor: '::',
+																				_0: A2(
+																					_elm_lang$svg$Svg$polygon,
+																					{
+																						ctor: '::',
+																						_0: _elm_lang$svg$Svg_Attributes$id('bottom-4'),
+																						_1: {
+																							ctor: '::',
+																							_0: _elm_lang$svg$Svg_Attributes$fill('#F9F9F9'),
+																							_1: {
+																								ctor: '::',
+																								_0: _elm_lang$svg$Svg_Attributes$points('177.669,183.004 150.001,155.336 122.333,127.668 177.669,127.668'),
+																								_1: {ctor: '[]'}
+																							}
+																						}
+																					},
+																					{ctor: '[]'}),
+																				_1: {
+																					ctor: '::',
+																					_0: A2(
+																						_elm_lang$svg$Svg$polygon,
+																						{
+																							ctor: '::',
+																							_0: _elm_lang$svg$Svg_Attributes$id('bottom-6'),
+																							_1: {
+																								ctor: '::',
+																								_0: _elm_lang$svg$Svg_Attributes$fill('#2A303F'),
+																								_1: {
+																									ctor: '::',
+																									_0: _elm_lang$svg$Svg_Attributes$points('233.005,183.004 205.338,155.336 177.669,127.668 233.005,127.668'),
+																									_1: {ctor: '[]'}
+																								}
+																							}
+																						},
+																						{ctor: '[]'}),
+																					_1: {
+																						ctor: '::',
+																						_0: A2(
+																							_elm_lang$svg$Svg$polygon,
+																							{
+																								ctor: '::',
+																								_0: _elm_lang$svg$Svg_Attributes$id('bottom-5'),
+																								_1: {
+																									ctor: '::',
+																									_0: _elm_lang$svg$Svg_Attributes$fill('#2A303F'),
+																									_1: {
+																										ctor: '::',
+																										_0: _elm_lang$svg$Svg_Attributes$points('177.669,127.67 205.338,155.336 233.005,183.006 177.669,183.006'),
+																										_1: {ctor: '[]'}
+																									}
+																								}
+																							},
+																							{ctor: '[]'}),
+																						_1: {ctor: '[]'}
+																					}
+																				}
+																			}
+																		}
+																	}
+																}
+															}
+														}
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+						}),
+					_1: {ctor: '[]'}
+				}),
+			_1: {ctor: '[]'}
+		});
+	
 	var _user$project$AddArtwork$errorPanel = function (error) {
 		var _p0 = error;
 		if (_p0.ctor === 'Nothing') {
@@ -10624,7 +10991,7 @@
 			'change',
 			A2(_elm_lang$core$Json_Decode$map, tagger, _elm_lang$html$Html_Events$targetValue));
 	};
-	var _user$project$AddArtwork$initModel = {error: _elm_lang$core$Maybe$Nothing, artist: '', artistError: _elm_lang$core$Maybe$Nothing, title: '', titleError: _elm_lang$core$Maybe$Nothing, medium: '', mediumError: _elm_lang$core$Maybe$Nothing, year: '', yearError: _elm_lang$core$Maybe$Nothing, dimensions: '', dimensionsError: _elm_lang$core$Maybe$Nothing, price: '', priceError: _elm_lang$core$Maybe$Nothing, artworkImageFile: '', artworkImageFileError: _elm_lang$core$Maybe$Nothing};
+	var _user$project$AddArtwork$initModel = {error: _elm_lang$core$Maybe$Nothing, isLoading: false, artist: '', artistError: _elm_lang$core$Maybe$Nothing, title: '', titleError: _elm_lang$core$Maybe$Nothing, medium: '', mediumError: _elm_lang$core$Maybe$Nothing, year: '', yearError: _elm_lang$core$Maybe$Nothing, dimensions: '', dimensionsError: _elm_lang$core$Maybe$Nothing, price: '', priceError: _elm_lang$core$Maybe$Nothing, artworkImageFile: '', artworkImageFileError: _elm_lang$core$Maybe$Nothing};
 	var _user$project$AddArtwork$init = {ctor: '_Tuple2', _0: _user$project$AddArtwork$initModel, _1: _elm_lang$core$Platform_Cmd$none};
 	var _user$project$AddArtwork$addArtworkToFb = _elm_lang$core$Native_Platform.outgoingPort(
 		'addArtworkToFb',
@@ -10763,7 +11130,13 @@
 							}));
 					var cmd = _user$project$AddArtwork$addArtworkToFb(body);
 					var updatedModel = _user$project$AddArtwork$validate(model);
-					return _user$project$AddArtwork$isValid(updatedModel) ? {ctor: '_Tuple2', _0: _user$project$AddArtwork$initModel, _1: cmd} : {ctor: '_Tuple2', _0: updatedModel, _1: _elm_lang$core$Platform_Cmd$none};
+					return _user$project$AddArtwork$isValid(updatedModel) ? {
+						ctor: '_Tuple2',
+						_0: _elm_lang$core$Native_Utils.update(
+							model,
+							{isLoading: true}),
+						_1: cmd
+					} : {ctor: '_Tuple2', _0: updatedModel, _1: _elm_lang$core$Platform_Cmd$none};
 				default:
 					var _p2 = _p1._0;
 					return _elm_lang$core$Native_Utils.eq(_p2, 'Error') ? {
@@ -10797,7 +11170,9 @@
 													return function (m) {
 														return function (n) {
 															return function (o) {
-																return {error: a, artist: b, artistError: c, title: d, titleError: e, medium: f, mediumError: g, year: h, yearError: i, dimensions: j, dimensionsError: k, price: l, priceError: m, artworkImageFile: n, artworkImageFileError: o};
+																return function (p) {
+																	return {error: a, isLoading: b, artist: c, artistError: d, title: e, titleError: f, medium: g, mediumError: h, year: i, yearError: j, dimensions: k, dimensionsError: l, price: m, priceError: n, artworkImageFile: o, artworkImageFileError: p};
+																};
 															};
 														};
 													};
@@ -11221,7 +11596,18 @@
 			});
 	};
 	var _user$project$AddArtwork$view = function (model) {
-		return A2(
+		return model.isLoading ? A2(
+			_elm_lang$html$Html$div,
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html_Attributes$class('main'),
+				_1: {ctor: '[]'}
+			},
+			{
+				ctor: '::',
+				_0: _user$project$Loading$loadingSvg,
+				_1: {ctor: '[]'}
+			}) : A2(
 			_elm_lang$html$Html$div,
 			{
 				ctor: '::',
@@ -11238,349 +11624,6 @@
 				}
 			});
 	};
-	
-	var _user$project$Loading$loadingSvg = A2(
-		_elm_lang$html$Html$div,
-		{
-			ctor: '::',
-			_0: _elm_lang$svg$Svg_Attributes$class('loading-container'),
-			_1: {ctor: '[]'}
-		},
-		{
-			ctor: '::',
-			_0: A2(
-				_elm_lang$svg$Svg$svg,
-				{
-					ctor: '::',
-					_0: _elm_lang$svg$Svg_Attributes$width('250'),
-					_1: {
-						ctor: '::',
-						_0: _elm_lang$svg$Svg_Attributes$height('125'),
-						_1: {
-							ctor: '::',
-							_0: _elm_lang$svg$Svg_Attributes$viewBox('0 0 300 200'),
-							_1: {ctor: '[]'}
-						}
-					}
-				},
-				{
-					ctor: '::',
-					_0: A2(
-						_elm_lang$svg$Svg$g,
-						{
-							ctor: '::',
-							_0: _elm_lang$svg$Svg_Attributes$id('houseable-loading'),
-							_1: {ctor: '[]'}
-						},
-						{
-							ctor: '::',
-							_0: A2(
-								_elm_lang$svg$Svg$polygon,
-								{
-									ctor: '::',
-									_0: _elm_lang$svg$Svg_Attributes$id('middle-2'),
-									_1: {
-										ctor: '::',
-										_0: _elm_lang$svg$Svg_Attributes$fill('#2A303F'),
-										_1: {
-											ctor: '::',
-											_0: _elm_lang$svg$Svg_Attributes$points('122.333,127.668 94.664,100.001 66.996,72.332 122.333,72.332'),
-											_1: {ctor: '[]'}
-										}
-									}
-								},
-								{ctor: '[]'}),
-							_1: {
-								ctor: '::',
-								_0: A2(
-									_elm_lang$svg$Svg$polygon,
-									{
-										ctor: '::',
-										_0: _elm_lang$svg$Svg_Attributes$id('middle-1'),
-										_1: {
-											ctor: '::',
-											_0: _elm_lang$svg$Svg_Attributes$fill('#2A303F'),
-											_1: {
-												ctor: '::',
-												_0: _elm_lang$svg$Svg_Attributes$points('66.996,72.332 94.664,100.001 122.333,127.67 66.996,127.67'),
-												_1: {ctor: '[]'}
-											}
-										}
-									},
-									{ctor: '[]'}),
-								_1: {
-									ctor: '::',
-									_0: A2(
-										_elm_lang$svg$Svg$polygon,
-										{
-											ctor: '::',
-											_0: _elm_lang$svg$Svg_Attributes$id('middle-4'),
-											_1: {
-												ctor: '::',
-												_0: _elm_lang$svg$Svg_Attributes$fill('#2A303F'),
-												_1: {
-													ctor: '::',
-													_0: _elm_lang$svg$Svg_Attributes$points('177.669,127.668 150.001,100 122.332,72.332 177.669,72.332'),
-													_1: {ctor: '[]'}
-												}
-											}
-										},
-										{ctor: '[]'}),
-									_1: {
-										ctor: '::',
-										_0: A2(
-											_elm_lang$svg$Svg$polygon,
-											{
-												ctor: '::',
-												_0: _elm_lang$svg$Svg_Attributes$id('middle-3'),
-												_1: {
-													ctor: '::',
-													_0: _elm_lang$svg$Svg_Attributes$fill('#2A303F'),
-													_1: {
-														ctor: '::',
-														_0: _elm_lang$svg$Svg_Attributes$points('122.333,72.332 150.001,100.001 177.669,127.67 122.333,127.67'),
-														_1: {ctor: '[]'}
-													}
-												}
-											},
-											{ctor: '[]'}),
-										_1: {
-											ctor: '::',
-											_0: A2(
-												_elm_lang$svg$Svg$polygon,
-												{
-													ctor: '::',
-													_0: _elm_lang$svg$Svg_Attributes$id('middle-6'),
-													_1: {
-														ctor: '::',
-														_0: _elm_lang$svg$Svg_Attributes$fill('#38DDE5'),
-														_1: {
-															ctor: '::',
-															_0: _elm_lang$svg$Svg_Attributes$points('233.005,127.668 205.338,100 177.669,72.332 233.005,72.332'),
-															_1: {ctor: '[]'}
-														}
-													}
-												},
-												{ctor: '[]'}),
-											_1: {
-												ctor: '::',
-												_0: A2(
-													_elm_lang$svg$Svg$polygon,
-													{
-														ctor: '::',
-														_0: _elm_lang$svg$Svg_Attributes$id('middle-5_1'),
-														_1: {
-															ctor: '::',
-															_0: _elm_lang$svg$Svg_Attributes$fill('#29C3D3'),
-															_1: {
-																ctor: '::',
-																_0: _elm_lang$svg$Svg_Attributes$points('177.669,72.332 205.338,100.001 233.005,127.67 177.669,127.67'),
-																_1: {ctor: '[]'}
-															}
-														}
-													},
-													{ctor: '[]'}),
-												_1: {
-													ctor: '::',
-													_0: A2(
-														_elm_lang$svg$Svg$polygon,
-														{
-															ctor: '::',
-															_0: _elm_lang$svg$Svg_Attributes$id('middle-5'),
-															_1: {
-																ctor: '::',
-																_0: _elm_lang$svg$Svg_Attributes$fill('#29C3D3'),
-																_1: {
-																	ctor: '::',
-																	_0: _elm_lang$svg$Svg_Attributes$points('66.997,72.331 94.664,44.663 122.333,16.996 122.333,72.331'),
-																	_1: {ctor: '[]'}
-																}
-															}
-														},
-														{ctor: '[]'}),
-													_1: {
-														ctor: '::',
-														_0: A2(
-															_elm_lang$svg$Svg$polygon,
-															{
-																ctor: '::',
-																_0: _elm_lang$svg$Svg_Attributes$id('top-4'),
-																_1: {
-																	ctor: '::',
-																	_0: _elm_lang$svg$Svg_Attributes$fill('#29C3D3'),
-																	_1: {
-																		ctor: '::',
-																		_0: _elm_lang$svg$Svg_Attributes$points('177.669,72.331 150.001,44.663 122.333,16.995 177.669,16.995'),
-																		_1: {ctor: '[]'}
-																	}
-																}
-															},
-															{ctor: '[]'}),
-														_1: {
-															ctor: '::',
-															_0: A2(
-																_elm_lang$svg$Svg$polygon,
-																{
-																	ctor: '::',
-																	_0: _elm_lang$svg$Svg_Attributes$id('top-3'),
-																	_1: {
-																		ctor: '::',
-																		_0: _elm_lang$svg$Svg_Attributes$fill('#2A303F'),
-																		_1: {
-																			ctor: '::',
-																			_0: _elm_lang$svg$Svg_Attributes$points('122.332,16.996 150.001,44.664 177.669,72.332 122.332,72.332'),
-																			_1: {ctor: '[]'}
-																		}
-																	}
-																},
-																{ctor: '[]'}),
-															_1: {
-																ctor: '::',
-																_0: A2(
-																	_elm_lang$svg$Svg$polygon,
-																	{
-																		ctor: '::',
-																		_0: _elm_lang$svg$Svg_Attributes$id('top-5'),
-																		_1: {
-																			ctor: '::',
-																			_0: _elm_lang$svg$Svg_Attributes$fill('#38E8E8'),
-																			_1: {
-																				ctor: '::',
-																				_0: _elm_lang$svg$Svg_Attributes$points('177.669,16.996 205.338,44.664 233.005,72.332 177.669,72.332'),
-																				_1: {ctor: '[]'}
-																			}
-																		}
-																	},
-																	{ctor: '[]'}),
-																_1: {
-																	ctor: '::',
-																	_0: A2(
-																		_elm_lang$svg$Svg$polygon,
-																		{
-																			ctor: '::',
-																			_0: _elm_lang$svg$Svg_Attributes$id('bottom-1'),
-																			_1: {
-																				ctor: '::',
-																				_0: _elm_lang$svg$Svg_Attributes$fill('#2A303F'),
-																				_1: {
-																					ctor: '::',
-																					_0: _elm_lang$svg$Svg_Attributes$points('66.997,127.67 94.665,155.336 122.333,183.006 66.995,183.006'),
-																					_1: {ctor: '[]'}
-																				}
-																			}
-																		},
-																		{ctor: '[]'}),
-																	_1: {
-																		ctor: '::',
-																		_0: A2(
-																			_elm_lang$svg$Svg$polygon,
-																			{
-																				ctor: '::',
-																				_0: _elm_lang$svg$Svg_Attributes$id('bottom-2'),
-																				_1: {
-																					ctor: '::',
-																					_0: _elm_lang$svg$Svg_Attributes$fill('#2A303F'),
-																					_1: {
-																						ctor: '::',
-																						_0: _elm_lang$svg$Svg_Attributes$points('122.333,183.004 94.665,155.336 66.997,127.668 122.333,127.668'),
-																						_1: {ctor: '[]'}
-																					}
-																				}
-																			},
-																			{ctor: '[]'}),
-																		_1: {
-																			ctor: '::',
-																			_0: A2(
-																				_elm_lang$svg$Svg$polygon,
-																				{
-																					ctor: '::',
-																					_0: _elm_lang$svg$Svg_Attributes$id('bottom-3'),
-																					_1: {
-																						ctor: '::',
-																						_0: _elm_lang$svg$Svg_Attributes$fill('#F9F9F9'),
-																						_1: {
-																							ctor: '::',
-																							_0: _elm_lang$svg$Svg_Attributes$points('122.332,127.67 150,155.336 177.669,183.006 122.332,183.006'),
-																							_1: {ctor: '[]'}
-																						}
-																					}
-																				},
-																				{ctor: '[]'}),
-																			_1: {
-																				ctor: '::',
-																				_0: A2(
-																					_elm_lang$svg$Svg$polygon,
-																					{
-																						ctor: '::',
-																						_0: _elm_lang$svg$Svg_Attributes$id('bottom-4'),
-																						_1: {
-																							ctor: '::',
-																							_0: _elm_lang$svg$Svg_Attributes$fill('#F9F9F9'),
-																							_1: {
-																								ctor: '::',
-																								_0: _elm_lang$svg$Svg_Attributes$points('177.669,183.004 150.001,155.336 122.333,127.668 177.669,127.668'),
-																								_1: {ctor: '[]'}
-																							}
-																						}
-																					},
-																					{ctor: '[]'}),
-																				_1: {
-																					ctor: '::',
-																					_0: A2(
-																						_elm_lang$svg$Svg$polygon,
-																						{
-																							ctor: '::',
-																							_0: _elm_lang$svg$Svg_Attributes$id('bottom-6'),
-																							_1: {
-																								ctor: '::',
-																								_0: _elm_lang$svg$Svg_Attributes$fill('#2A303F'),
-																								_1: {
-																									ctor: '::',
-																									_0: _elm_lang$svg$Svg_Attributes$points('233.005,183.004 205.338,155.336 177.669,127.668 233.005,127.668'),
-																									_1: {ctor: '[]'}
-																								}
-																							}
-																						},
-																						{ctor: '[]'}),
-																					_1: {
-																						ctor: '::',
-																						_0: A2(
-																							_elm_lang$svg$Svg$polygon,
-																							{
-																								ctor: '::',
-																								_0: _elm_lang$svg$Svg_Attributes$id('bottom-5'),
-																								_1: {
-																									ctor: '::',
-																									_0: _elm_lang$svg$Svg_Attributes$fill('#2A303F'),
-																									_1: {
-																										ctor: '::',
-																										_0: _elm_lang$svg$Svg_Attributes$points('177.669,127.67 205.338,155.336 233.005,183.006 177.669,183.006'),
-																										_1: {ctor: '[]'}
-																									}
-																								}
-																							},
-																							{ctor: '[]'}),
-																						_1: {ctor: '[]'}
-																					}
-																				}
-																			}
-																		}
-																	}
-																}
-															}
-														}
-													}
-												}
-											}
-										}
-									}
-								}
-							}
-						}),
-					_1: {ctor: '[]'}
-				}),
-			_1: {ctor: '[]'}
-		});
 	
 	var _user$project$Artwork$errorPanel = function (error) {
 		var _p0 = error;
@@ -11623,6 +11666,12 @@
 		function (v) {
 			return v;
 		});
+	var _user$project$Artwork$deleteArtwork = _elm_lang$core$Native_Platform.outgoingPort(
+		'deleteArtwork',
+		function (v) {
+			return v;
+		});
+	var _user$project$Artwork$artworkDeleted = _elm_lang$core$Native_Platform.incomingPort('artworkDeleted', _elm_lang$core$Json_Decode$string);
 	var _user$project$Artwork$Model = F5(
 		function (a, b, c, d, e) {
 			return {error: a, active: b, artwork: c, isEditing: d, isFetching: e};
@@ -11948,6 +11997,18 @@
 							}),
 						_1: cmd
 					};
+				case 'DeleteArtwork':
+					return {
+						ctor: '_Tuple2',
+						_0: model,
+						_1: _user$project$Artwork$deleteArtwork(model.artwork.artworkId)
+					};
+				case 'ArtworkDeleted':
+					return {
+						ctor: '_Tuple2',
+						_0: _user$project$Artwork$initModel,
+						_1: _elm_lang$navigation$Navigation$newUrl('#/gallery')
+					};
 				default:
 					return {
 						ctor: '_Tuple2',
@@ -11963,6 +12024,10 @@
 	var _user$project$Artwork$Error = function (a) {
 		return {ctor: 'Error', _0: a};
 	};
+	var _user$project$Artwork$ArtworkDeleted = function (a) {
+		return {ctor: 'ArtworkDeleted', _0: a};
+	};
+	var _user$project$Artwork$DeleteArtwork = {ctor: 'DeleteArtwork'};
 	var _user$project$Artwork$SubmitEditedArtwork = {ctor: 'SubmitEditedArtwork'};
 	var _user$project$Artwork$FetchImageFileEdit = function (a) {
 		return {ctor: 'FetchImageFileEdit', _0: a};
@@ -12465,7 +12530,37 @@
 							_1: {ctor: '[]'}
 						}
 					}),
-				_1: {ctor: '[]'}
+				_1: {
+					ctor: '::',
+					_0: A2(
+						_elm_lang$html$Html$div,
+						{
+							ctor: '::',
+							_0: _elm_lang$html$Html_Attributes$class('text-center'),
+							_1: {ctor: '[]'}
+						},
+						{
+							ctor: '::',
+							_0: A2(
+								_elm_lang$html$Html$button,
+								{
+									ctor: '::',
+									_0: _elm_lang$html$Html_Attributes$class('btn btn-danger'),
+									_1: {
+										ctor: '::',
+										_0: _elm_lang$html$Html_Events$onClick(_user$project$Artwork$DeleteArtwork),
+										_1: {ctor: '[]'}
+									}
+								},
+								{
+									ctor: '::',
+									_0: _elm_lang$html$Html$text('delete artwork'),
+									_1: {ctor: '[]'}
+								}),
+							_1: {ctor: '[]'}
+						}),
+					_1: {ctor: '[]'}
+				}
 			});
 	};
 	var _user$project$Artwork$view = function (model) {
@@ -12551,7 +12646,11 @@
 					_1: {
 						ctor: '::',
 						_0: _user$project$Artwork$imageFileReadEdit(_user$project$Artwork$ArtworkImageFileEditInput),
-						_1: {ctor: '[]'}
+						_1: {
+							ctor: '::',
+							_0: _user$project$Artwork$artworkDeleted(_user$project$Artwork$ArtworkDeleted),
+							_1: {ctor: '[]'}
+						}
 					}
 				}
 			});
@@ -12817,7 +12916,11 @@
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
-						{searchId: _p3.searchId, userId: _p3.userId}),
+						{
+							searchId: _p3.searchId,
+							userId: _p3.userId,
+							gallery: {ctor: '[]'}
+						}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 			} else {
@@ -17107,7 +17210,23 @@
 	  editArtwork: function (artworkId, artworkToEdit) {
 	    console.log(artworkId, artworkToEdit)
 	    return database.ref('/artwork/' + artworkId).update(artworkToEdit)
-	  } // end editArtwork()
+	  }, // end editArtwork()
+	  deleteArtworkFromFb: function (artworkId) {
+	    return database.ref('/artwork/' + artworkId).remove()
+	  }, // deleteArtworkFromFb()
+	  deleteArtworkFromUserGallery: function (userId, artworkId) {
+	    return database.ref('/userGalleries/' + userId)
+	      .once('value', function (snapshot) {
+	        const fbSnapshot = snapshot.val()
+	        const artworkIdToDelete =
+	          Object.keys(fbSnapshot).reduce(function (previous, key) {
+	            if (fbSnapshot[key] === artworkId) {
+	              return key
+	            }
+	          })
+	        return database.ref('/userGalleries/' + userId + '/' + artworkIdToDelete).remove()
+	      })
+	  } // end deleteArtworkFromUserGallery()
 	}
 	
 	module.exports = firebaseHelper
