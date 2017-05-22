@@ -231,18 +231,19 @@ paintingListView { artist, title, medium, year, dimensions, price, artworkImageF
 
 
 galleryTableView : Model -> Html Msg
-galleryTableView { gallery } =
-    gallery
-        |> List.map paintingTableView
+galleryTableView model =
+    model.gallery
+        |> List.indexedMap paintingTableView
         |> tbody [ class "main--gallery--table" ]
         |> (\g -> galleryTableHeader :: [ g ])
         |> table [ class "table table-striped table--custom" ]
 
 
-paintingTableView : GalleryItem -> Html Msg
-paintingTableView { artist, title, medium, year, dimensions, price, artworkImageFile, artworkId, userId, searchId } =
+paintingTableView : Int -> GalleryItem -> Html Msg
+paintingTableView index { artist, title, medium, year, dimensions, price, artworkImageFile, artworkId, userId, searchId } =
     tr []
-        [ if userId == searchId then
+        [ td [] [ text (toString (index + 1)) ]
+        , if userId == searchId then
             td [] [ img [ src artworkImageFile, class "thumbnail", onClick (ArtworkPage artworkId) ] [] ]
           else
             td [] [ img [ src artworkImageFile, class "thumbnail" ] [] ]
@@ -262,7 +263,8 @@ galleryTableHeader : Html Msg
 galleryTableHeader =
     thead [ class "table-head--custom" ]
         [ tr []
-            [ th [] [ text "Artwork" ]
+            [ th [] [ text "No." ]
+            , th [] [ text "Artwork" ]
             , th [ class "table-sort-link", onClick SortGalleryByArtist ] [ text "Artist" ]
             , th [] [ text "Title" ]
             , th [ class "table-sort-link", onClick SortGalleryByYear ] [ text "Year" ]

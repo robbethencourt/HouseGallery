@@ -355,8 +355,14 @@ editArtwork model =
 deleteModuleView : Html Msg
 deleteModuleView =
     div [ class "delete-module" ]
-        [ button [ onClick CancelDeleteArtwork ] [ text "NO delete" ]
-        , button [ onClick DeleteArtwork ] [ text "delete" ]
+        [ div [ class "container-fluid" ]
+            [ div [ class "delete-module__container__content" ]
+                [ p [ class "text-center" ] [ text "You're about to delete a piece of artwork from you gallery. Are you sure?" ] ]
+            , div [ class "delete-module__container__button-1" ]
+                [ button [ class "btn btn--green btn--dark-bg", onClick CancelDeleteArtwork ] [ text "no, keep artwork" ] ]
+            , div [ class "delete-module__container__button-2" ]
+                [ button [ class "btn btn-danger btn--dark-bg", onClick DeleteArtwork ] [ text "yes, delete artwork" ] ]
+            ]
         ]
 
 
