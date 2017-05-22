@@ -11651,7 +11651,7 @@
 			A2(_elm_lang$core$Json_Decode$map, tagger, _elm_lang$html$Html_Events$targetValue));
 	};
 	var _user$project$Artwork$initArtwork = {artworkId: '', artist: '', title: '', medium: '', year: '', dimensions: '', price: '', artworkImageFile: '', oldArtworkImageFile: ''};
-	var _user$project$Artwork$initModel = {error: _elm_lang$core$Maybe$Nothing, active: false, artwork: _user$project$Artwork$initArtwork, isEditing: false, isFetching: true};
+	var _user$project$Artwork$initModel = {error: _elm_lang$core$Maybe$Nothing, active: false, artwork: _user$project$Artwork$initArtwork, isEditing: false, isFetching: true, deleteModule: false};
 	var _user$project$Artwork$init = {ctor: '_Tuple2', _0: _user$project$Artwork$initModel, _1: _elm_lang$core$Platform_Cmd$none};
 	var _user$project$Artwork$fetchingArtwork = _elm_lang$core$Native_Platform.incomingPort('fetchingArtwork', _elm_lang$core$Json_Decode$string);
 	var _user$project$Artwork$artworkReceived = _elm_lang$core$Native_Platform.incomingPort('artworkReceived', _elm_lang$core$Json_Decode$string);
@@ -11672,9 +11672,9 @@
 			return v;
 		});
 	var _user$project$Artwork$artworkDeleted = _elm_lang$core$Native_Platform.incomingPort('artworkDeleted', _elm_lang$core$Json_Decode$string);
-	var _user$project$Artwork$Model = F5(
-		function (a, b, c, d, e) {
-			return {error: a, active: b, artwork: c, isEditing: d, isFetching: e};
+	var _user$project$Artwork$Model = F6(
+		function (a, b, c, d, e, f) {
+			return {error: a, active: b, artwork: c, isEditing: d, isFetching: e, deleteModule: f};
 		});
 	var _user$project$Artwork$Artwork = F9(
 		function (a, b, c, d, e, f, g, h, i) {
@@ -11997,6 +11997,22 @@
 							}),
 						_1: cmd
 					};
+				case 'DeleteArtworkModule':
+					return {
+						ctor: '_Tuple2',
+						_0: _elm_lang$core$Native_Utils.update(
+							model,
+							{deleteModule: true}),
+						_1: _elm_lang$core$Platform_Cmd$none
+					};
+				case 'CancelDeleteArtwork':
+					return {
+						ctor: '_Tuple2',
+						_0: _elm_lang$core$Native_Utils.update(
+							model,
+							{deleteModule: false}),
+						_1: _elm_lang$core$Platform_Cmd$none
+					};
 				case 'DeleteArtwork':
 					return {
 						ctor: '_Tuple2',
@@ -12028,6 +12044,113 @@
 		return {ctor: 'ArtworkDeleted', _0: a};
 	};
 	var _user$project$Artwork$DeleteArtwork = {ctor: 'DeleteArtwork'};
+	var _user$project$Artwork$CancelDeleteArtwork = {ctor: 'CancelDeleteArtwork'};
+	var _user$project$Artwork$deleteModuleView = A2(
+		_elm_lang$html$Html$div,
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html_Attributes$class('delete-module'),
+			_1: {ctor: '[]'}
+		},
+		{
+			ctor: '::',
+			_0: A2(
+				_elm_lang$html$Html$div,
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html_Attributes$class('container-fluid'),
+					_1: {ctor: '[]'}
+				},
+				{
+					ctor: '::',
+					_0: A2(
+						_elm_lang$html$Html$div,
+						{
+							ctor: '::',
+							_0: _elm_lang$html$Html_Attributes$class('delete-module__container__content'),
+							_1: {ctor: '[]'}
+						},
+						{
+							ctor: '::',
+							_0: A2(
+								_elm_lang$html$Html$p,
+								{
+									ctor: '::',
+									_0: _elm_lang$html$Html_Attributes$class('text-center'),
+									_1: {ctor: '[]'}
+								},
+								{
+									ctor: '::',
+									_0: _elm_lang$html$Html$text('You\'re about to delete a piece of artwork from you gallery. Are you sure?'),
+									_1: {ctor: '[]'}
+								}),
+							_1: {ctor: '[]'}
+						}),
+					_1: {
+						ctor: '::',
+						_0: A2(
+							_elm_lang$html$Html$div,
+							{
+								ctor: '::',
+								_0: _elm_lang$html$Html_Attributes$class('delete-module__container__button-1'),
+								_1: {ctor: '[]'}
+							},
+							{
+								ctor: '::',
+								_0: A2(
+									_elm_lang$html$Html$button,
+									{
+										ctor: '::',
+										_0: _elm_lang$html$Html_Attributes$class('btn btn--green btn--dark-bg'),
+										_1: {
+											ctor: '::',
+											_0: _elm_lang$html$Html_Events$onClick(_user$project$Artwork$CancelDeleteArtwork),
+											_1: {ctor: '[]'}
+										}
+									},
+									{
+										ctor: '::',
+										_0: _elm_lang$html$Html$text('no, keep artwork'),
+										_1: {ctor: '[]'}
+									}),
+								_1: {ctor: '[]'}
+							}),
+						_1: {
+							ctor: '::',
+							_0: A2(
+								_elm_lang$html$Html$div,
+								{
+									ctor: '::',
+									_0: _elm_lang$html$Html_Attributes$class('delete-module__container__button-2'),
+									_1: {ctor: '[]'}
+								},
+								{
+									ctor: '::',
+									_0: A2(
+										_elm_lang$html$Html$button,
+										{
+											ctor: '::',
+											_0: _elm_lang$html$Html_Attributes$class('btn btn-danger btn--dark-bg'),
+											_1: {
+												ctor: '::',
+												_0: _elm_lang$html$Html_Events$onClick(_user$project$Artwork$DeleteArtwork),
+												_1: {ctor: '[]'}
+											}
+										},
+										{
+											ctor: '::',
+											_0: _elm_lang$html$Html$text('yes, delete artwork'),
+											_1: {ctor: '[]'}
+										}),
+									_1: {ctor: '[]'}
+								}),
+							_1: {ctor: '[]'}
+						}
+					}
+				}),
+			_1: {ctor: '[]'}
+		});
+	var _user$project$Artwork$DeleteArtworkModule = {ctor: 'DeleteArtworkModule'};
 	var _user$project$Artwork$SubmitEditedArtwork = {ctor: 'SubmitEditedArtwork'};
 	var _user$project$Artwork$FetchImageFileEdit = function (a) {
 		return {ctor: 'FetchImageFileEdit', _0: a};
@@ -12548,7 +12671,7 @@
 									_0: _elm_lang$html$Html_Attributes$class('btn btn-danger'),
 									_1: {
 										ctor: '::',
-										_0: _elm_lang$html$Html_Events$onClick(_user$project$Artwork$DeleteArtwork),
+										_0: _elm_lang$html$Html_Events$onClick(_user$project$Artwork$DeleteArtworkModule),
 										_1: {ctor: '[]'}
 									}
 								},
@@ -12626,7 +12749,14 @@
 							_1: {ctor: '[]'}
 						}
 					}),
-				_1: {ctor: '[]'}
+				_1: {
+					ctor: '::',
+					_0: model.deleteModule ? _user$project$Artwork$deleteModuleView : A2(
+						_elm_lang$html$Html$div,
+						{ctor: '[]'},
+						{ctor: '[]'}),
+					_1: {ctor: '[]'}
+				}
 			}));
 	};
 	var _user$project$Artwork$ArtworkReceived = function (a) {
@@ -12948,63 +13078,63 @@
 						{ctor: '[]'},
 						{
 							ctor: '::',
-							_0: _elm_lang$html$Html$text('Artwork'),
+							_0: _elm_lang$html$Html$text('No.'),
 							_1: {ctor: '[]'}
 						}),
 					_1: {
 						ctor: '::',
 						_0: A2(
 							_elm_lang$html$Html$th,
+							{ctor: '[]'},
 							{
 								ctor: '::',
-								_0: _elm_lang$html$Html_Attributes$class('table-sort-link'),
-								_1: {
-									ctor: '::',
-									_0: _elm_lang$html$Html_Events$onClick(_user$project$Gallery$SortGalleryByArtist),
-									_1: {ctor: '[]'}
-								}
-							},
-							{
-								ctor: '::',
-								_0: _elm_lang$html$Html$text('Artist'),
+								_0: _elm_lang$html$Html$text('Artwork'),
 								_1: {ctor: '[]'}
 							}),
 						_1: {
 							ctor: '::',
 							_0: A2(
 								_elm_lang$html$Html$th,
-								{ctor: '[]'},
 								{
 									ctor: '::',
-									_0: _elm_lang$html$Html$text('Title'),
+									_0: _elm_lang$html$Html_Attributes$class('table-sort-link'),
+									_1: {
+										ctor: '::',
+										_0: _elm_lang$html$Html_Events$onClick(_user$project$Gallery$SortGalleryByArtist),
+										_1: {ctor: '[]'}
+									}
+								},
+								{
+									ctor: '::',
+									_0: _elm_lang$html$Html$text('Artist'),
 									_1: {ctor: '[]'}
 								}),
 							_1: {
 								ctor: '::',
 								_0: A2(
 									_elm_lang$html$Html$th,
+									{ctor: '[]'},
 									{
 										ctor: '::',
-										_0: _elm_lang$html$Html_Attributes$class('table-sort-link'),
-										_1: {
-											ctor: '::',
-											_0: _elm_lang$html$Html_Events$onClick(_user$project$Gallery$SortGalleryByYear),
-											_1: {ctor: '[]'}
-										}
-									},
-									{
-										ctor: '::',
-										_0: _elm_lang$html$Html$text('Year'),
+										_0: _elm_lang$html$Html$text('Title'),
 										_1: {ctor: '[]'}
 									}),
 								_1: {
 									ctor: '::',
 									_0: A2(
 										_elm_lang$html$Html$th,
-										{ctor: '[]'},
 										{
 											ctor: '::',
-											_0: _elm_lang$html$Html$text('Medium'),
+											_0: _elm_lang$html$Html_Attributes$class('table-sort-link'),
+											_1: {
+												ctor: '::',
+												_0: _elm_lang$html$Html_Events$onClick(_user$project$Gallery$SortGalleryByYear),
+												_1: {ctor: '[]'}
+											}
+										},
+										{
+											ctor: '::',
+											_0: _elm_lang$html$Html$text('Year'),
 											_1: {ctor: '[]'}
 										}),
 									_1: {
@@ -13014,7 +13144,7 @@
 											{ctor: '[]'},
 											{
 												ctor: '::',
-												_0: _elm_lang$html$Html$text('Dimensions'),
+												_0: _elm_lang$html$Html$text('Medium'),
 												_1: {ctor: '[]'}
 											}),
 										_1: {
@@ -13024,10 +13154,21 @@
 												{ctor: '[]'},
 												{
 													ctor: '::',
-													_0: _elm_lang$html$Html$text('Price'),
+													_0: _elm_lang$html$Html$text('Dimensions'),
 													_1: {ctor: '[]'}
 												}),
-											_1: {ctor: '[]'}
+											_1: {
+												ctor: '::',
+												_0: A2(
+													_elm_lang$html$Html$th,
+													{ctor: '[]'},
+													{
+														ctor: '::',
+														_0: _elm_lang$html$Html$text('Price'),
+														_1: {ctor: '[]'}
+													}),
+												_1: {ctor: '[]'}
+											}
 										}
 									}
 								}
@@ -13239,68 +13380,26 @@
 			},
 			A2(_elm_lang$core$List$map, _user$project$Gallery$paintingListView, model.gallery));
 	};
-	var _user$project$Gallery$paintingTableView = function (_p8) {
-		var _p9 = _p8;
-		var _p14 = _p9.userId;
-		var _p13 = _p9.title;
-		var _p12 = _p9.searchId;
-		var _p11 = _p9.artworkImageFile;
-		var _p10 = _p9.artworkId;
-		return A2(
-			_elm_lang$html$Html$tr,
-			{ctor: '[]'},
-			{
-				ctor: '::',
-				_0: _elm_lang$core$Native_Utils.eq(_p14, _p12) ? A2(
-					_elm_lang$html$Html$td,
-					{ctor: '[]'},
-					{
-						ctor: '::',
-						_0: A2(
-							_elm_lang$html$Html$img,
-							{
-								ctor: '::',
-								_0: _elm_lang$html$Html_Attributes$src(_p11),
-								_1: {
-									ctor: '::',
-									_0: _elm_lang$html$Html_Attributes$class('thumbnail'),
-									_1: {
-										ctor: '::',
-										_0: _elm_lang$html$Html_Events$onClick(
-											_user$project$Gallery$ArtworkPage(_p10)),
-										_1: {ctor: '[]'}
-									}
-								}
-							},
-							{ctor: '[]'}),
-						_1: {ctor: '[]'}
-					}) : A2(
-					_elm_lang$html$Html$td,
-					{ctor: '[]'},
-					{
-						ctor: '::',
-						_0: A2(
-							_elm_lang$html$Html$img,
-							{
-								ctor: '::',
-								_0: _elm_lang$html$Html_Attributes$src(_p11),
-								_1: {
-									ctor: '::',
-									_0: _elm_lang$html$Html_Attributes$class('thumbnail'),
-									_1: {ctor: '[]'}
-								}
-							},
-							{ctor: '[]'}),
-						_1: {ctor: '[]'}
-					}),
-				_1: {
+	var _user$project$Gallery$paintingTableView = F2(
+		function (index, _p8) {
+			var _p9 = _p8;
+			var _p14 = _p9.userId;
+			var _p13 = _p9.title;
+			var _p12 = _p9.searchId;
+			var _p11 = _p9.artworkImageFile;
+			var _p10 = _p9.artworkId;
+			return A2(
+				_elm_lang$html$Html$tr,
+				{ctor: '[]'},
+				{
 					ctor: '::',
 					_0: A2(
 						_elm_lang$html$Html$td,
 						{ctor: '[]'},
 						{
 							ctor: '::',
-							_0: _elm_lang$html$Html$text(_p9.artist),
+							_0: _elm_lang$html$Html$text(
+								_elm_lang$core$Basics$toString(index + 1)),
 							_1: {ctor: '[]'}
 						}),
 					_1: {
@@ -13311,25 +13410,40 @@
 							{
 								ctor: '::',
 								_0: A2(
-									_elm_lang$html$Html$a,
+									_elm_lang$html$Html$img,
 									{
 										ctor: '::',
-										_0: _elm_lang$html$Html_Events$onClick(
-											_user$project$Gallery$ArtworkPage(_p10)),
-										_1: {ctor: '[]'}
+										_0: _elm_lang$html$Html_Attributes$src(_p11),
+										_1: {
+											ctor: '::',
+											_0: _elm_lang$html$Html_Attributes$class('thumbnail'),
+											_1: {
+												ctor: '::',
+												_0: _elm_lang$html$Html_Events$onClick(
+													_user$project$Gallery$ArtworkPage(_p10)),
+												_1: {ctor: '[]'}
+											}
+										}
 									},
-									{
-										ctor: '::',
-										_0: _elm_lang$html$Html$text(_p13),
-										_1: {ctor: '[]'}
-									}),
+									{ctor: '[]'}),
 								_1: {ctor: '[]'}
 							}) : A2(
 							_elm_lang$html$Html$td,
 							{ctor: '[]'},
 							{
 								ctor: '::',
-								_0: _elm_lang$html$Html$text(_p13),
+								_0: A2(
+									_elm_lang$html$Html$img,
+									{
+										ctor: '::',
+										_0: _elm_lang$html$Html_Attributes$src(_p11),
+										_1: {
+											ctor: '::',
+											_0: _elm_lang$html$Html_Attributes$class('thumbnail'),
+											_1: {ctor: '[]'}
+										}
+									},
+									{ctor: '[]'}),
 								_1: {ctor: '[]'}
 							}),
 						_1: {
@@ -13339,17 +13453,36 @@
 								{ctor: '[]'},
 								{
 									ctor: '::',
-									_0: _elm_lang$html$Html$text(_p9.year),
+									_0: _elm_lang$html$Html$text(_p9.artist),
 									_1: {ctor: '[]'}
 								}),
 							_1: {
 								ctor: '::',
-								_0: A2(
+								_0: _elm_lang$core$Native_Utils.eq(_p14, _p12) ? A2(
 									_elm_lang$html$Html$td,
 									{ctor: '[]'},
 									{
 										ctor: '::',
-										_0: _elm_lang$html$Html$text(_p9.medium),
+										_0: A2(
+											_elm_lang$html$Html$a,
+											{
+												ctor: '::',
+												_0: _elm_lang$html$Html_Events$onClick(
+													_user$project$Gallery$ArtworkPage(_p10)),
+												_1: {ctor: '[]'}
+											},
+											{
+												ctor: '::',
+												_0: _elm_lang$html$Html$text(_p13),
+												_1: {ctor: '[]'}
+											}),
+										_1: {ctor: '[]'}
+									}) : A2(
+									_elm_lang$html$Html$td,
+									{ctor: '[]'},
+									{
+										ctor: '::',
+										_0: _elm_lang$html$Html$text(_p13),
 										_1: {ctor: '[]'}
 									}),
 								_1: {
@@ -13359,7 +13492,7 @@
 										{ctor: '[]'},
 										{
 											ctor: '::',
-											_0: _elm_lang$html$Html$text(_p9.dimensions),
+											_0: _elm_lang$html$Html$text(_p9.year),
 											_1: {ctor: '[]'}
 										}),
 									_1: {
@@ -13369,21 +13502,41 @@
 											{ctor: '[]'},
 											{
 												ctor: '::',
-												_0: _elm_lang$html$Html$text(
-													A2(_elm_lang$core$Basics_ops['++'], '$', _p9.price)),
+												_0: _elm_lang$html$Html$text(_p9.medium),
 												_1: {ctor: '[]'}
 											}),
-										_1: {ctor: '[]'}
+										_1: {
+											ctor: '::',
+											_0: A2(
+												_elm_lang$html$Html$td,
+												{ctor: '[]'},
+												{
+													ctor: '::',
+													_0: _elm_lang$html$Html$text(_p9.dimensions),
+													_1: {ctor: '[]'}
+												}),
+											_1: {
+												ctor: '::',
+												_0: A2(
+													_elm_lang$html$Html$td,
+													{ctor: '[]'},
+													{
+														ctor: '::',
+														_0: _elm_lang$html$Html$text(
+															A2(_elm_lang$core$Basics_ops['++'], '$', _p9.price)),
+														_1: {ctor: '[]'}
+													}),
+												_1: {ctor: '[]'}
+											}
+										}
 									}
 								}
 							}
 						}
 					}
-				}
-			});
-	};
-	var _user$project$Gallery$galleryTableView = function (_p15) {
-		var _p16 = _p15;
+				});
+		});
+	var _user$project$Gallery$galleryTableView = function (model) {
 		return A2(
 			_elm_lang$html$Html$table,
 			{
@@ -13409,7 +13562,7 @@
 						_0: _elm_lang$html$Html_Attributes$class('main--gallery--table'),
 						_1: {ctor: '[]'}
 					},
-					A2(_elm_lang$core$List$map, _user$project$Gallery$paintingTableView, _p16.gallery))));
+					A2(_elm_lang$core$List$indexedMap, _user$project$Gallery$paintingTableView, model.gallery))));
 	};
 	var _user$project$Gallery$view = function (model) {
 		return model.isFetching ? A2(
