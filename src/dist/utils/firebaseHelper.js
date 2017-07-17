@@ -6,7 +6,6 @@ const database = fbApp.database()
 
 const firebaseHelper = {
   fetchUser: function (userToFetch) {
-    console.log(userToFetch)
     return database.ref('/userDisplayNames/' + userToFetch.toLowerCase()).once('value')
   },
   addUser: function (usersDataToSave) {
@@ -19,12 +18,10 @@ const firebaseHelper = {
   }, // end addUser()
   updateUser: function (displayNameToSave) {
     var user = firebase.auth().currentUser
-    console.log(user, displayNameToSave)
     user.updateProfile({
       displayName: displayNameToSave
     })
       .then(function () {
-        console.log('display name saved')
         fbApp.database()
           .ref('userDisplayNames/' + displayNameToSave.toLowerCase())
           .set({
@@ -44,13 +41,11 @@ const firebaseHelper = {
       })
   }, // end checkUser
   addArtwork: function (artworkToAdd) {
-    console.log(artworkToAdd)
     return fbApp.database()
       .ref('artwork')
       .push(artworkToAdd)
   }, // end addArtwork()
   addArtworkToUserGallery: function (uidAndArtworkId) {
-    console.log(uidAndArtworkId)
     return fbApp.database()
       .ref('userGalleries')
       .child(uidAndArtworkId.uid)
@@ -63,7 +58,6 @@ const firebaseHelper = {
     return database.ref('/artwork/' + artworkToQuery).once('value')
   }, // end getArtwork()
   editArtwork: function (artworkId, artworkToEdit) {
-    console.log(artworkId, artworkToEdit)
     return database.ref('/artwork/' + artworkId).update(artworkToEdit)
   }, // end editArtwork()
   deleteArtworkFromFb: function (artworkId) {
@@ -74,12 +68,13 @@ const firebaseHelper = {
       .once('value', function (snapshot) {
         const fbSnapshot = snapshot.val()
         const artworkIdToDelete =
-          Object.keys(fbSnapshot).reduce(function (previous, key) {
-            if (fbSnapshot[key] === artworkId) {
-              return key
-            }
-          })
-        return database.ref('/userGalleries/' + userId + '/' + artworkIdToDelete).remove()
+          Object.keys(fbSnapshot)
+            .filter(function (arrayOfKeys) {
+              console.log(arrayOfKeys)
+              console.log(artworkId)
+              return fbSnapshot[arrayOfKeys] === artworkId
+            })
+        return database.ref('/userGalleries/' + userId + '/' + artworkIdToDelete[0]).remove()
       })
   } // end deleteArtworkFromUserGallery()
 }
