@@ -24,7 +24,6 @@ firebase.auth().onAuthStateChanged(function (user) {
 app.ports.fetchingUsers.subscribe(elmSearchInput => {
   firebaseHelper.fetchUser(elmSearchInput)
     .then(function (fbResponse) {
-      console.log(fbResponse.val())
       if (fbResponse.val() === null) {
         const noUser = {
           displayName: '...searching',
@@ -39,7 +38,6 @@ app.ports.fetchingUsers.subscribe(elmSearchInput => {
 
 app.ports.fetchingSearchUserGallery.subscribe(function (elmUserSearchId) {
   const jsonParsedElmUserSearchId = JSON.parse(elmUserSearchId)
-  console.log(jsonParsedElmUserSearchId)
   // this is the only place we pass 2 arguments as we're handling the default value to the second argument in the fun dec
   getUserAndGallery(jsonParsedElmUserSearchId.searchId, jsonParsedElmUserSearchId.userId)
 })
@@ -55,7 +53,6 @@ app.ports.saveUser.subscribe(function (elmUserRecord) {
 
   firebaseHelper.addUser(userToSave)
     .then(function (fbResponse) {
-      console.log(fbResponse)
       firebaseHelper.updateUser(userToSave.displayName)
       localStorage.setItem('fbLoggedIn', 'True')
       app.ports.userSaved.send(JSON.stringify({
@@ -77,7 +74,6 @@ app.ports.fetchingUser.subscribe(function (elmLoginRecord) {
 
   firebaseHelper.checkUser(userToCheck)
     .then(function (fbResponse) {
-      console.log(fbResponse)
       localStorage.setItem('fbLoggedIn', 'True')
       app.ports.userLoggedIn.send(JSON.stringify({
         uid: fbResponse.uid,
@@ -126,14 +122,12 @@ app.ports.addArtworkToFb.subscribe(function (elmArtworkToAdd) {
       }
       firebaseHelper.addArtwork(artworkFbObject)
         .then(function (fbResponse) {
-          console.log(fbResponse)
           const uidAndArtworkId = {
             uid: artworkFbObject.uid,
             artworkId: fbResponse.path.o[1]
           }
           firebaseHelper.addArtworkToUserGallery(uidAndArtworkId)
             .then(function (fbResponseFromUserGallery) {
-              console.log(fbResponseFromUserGallery)
               app.ports.artworkAdded.send('all items added')
 
               // clear out the elm gallery model before calling for the artwork again
@@ -165,7 +159,6 @@ app.ports.fetchImageFile.subscribe(function (id) {
   let reader = new FileReader()
   reader.readAsDataURL(imageFile)
   reader.onload = function (e) {
-    console.log(e.target.result)
     app.ports.imageFileRead.send(e.target.result)
   }
 })
@@ -286,8 +279,6 @@ app.ports.submitEditedArtwork.subscribe(function (artworkToEdit) {
   const el = document.getElementById('cloudinary-input')
   const imageFile = el.files[0]
 
-  console.log(imageFile)
-
   if (imageFile !== undefined) {
     let cloudinaryImageLink = new Promise(function (resolve, reject) {
       let upload = request.post(config.CLOUDINARY_UPLOAD_URL)
@@ -337,7 +328,6 @@ app.ports.submitEditedArtwork.subscribe(function (artworkToEdit) {
       artworkImageFile: jsonParsedElmArtworkToEditRecord.artworkImage,
       uid: jsonParsedElmArtworkToEditRecord.uid
     }
-    console.log(artworkFbObject)
     firebaseHelper.editArtwork(artworkId, artworkFbObject)
       .then(function (fbEditArtworkResponse) {
         // clear out the elm gallery model before calling for the artwork again
@@ -356,7 +346,7 @@ app.ports.deleteArtwork.subscribe(function (elmArtworkId) {
   firebaseHelper.deleteArtworkFromFb(elmArtworkId)
     .then(function () {
       firebaseHelper.deleteArtworkFromUserGallery(user.uid, elmArtworkId)
-        .then(function () {
+        .then(function (response) {
           // this is where it returns to elm
           app.ports.artworkDeleted.send('artwork deleted from both')
           const clearGalleryIds = {
