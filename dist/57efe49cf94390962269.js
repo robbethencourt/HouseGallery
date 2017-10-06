@@ -70,7 +70,6 @@
 	app.ports.fetchingUsers.subscribe(elmSearchInput => {
 	  firebaseHelper.fetchUser(elmSearchInput)
 	    .then(function (fbResponse) {
-	      console.log(fbResponse.val())
 	      if (fbResponse.val() === null) {
 	        const noUser = {
 	          displayName: '...searching',
@@ -85,7 +84,6 @@
 	
 	app.ports.fetchingSearchUserGallery.subscribe(function (elmUserSearchId) {
 	  const jsonParsedElmUserSearchId = JSON.parse(elmUserSearchId)
-	  console.log(jsonParsedElmUserSearchId)
 	  // this is the only place we pass 2 arguments as we're handling the default value to the second argument in the fun dec
 	  getUserAndGallery(jsonParsedElmUserSearchId.searchId, jsonParsedElmUserSearchId.userId)
 	})
@@ -101,7 +99,6 @@
 	
 	  firebaseHelper.addUser(userToSave)
 	    .then(function (fbResponse) {
-	      console.log(fbResponse)
 	      firebaseHelper.updateUser(userToSave.displayName)
 	      localStorage.setItem('fbLoggedIn', 'True')
 	      app.ports.userSaved.send(JSON.stringify({
@@ -123,7 +120,6 @@
 	
 	  firebaseHelper.checkUser(userToCheck)
 	    .then(function (fbResponse) {
-	      console.log(fbResponse)
 	      localStorage.setItem('fbLoggedIn', 'True')
 	      app.ports.userLoggedIn.send(JSON.stringify({
 	        uid: fbResponse.uid,
@@ -172,14 +168,12 @@
 	      }
 	      firebaseHelper.addArtwork(artworkFbObject)
 	        .then(function (fbResponse) {
-	          console.log(fbResponse)
 	          const uidAndArtworkId = {
 	            uid: artworkFbObject.uid,
 	            artworkId: fbResponse.path.o[1]
 	          }
 	          firebaseHelper.addArtworkToUserGallery(uidAndArtworkId)
 	            .then(function (fbResponseFromUserGallery) {
-	              console.log(fbResponseFromUserGallery)
 	              app.ports.artworkAdded.send('all items added')
 	
 	              // clear out the elm gallery model before calling for the artwork again
@@ -211,7 +205,6 @@
 	  let reader = new FileReader()
 	  reader.readAsDataURL(imageFile)
 	  reader.onload = function (e) {
-	    console.log(e.target.result)
 	    app.ports.imageFileRead.send(e.target.result)
 	  }
 	})
@@ -240,20 +233,21 @@
 	    .then(function (fbGalleryResponse) {
 	      const fbGalleryObject = fbGalleryResponse.val()
 	      const arrayOfArtworkIds =
-	        Object.keys(fbGalleryObject)
-	          .map(key => fbGalleryObject[key])
+	      Object.keys(fbGalleryObject)
+	        .map(key => fbGalleryObject[key])
 	
 	      // array of db calls to pass to Promise.all and then pass to Elm
 	      const arrayOfArtworkObjects =
-	        arrayOfArtworkIds
-	          .map(artwork => {
-	            return firebaseHelper.getArtwork(artwork)
-	              .then(function (fbArtworkObjResponse) {
-	                return {
-	                  artworkId: artwork,
-	                  artworkObj: fbArtworkObjResponse.val()}
-	              })
-	          })
+	      arrayOfArtworkIds
+	        .map(artwork => {
+	          return firebaseHelper.getArtwork(artwork)
+	            .then(function (fbArtworkObjResponse) {
+	              return {
+	                artworkId: artwork,
+	                artworkObj: fbArtworkObjResponse.val()
+	              }
+	            })
+	        })
 	      Promise.all(arrayOfArtworkObjects).then(gallery => {
 	        gallery
 	          .forEach(artwork => {
@@ -332,8 +326,6 @@
 	  const el = document.getElementById('cloudinary-input')
 	  const imageFile = el.files[0]
 	
-	  console.log(imageFile)
-	
 	  if (imageFile !== undefined) {
 	    let cloudinaryImageLink = new Promise(function (resolve, reject) {
 	      let upload = request.post(config.CLOUDINARY_UPLOAD_URL)
@@ -383,7 +375,6 @@
 	      artworkImageFile: jsonParsedElmArtworkToEditRecord.artworkImage,
 	      uid: jsonParsedElmArtworkToEditRecord.uid
 	    }
-	    console.log(artworkFbObject)
 	    firebaseHelper.editArtwork(artworkId, artworkFbObject)
 	      .then(function (fbEditArtworkResponse) {
 	        // clear out the elm gallery model before calling for the artwork again
@@ -402,7 +393,7 @@
 	  firebaseHelper.deleteArtworkFromFb(elmArtworkId)
 	    .then(function () {
 	      firebaseHelper.deleteArtworkFromUserGallery(user.uid, elmArtworkId)
-	        .then(function () {
+	        .then(function (response) {
 	          // this is where it returns to elm
 	          app.ports.artworkDeleted.send('artwork deleted from both')
 	          const clearGalleryIds = {
@@ -419,6 +410,37 @@
 	    .catch(function (error) {
 	      console.log(`Removing artwork from firebase failed: ${error}`)
 	    })
+	})
+	
+	// arjs
+	app.ports.sendArtworkToArjs.subscribe(imageUrl => {
+	  console.log(imageUrl)
+	  // create aFrame elements
+	  const htmlBody = document.getElementsByTagName('body')[0]
+	  const arjsContent = document.createElement('arjs-content')
+	  const arScene = document.createElement('a-scene')
+	  const aImage = document.createElement('a-image')
+	  const aMarker = document.createElement('a-marker-camera')
+	
+	  // set attributes for a-scene
+	  arScene.setAttribute('embedded', 'true')
+	  arScene.setAttribute('artoolkit', 'sourceType: webcam;')
+	
+	  // set attributes on a-image
+	  aImage.setAttribute('src', imageUrl)
+	  aImage.setAttribute('width', '1.67')
+	  aImage.setAttribute('position', {x: 0, y: 5, z: 0})
+	  aImage.setAttribute('scale', '1 1 1')
+	  aImage.setAttribute('rotation', '90 -90 90')
+	
+	  // set attributes on a-marker-camera
+	  aMarker.setAttribute('a-marker-camera', 'hiro')
+	
+	  // append the elements to the scene and then to the arjs-content div in index.html
+	  arScene.appendChild(aImage)
+	  arScene.appendChild(aMarker)
+	  arjsContent.appendChild(arScene)
+	  htmlBody.appendChild(arjsContent)
 	})
 
 
@@ -11672,6 +11694,11 @@
 			return v;
 		});
 	var _user$project$Artwork$artworkDeleted = _elm_lang$core$Native_Platform.incomingPort('artworkDeleted', _elm_lang$core$Json_Decode$string);
+	var _user$project$Artwork$sendArtworkToArjs = _elm_lang$core$Native_Platform.outgoingPort(
+		'sendArtworkToArjs',
+		function (v) {
+			return v;
+		});
 	var _user$project$Artwork$Model = F6(
 		function (a, b, c, d, e, f) {
 			return {error: a, active: b, artwork: c, isEditing: d, isFetching: e, deleteModule: f};
@@ -12025,7 +12052,7 @@
 						_0: _user$project$Artwork$initModel,
 						_1: _elm_lang$navigation$Navigation$newUrl('#/gallery')
 					};
-				default:
+				case 'Error':
 					return {
 						ctor: '_Tuple2',
 						_0: _elm_lang$core$Native_Utils.update(
@@ -12035,8 +12062,17 @@
 							}),
 						_1: _elm_lang$core$Platform_Cmd$none
 					};
+				default:
+					return {
+						ctor: '_Tuple2',
+						_0: model,
+						_1: _user$project$Artwork$sendArtworkToArjs(_p3._0)
+					};
 			}
 		});
+	var _user$project$Artwork$SendArtworkToArjs = function (a) {
+		return {ctor: 'SendArtworkToArjs', _0: a};
+	};
 	var _user$project$Artwork$Error = function (a) {
 		return {ctor: 'Error', _0: a};
 	};
@@ -12660,7 +12696,16 @@
 						{
 							ctor: '::',
 							_0: _elm_lang$html$Html_Attributes$class('text-center'),
-							_1: {ctor: '[]'}
+							_1: {
+								ctor: '::',
+								_0: _elm_lang$html$Html_Attributes$style(
+									{
+										ctor: '::',
+										_0: {ctor: '_Tuple2', _0: 'margin-bottom', _1: '100px'},
+										_1: {ctor: '[]'}
+									}),
+								_1: {ctor: '[]'}
+							}
 						},
 						{
 							ctor: '::',
@@ -12668,21 +12713,52 @@
 								_elm_lang$html$Html$button,
 								{
 									ctor: '::',
-									_0: _elm_lang$html$Html_Attributes$class('btn btn-danger'),
+									_0: _elm_lang$html$Html_Attributes$class('btn btn--green'),
 									_1: {
 										ctor: '::',
-										_0: _elm_lang$html$Html_Events$onClick(_user$project$Artwork$DeleteArtworkModule),
+										_0: _elm_lang$html$Html_Events$onClick(
+											_user$project$Artwork$SendArtworkToArjs(model.artwork.artworkImageFile)),
 										_1: {ctor: '[]'}
 									}
 								},
 								{
 									ctor: '::',
-									_0: _elm_lang$html$Html$text('delete artwork'),
+									_0: _elm_lang$html$Html$text('view artwork in augmented reality'),
 									_1: {ctor: '[]'}
 								}),
 							_1: {ctor: '[]'}
 						}),
-					_1: {ctor: '[]'}
+					_1: {
+						ctor: '::',
+						_0: A2(
+							_elm_lang$html$Html$div,
+							{
+								ctor: '::',
+								_0: _elm_lang$html$Html_Attributes$class('text-center'),
+								_1: {ctor: '[]'}
+							},
+							{
+								ctor: '::',
+								_0: A2(
+									_elm_lang$html$Html$button,
+									{
+										ctor: '::',
+										_0: _elm_lang$html$Html_Attributes$class('btn btn-danger'),
+										_1: {
+											ctor: '::',
+											_0: _elm_lang$html$Html_Events$onClick(_user$project$Artwork$DeleteArtworkModule),
+											_1: {ctor: '[]'}
+										}
+									},
+									{
+										ctor: '::',
+										_0: _elm_lang$html$Html$text('delete artwork'),
+										_1: {ctor: '[]'}
+									}),
+								_1: {ctor: '[]'}
+							}),
+						_1: {ctor: '[]'}
+					}
 				}
 			});
 	};
@@ -17352,7 +17428,6 @@
 	
 	const firebaseHelper = {
 	  fetchUser: function (userToFetch) {
-	    console.log(userToFetch)
 	    return database.ref('/userDisplayNames/' + userToFetch.toLowerCase()).once('value')
 	  },
 	  addUser: function (usersDataToSave) {
@@ -17365,12 +17440,10 @@
 	  }, // end addUser()
 	  updateUser: function (displayNameToSave) {
 	    var user = firebase.auth().currentUser
-	    console.log(user, displayNameToSave)
 	    user.updateProfile({
 	      displayName: displayNameToSave
 	    })
 	      .then(function () {
-	        console.log('display name saved')
 	        fbApp.database()
 	          .ref('userDisplayNames/' + displayNameToSave.toLowerCase())
 	          .set({
@@ -17390,13 +17463,11 @@
 	      })
 	  }, // end checkUser
 	  addArtwork: function (artworkToAdd) {
-	    console.log(artworkToAdd)
 	    return fbApp.database()
 	      .ref('artwork')
 	      .push(artworkToAdd)
 	  }, // end addArtwork()
 	  addArtworkToUserGallery: function (uidAndArtworkId) {
-	    console.log(uidAndArtworkId)
 	    return fbApp.database()
 	      .ref('userGalleries')
 	      .child(uidAndArtworkId.uid)
@@ -17409,7 +17480,6 @@
 	    return database.ref('/artwork/' + artworkToQuery).once('value')
 	  }, // end getArtwork()
 	  editArtwork: function (artworkId, artworkToEdit) {
-	    console.log(artworkId, artworkToEdit)
 	    return database.ref('/artwork/' + artworkId).update(artworkToEdit)
 	  }, // end editArtwork()
 	  deleteArtworkFromFb: function (artworkId) {
@@ -17420,12 +17490,13 @@
 	      .once('value', function (snapshot) {
 	        const fbSnapshot = snapshot.val()
 	        const artworkIdToDelete =
-	          Object.keys(fbSnapshot).reduce(function (previous, key) {
-	            if (fbSnapshot[key] === artworkId) {
-	              return key
-	            }
-	          })
-	        return database.ref('/userGalleries/' + userId + '/' + artworkIdToDelete).remove()
+	          Object.keys(fbSnapshot)
+	            .filter(function (arrayOfKeys) {
+	              console.log(arrayOfKeys)
+	              console.log(artworkId)
+	              return fbSnapshot[arrayOfKeys] === artworkId
+	            })
+	        return database.ref('/userGalleries/' + userId + '/' + artworkIdToDelete[0]).remove()
 	      })
 	  } // end deleteArtworkFromUserGallery()
 	}
