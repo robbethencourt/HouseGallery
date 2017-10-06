@@ -11673,7 +11673,7 @@
 			A2(_elm_lang$core$Json_Decode$map, tagger, _elm_lang$html$Html_Events$targetValue));
 	};
 	var _user$project$Artwork$initArtwork = {artworkId: '', artist: '', title: '', medium: '', year: '', dimensions: '', price: '', artworkImageFile: '', oldArtworkImageFile: ''};
-	var _user$project$Artwork$initModel = {error: _elm_lang$core$Maybe$Nothing, active: false, artwork: _user$project$Artwork$initArtwork, isEditing: false, isFetching: true, deleteModule: false};
+	var _user$project$Artwork$initModel = {error: _elm_lang$core$Maybe$Nothing, active: false, artwork: _user$project$Artwork$initArtwork, isEditing: false, isFetching: true, deleteModule: false, arjsActive: false};
 	var _user$project$Artwork$init = {ctor: '_Tuple2', _0: _user$project$Artwork$initModel, _1: _elm_lang$core$Platform_Cmd$none};
 	var _user$project$Artwork$fetchingArtwork = _elm_lang$core$Native_Platform.incomingPort('fetchingArtwork', _elm_lang$core$Json_Decode$string);
 	var _user$project$Artwork$artworkReceived = _elm_lang$core$Native_Platform.incomingPort('artworkReceived', _elm_lang$core$Json_Decode$string);
@@ -11699,9 +11699,9 @@
 		function (v) {
 			return v;
 		});
-	var _user$project$Artwork$Model = F6(
-		function (a, b, c, d, e, f) {
-			return {error: a, active: b, artwork: c, isEditing: d, isFetching: e, deleteModule: f};
+	var _user$project$Artwork$Model = F7(
+		function (a, b, c, d, e, f, g) {
+			return {error: a, active: b, artwork: c, isEditing: d, isFetching: e, deleteModule: f, arjsActive: g};
 		});
 	var _user$project$Artwork$Artwork = F9(
 		function (a, b, c, d, e, f, g, h, i) {
@@ -12065,7 +12065,9 @@
 				default:
 					return {
 						ctor: '_Tuple2',
-						_0: model,
+						_0: _elm_lang$core$Native_Utils.update(
+							model,
+							{arjsActive: true}),
 						_1: _user$project$Artwork$sendArtworkToArjs(_p3._0)
 					};
 			}
@@ -12800,7 +12802,10 @@
 						}
 					}),
 				_1: {ctor: '[]'}
-			}) : A2(
+			}) : (model.arjsActive ? A2(
+			_elm_lang$html$Html$div,
+			{ctor: '[]'},
+			{ctor: '[]'}) : A2(
 			_elm_lang$html$Html$div,
 			{
 				ctor: '::',
@@ -12833,7 +12838,7 @@
 						{ctor: '[]'}),
 					_1: {ctor: '[]'}
 				}
-			}));
+			})));
 	};
 	var _user$project$Artwork$ArtworkReceived = function (a) {
 		return {ctor: 'ArtworkReceived', _0: a};
