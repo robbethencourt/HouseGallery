@@ -89,6 +89,7 @@ type Msg
     | DeleteArtwork
     | ArtworkDeleted String
     | Error String
+    | SendArtworkToArjs String
 
 
 update : String -> Msg -> Model -> ( Model, Cmd Msg )
@@ -175,6 +176,9 @@ update uid msg model =
 
             Error error ->
                 ( { model | error = Just error }, Cmd.none )
+
+            SendArtworkToArjs url ->
+                ( model, sendArtworkToArjs url )
 
 
 onChange : (String -> msg) -> Html.Attribute msg
@@ -267,6 +271,8 @@ artwork model =
                     ]
                 ]
             ]
+        , div [ class "text-center", style [ ( "margin-bottom", "100px" ) ] ]
+            [ button [ class "btn btn--green", onClick (SendArtworkToArjs model.artwork.artworkImageFile) ] [ text "view artwork in augmented reality" ] ]
         , div [ class "text-center" ]
             [ button [ class "btn btn-danger", onClick DeleteArtworkModule ] [ text "delete artwork" ] ]
         ]
@@ -410,3 +416,6 @@ port deleteArtwork : String -> Cmd msg
 
 
 port artworkDeleted : (String -> msg) -> Sub msg
+
+
+port sendArtworkToArjs : String -> Cmd msg

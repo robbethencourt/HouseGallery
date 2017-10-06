@@ -187,20 +187,21 @@ function getUserAndGallery (uid, searchId = uid) {
     .then(function (fbGalleryResponse) {
       const fbGalleryObject = fbGalleryResponse.val()
       const arrayOfArtworkIds =
-        Object.keys(fbGalleryObject)
-          .map(key => fbGalleryObject[key])
+      Object.keys(fbGalleryObject)
+        .map(key => fbGalleryObject[key])
 
       // array of db calls to pass to Promise.all and then pass to Elm
       const arrayOfArtworkObjects =
-        arrayOfArtworkIds
-          .map(artwork => {
-            return firebaseHelper.getArtwork(artwork)
-              .then(function (fbArtworkObjResponse) {
-                return {
-                  artworkId: artwork,
-                  artworkObj: fbArtworkObjResponse.val()}
-              })
-          })
+      arrayOfArtworkIds
+        .map(artwork => {
+          return firebaseHelper.getArtwork(artwork)
+            .then(function (fbArtworkObjResponse) {
+              return {
+                artworkId: artwork,
+                artworkObj: fbArtworkObjResponse.val()
+              }
+            })
+        })
       Promise.all(arrayOfArtworkObjects).then(gallery => {
         gallery
           .forEach(artwork => {
@@ -363,4 +364,35 @@ app.ports.deleteArtwork.subscribe(function (elmArtworkId) {
     .catch(function (error) {
       console.log(`Removing artwork from firebase failed: ${error}`)
     })
+})
+
+// arjs
+app.ports.sendArtworkToArjs.subscribe(imageUrl => {
+  console.log(imageUrl)
+  // create aFrame elements
+  const htmlBody = document.getElementsByTagName('body')[0]
+  const arjsContent = document.createElement('arjs-content')
+  const arScene = document.createElement('a-scene')
+  const aImage = document.createElement('a-image')
+  const aMarker = document.createElement('a-marker-camera')
+
+  // set attributes for a-scene
+  arScene.setAttribute('embedded', 'true')
+  arScene.setAttribute('artoolkit', 'sourceType: webcam;')
+
+  // set attributes on a-image
+  aImage.setAttribute('src', imageUrl)
+  aImage.setAttribute('width', '1.67')
+  aImage.setAttribute('position', {x: 0, y: 5, z: 0})
+  aImage.setAttribute('scale', '1 1 1')
+  aImage.setAttribute('rotation', '90 -90 90')
+
+  // set attributes on a-marker-camera
+  aMarker.setAttribute('a-marker-camera', 'hiro')
+
+  // append the elements to the scene and then to the arjs-content div in index.html
+  arScene.appendChild(aImage)
+  arScene.appendChild(aMarker)
+  arjsContent.appendChild(arScene)
+  htmlBody.appendChild(arjsContent)
 })
