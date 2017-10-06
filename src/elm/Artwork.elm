@@ -20,6 +20,7 @@ type alias Model =
     , isEditing : Bool
     , isFetching : Bool
     , deleteModule : Bool
+    , arjsActive : Bool
     }
 
 
@@ -58,6 +59,7 @@ initModel =
     , isEditing = False
     , isFetching = True
     , deleteModule = False
+    , arjsActive = False
     }
 
 
@@ -178,7 +180,7 @@ update uid msg model =
                 ( { model | error = Just error }, Cmd.none )
 
             SendArtworkToArjs url ->
-                ( model, sendArtworkToArjs url )
+                ( { model | arjsActive = True }, sendArtworkToArjs url )
 
 
 onChange : (String -> msg) -> Html.Attribute msg
@@ -240,6 +242,8 @@ view model =
                 , editArtwork model
                 ]
             ]
+    else if model.arjsActive then
+        div [] []
     else
         div [ class "main main--gallery" ]
             [ div [ class "container" ]
