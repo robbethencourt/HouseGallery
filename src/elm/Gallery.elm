@@ -207,7 +207,7 @@ view model =
             , case model.gallery of
                 [] ->
                     div [ class "container empty-gallery-message" ]
-                        [ h2 [] [ text "Gallery is empty. Add artwork to start using Houseable!" ] ]
+                        [ h2 [] [ text "Your gallery is empty. Add artwork to start using Houseable!" ] ]
 
                 _ ->
                     if model.listView then
