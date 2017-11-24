@@ -149,15 +149,27 @@ decodeJson : String -> Model -> ( Model, Cmd Msg )
 decodeJson jsonGallery model =
     case JD.decodeString decodeGalleryItem jsonGallery of
         Ok artwork ->
+            if artwork.artworkId == "0" then
+                ( { model
+                    | isFetching = False
+                  }
+                , Cmd.none
+                )
+            else
+                ( { model
+                    | gallery = artwork :: model.gallery
+                    , isFetching = False
+                  }
+                , Cmd.none
+                )
+
+        Err err ->
             ( { model
-                | gallery = artwork :: model.gallery
+                | error = Just err
                 , isFetching = False
               }
             , Cmd.none
             )
-
-        Err err ->
-            ( { model | error = Just err }, Cmd.none )
 
 
 decodeGalleryItem : JD.Decoder GalleryItem
@@ -192,11 +204,17 @@ view model =
                 , span [ class "glyphicon glyphicon-th-list glyphicon--custom-table", onClick TableView ] []
                 ]
             , galleryHeader model
-            , if model.listView then
-                galleryListView model
-              else
-                div [ class "container" ]
-                    [ div [ class "table-responsive" ] [ galleryTableView model ] ]
+            , case model.gallery of
+                [] ->
+                    div [ class "container empty-gallery-message" ]
+                        [ h2 [] [ text "Gallery is empty. Add artwork to start using Houseable!" ] ]
+
+                _ ->
+                    if model.listView then
+                        galleryListView model
+                    else
+                        div [ class "container" ]
+                            [ div [ class "table-responsive" ] [ galleryTableView model ] ]
             ]
 
 
