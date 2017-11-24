@@ -68,12 +68,12 @@ const firebaseHelper = {
       .once('value', function (snapshot) {
         const fbSnapshot = snapshot.val()
         const artworkIdToDelete =
-          Object.keys(fbSnapshot)
-            .filter(function (arrayOfKeys) {
-              console.log(arrayOfKeys)
-              console.log(artworkId)
-              return fbSnapshot[arrayOfKeys] === artworkId
-            })
+        Object.keys(fbSnapshot)
+          .filter(function (arrayOfKeys) {
+            console.log(arrayOfKeys)
+            console.log(artworkId)
+            return fbSnapshot[arrayOfKeys] === artworkId
+          })
         return database.ref('/userGalleries/' + userId + '/' + artworkIdToDelete[0]).remove()
       })
   } // end deleteArtworkFromUserGallery()
