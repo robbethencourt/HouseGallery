@@ -399,7 +399,8 @@ app.ports.sendArtworkToArjs.subscribe(imageUrl => {
 
   // set attributes on a-image
   aImage.setAttribute('src', imageUrl)
-  aImage.setAttribute('width', '1.67')
+  aImage.setAttribute('width', '2')
+  aImage.setAttribute('height', '2')
   aImage.setAttribute('position', {x: 0, y: 5, z: 0})
   aImage.setAttribute('scale', '1 1 1')
   aImage.setAttribute('rotation', '90 -90 90')
