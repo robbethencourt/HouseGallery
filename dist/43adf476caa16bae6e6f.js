@@ -232,39 +232,56 @@
 	  firebaseHelper.getUsersGallery(uid)
 	    .then(function (fbGalleryResponse) {
 	      const fbGalleryObject = fbGalleryResponse.val()
-	      const arrayOfArtworkIds =
-	      Object.keys(fbGalleryObject)
-	        .map(key => fbGalleryObject[key])
 	
-	      // array of db calls to pass to Promise.all and then pass to Elm
-	      const arrayOfArtworkObjects =
-	      arrayOfArtworkIds
-	        .map(artwork => {
-	          return firebaseHelper.getArtwork(artwork)
-	            .then(function (fbArtworkObjResponse) {
-	              return {
-	                artworkId: artwork,
-	                artworkObj: fbArtworkObjResponse.val()
-	              }
+	      // sending a fake gallery item back to elm. Needs to be a better way to hanlde this, but for now...
+	      if (fbGalleryObject === undefined || fbGalleryObject === null) {
+	        app.ports.usersGallery.send(JSON.stringify({
+	          artworkId: '0',
+	          artist: '0',
+	          title: '0',
+	          medium: '0',
+	          year: '0',
+	          dimensions: '0',
+	          price: '0',
+	          artworkImageFile: '0',
+	          userId: '0',
+	          searchId: '0'
+	        }))
+	      } else {
+	        const arrayOfArtworkIds =
+	        Object.keys(fbGalleryObject)
+	          .map(key => fbGalleryObject[key])
+	
+	        // array of db calls to pass to Promise.all and then pass to Elm
+	        const arrayOfArtworkObjects =
+	        arrayOfArtworkIds
+	          .map(artwork => {
+	            return firebaseHelper.getArtwork(artwork)
+	              .then(function (fbArtworkObjResponse) {
+	                return {
+	                  artworkId: artwork,
+	                  artworkObj: fbArtworkObjResponse.val()
+	                }
+	              })
+	          })
+	        Promise.all(arrayOfArtworkObjects).then(gallery => {
+	          gallery
+	            .forEach(artwork => {
+	              app.ports.usersGallery.send(JSON.stringify({
+	                artworkId: artwork.artworkId,
+	                artist: artwork.artworkObj.artist,
+	                title: artwork.artworkObj.title,
+	                medium: artwork.artworkObj.medium,
+	                year: artwork.artworkObj.year,
+	                dimensions: artwork.artworkObj.dimensions,
+	                price: artwork.artworkObj.price,
+	                artworkImageFile: artwork.artworkObj.artworkImageFile,
+	                userId: clearGalleryIds.userId,
+	                searchId: clearGalleryIds.searchId
+	              }))
 	            })
 	        })
-	      Promise.all(arrayOfArtworkObjects).then(gallery => {
-	        gallery
-	          .forEach(artwork => {
-	            app.ports.usersGallery.send(JSON.stringify({
-	              artworkId: artwork.artworkId,
-	              artist: artwork.artworkObj.artist,
-	              title: artwork.artworkObj.title,
-	              medium: artwork.artworkObj.medium,
-	              year: artwork.artworkObj.year,
-	              dimensions: artwork.artworkObj.dimensions,
-	              price: artwork.artworkObj.price,
-	              artworkImageFile: artwork.artworkObj.artworkImageFile,
-	              userId: clearGalleryIds.userId,
-	              searchId: clearGalleryIds.searchId
-	            }))
-	          })
-	      })
+	      }
 	    })
 	}
 	
@@ -428,7 +445,8 @@
 	
 	  // set attributes on a-image
 	  aImage.setAttribute('src', imageUrl)
-	  aImage.setAttribute('width', '1.67')
+	  aImage.setAttribute('width', '2')
+	  aImage.setAttribute('height', '2')
 	  aImage.setAttribute('position', {x: 0, y: 5, z: 0})
 	  aImage.setAttribute('scale', '1 1 1')
 	  aImage.setAttribute('rotation', '90 -90 90')
@@ -12991,12 +13009,19 @@
 		function (jsonGallery, model) {
 			var _p1 = A2(_elm_lang$core$Json_Decode$decodeString, _user$project$Gallery$decodeGalleryItem, jsonGallery);
 			if (_p1.ctor === 'Ok') {
-				return {
+				var _p2 = _p1._0;
+				return _elm_lang$core$Native_Utils.eq(_p2.artworkId, '0') ? {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{isFetching: false}),
+					_1: _elm_lang$core$Platform_Cmd$none
+				} : {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
 						{
-							gallery: {ctor: '::', _0: _p1._0, _1: model.gallery},
+							gallery: {ctor: '::', _0: _p2, _1: model.gallery},
 							isFetching: false
 						}),
 					_1: _elm_lang$core$Platform_Cmd$none
@@ -13007,7 +13032,8 @@
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
 						{
-							error: _elm_lang$core$Maybe$Just(_p1._0)
+							error: _elm_lang$core$Maybe$Just(_p1._0),
+							isFetching: false
 						}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
@@ -13028,16 +13054,16 @@
 			_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$decode(_user$project$Gallery$ClearGalleryReturnValue)));
 	var _user$project$Gallery$jsonDecodeClearGallery = F2(
 		function (ids, model) {
-			var _p2 = A2(_elm_lang$core$Json_Decode$decodeString, _user$project$Gallery$decodedClearGallery, ids);
-			if (_p2.ctor === 'Ok') {
-				var _p3 = _p2._0;
+			var _p3 = A2(_elm_lang$core$Json_Decode$decodeString, _user$project$Gallery$decodedClearGallery, ids);
+			if (_p3.ctor === 'Ok') {
+				var _p4 = _p3._0;
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
 						{
-							searchId: _p3.searchId,
-							userId: _p3.userId,
+							searchId: _p4.searchId,
+							userId: _p4.userId,
 							gallery: {ctor: '[]'}
 						}),
 					_1: _elm_lang$core$Platform_Cmd$none
@@ -13048,7 +13074,7 @@
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
 						{
-							error: _elm_lang$core$Maybe$Just(_p2._0)
+							error: _elm_lang$core$Maybe$Just(_p3._0)
 						}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
@@ -13056,19 +13082,19 @@
 		});
 	var _user$project$Gallery$update = F2(
 		function (msg, model) {
-			var _p4 = msg;
-			switch (_p4.ctor) {
+			var _p5 = msg;
+			switch (_p5.ctor) {
 				case 'ArtworkPage':
-					var _p5 = _p4._0;
+					var _p6 = _p5._0;
 					return {
 						ctor: '_Tuple2',
 						_0: _elm_lang$core$Native_Utils.update(
 							model,
-							{routeParam: _p5}),
+							{routeParam: _p6}),
 						_1: _elm_lang$core$Platform_Cmd$batch(
 							{
 								ctor: '::',
-								_0: _user$project$Gallery$getOneArtwork(_p5),
+								_0: _user$project$Gallery$getOneArtwork(_p6),
 								_1: {
 									ctor: '::',
 									_0: _elm_lang$navigation$Navigation$newUrl('#/artwork'),
@@ -13082,14 +13108,14 @@
 						_0: _elm_lang$core$Native_Utils.update(
 							model,
 							{
-								error: _elm_lang$core$Maybe$Just(_p4._0)
+								error: _elm_lang$core$Maybe$Just(_p5._0)
 							}),
 						_1: _elm_lang$core$Platform_Cmd$none
 					};
 				case 'UsersGallery':
-					return A2(_user$project$Gallery$decodeJson, _p4._0, model);
+					return A2(_user$project$Gallery$decodeJson, _p5._0, model);
 				case 'ClearGallery':
-					return A2(_user$project$Gallery$jsonDecodeClearGallery, _p4._0, model);
+					return A2(_user$project$Gallery$jsonDecodeClearGallery, _p5._0, model);
 				case 'ListView':
 					return {
 						ctor: '_Tuple2',
@@ -13282,8 +13308,8 @@
 	var _user$project$Gallery$ArtworkPage = function (a) {
 		return {ctor: 'ArtworkPage', _0: a};
 	};
-	var _user$project$Gallery$paintingListView = function (_p6) {
-		var _p7 = _p6;
+	var _user$project$Gallery$paintingListView = function (_p7) {
+		var _p8 = _p7;
 		return A2(
 			_elm_lang$html$Html$div,
 			{
@@ -13315,7 +13341,7 @@
 									_elm_lang$html$Html$img,
 									{
 										ctor: '::',
-										_0: _elm_lang$html$Html_Attributes$src(_p7.artworkImageFile),
+										_0: _elm_lang$html$Html_Attributes$src(_p8.artworkImageFile),
 										_1: {ctor: '[]'}
 									},
 									{ctor: '[]'}),
@@ -13350,7 +13376,7 @@
 												},
 												{
 													ctor: '::',
-													_0: _elm_lang$html$Html$text(_p7.artist),
+													_0: _elm_lang$html$Html$text(_p8.artist),
 													_1: {ctor: '[]'}
 												}),
 											_1: {
@@ -13367,8 +13393,8 @@
 														_0: _elm_lang$html$Html$text(
 															A2(
 																_elm_lang$core$Basics_ops['++'],
-																_p7.title,
-																A2(_elm_lang$core$Basics_ops['++'], ', ', _p7.year))),
+																_p8.title,
+																A2(_elm_lang$core$Basics_ops['++'], ', ', _p8.year))),
 														_1: {ctor: '[]'}
 													}),
 												_1: {
@@ -13382,7 +13408,7 @@
 														},
 														{
 															ctor: '::',
-															_0: _elm_lang$html$Html$text(_p7.medium),
+															_0: _elm_lang$html$Html$text(_p8.medium),
 															_1: {ctor: '[]'}
 														}),
 													_1: {
@@ -13396,7 +13422,7 @@
 															},
 															{
 																ctor: '::',
-																_0: _elm_lang$html$Html$text(_p7.dimensions),
+																_0: _elm_lang$html$Html$text(_p8.dimensions),
 																_1: {ctor: '[]'}
 															}),
 														_1: {
@@ -13411,12 +13437,12 @@
 																{
 																	ctor: '::',
 																	_0: _elm_lang$html$Html$text(
-																		A2(_elm_lang$core$Basics_ops['++'], '$', _p7.price)),
+																		A2(_elm_lang$core$Basics_ops['++'], '$', _p8.price)),
 																	_1: {ctor: '[]'}
 																}),
 															_1: {
 																ctor: '::',
-																_0: _elm_lang$core$Native_Utils.eq(_p7.userId, _p7.searchId) ? A2(
+																_0: _elm_lang$core$Native_Utils.eq(_p8.userId, _p8.searchId) ? A2(
 																	_elm_lang$html$Html$button,
 																	{
 																		ctor: '::',
@@ -13424,7 +13450,7 @@
 																		_1: {
 																			ctor: '::',
 																			_0: _elm_lang$html$Html_Events$onClick(
-																				_user$project$Gallery$ArtworkPage(_p7.artworkId)),
+																				_user$project$Gallery$ArtworkPage(_p8.artworkId)),
 																			_1: {ctor: '[]'}
 																		}
 																	},
@@ -13462,13 +13488,13 @@
 			A2(_elm_lang$core$List$map, _user$project$Gallery$paintingListView, model.gallery));
 	};
 	var _user$project$Gallery$paintingTableView = F2(
-		function (index, _p8) {
-			var _p9 = _p8;
-			var _p14 = _p9.userId;
-			var _p13 = _p9.title;
-			var _p12 = _p9.searchId;
-			var _p11 = _p9.artworkImageFile;
-			var _p10 = _p9.artworkId;
+		function (index, _p9) {
+			var _p10 = _p9;
+			var _p15 = _p10.userId;
+			var _p14 = _p10.title;
+			var _p13 = _p10.searchId;
+			var _p12 = _p10.artworkImageFile;
+			var _p11 = _p10.artworkId;
 			return A2(
 				_elm_lang$html$Html$tr,
 				{ctor: '[]'},
@@ -13485,7 +13511,7 @@
 						}),
 					_1: {
 						ctor: '::',
-						_0: _elm_lang$core$Native_Utils.eq(_p14, _p12) ? A2(
+						_0: _elm_lang$core$Native_Utils.eq(_p15, _p13) ? A2(
 							_elm_lang$html$Html$td,
 							{ctor: '[]'},
 							{
@@ -13494,14 +13520,14 @@
 									_elm_lang$html$Html$img,
 									{
 										ctor: '::',
-										_0: _elm_lang$html$Html_Attributes$src(_p11),
+										_0: _elm_lang$html$Html_Attributes$src(_p12),
 										_1: {
 											ctor: '::',
 											_0: _elm_lang$html$Html_Attributes$class('thumbnail'),
 											_1: {
 												ctor: '::',
 												_0: _elm_lang$html$Html_Events$onClick(
-													_user$project$Gallery$ArtworkPage(_p10)),
+													_user$project$Gallery$ArtworkPage(_p11)),
 												_1: {ctor: '[]'}
 											}
 										}
@@ -13517,7 +13543,7 @@
 									_elm_lang$html$Html$img,
 									{
 										ctor: '::',
-										_0: _elm_lang$html$Html_Attributes$src(_p11),
+										_0: _elm_lang$html$Html_Attributes$src(_p12),
 										_1: {
 											ctor: '::',
 											_0: _elm_lang$html$Html_Attributes$class('thumbnail'),
@@ -13534,12 +13560,12 @@
 								{ctor: '[]'},
 								{
 									ctor: '::',
-									_0: _elm_lang$html$Html$text(_p9.artist),
+									_0: _elm_lang$html$Html$text(_p10.artist),
 									_1: {ctor: '[]'}
 								}),
 							_1: {
 								ctor: '::',
-								_0: _elm_lang$core$Native_Utils.eq(_p14, _p12) ? A2(
+								_0: _elm_lang$core$Native_Utils.eq(_p15, _p13) ? A2(
 									_elm_lang$html$Html$td,
 									{ctor: '[]'},
 									{
@@ -13549,12 +13575,12 @@
 											{
 												ctor: '::',
 												_0: _elm_lang$html$Html_Events$onClick(
-													_user$project$Gallery$ArtworkPage(_p10)),
+													_user$project$Gallery$ArtworkPage(_p11)),
 												_1: {ctor: '[]'}
 											},
 											{
 												ctor: '::',
-												_0: _elm_lang$html$Html$text(_p13),
+												_0: _elm_lang$html$Html$text(_p14),
 												_1: {ctor: '[]'}
 											}),
 										_1: {ctor: '[]'}
@@ -13563,7 +13589,7 @@
 									{ctor: '[]'},
 									{
 										ctor: '::',
-										_0: _elm_lang$html$Html$text(_p13),
+										_0: _elm_lang$html$Html$text(_p14),
 										_1: {ctor: '[]'}
 									}),
 								_1: {
@@ -13573,7 +13599,7 @@
 										{ctor: '[]'},
 										{
 											ctor: '::',
-											_0: _elm_lang$html$Html$text(_p9.year),
+											_0: _elm_lang$html$Html$text(_p10.year),
 											_1: {ctor: '[]'}
 										}),
 									_1: {
@@ -13583,7 +13609,7 @@
 											{ctor: '[]'},
 											{
 												ctor: '::',
-												_0: _elm_lang$html$Html$text(_p9.medium),
+												_0: _elm_lang$html$Html$text(_p10.medium),
 												_1: {ctor: '[]'}
 											}),
 										_1: {
@@ -13593,7 +13619,7 @@
 												{ctor: '[]'},
 												{
 													ctor: '::',
-													_0: _elm_lang$html$Html$text(_p9.dimensions),
+													_0: _elm_lang$html$Html$text(_p10.dimensions),
 													_1: {ctor: '[]'}
 												}),
 											_1: {
@@ -13604,7 +13630,7 @@
 													{
 														ctor: '::',
 														_0: _elm_lang$html$Html$text(
-															A2(_elm_lang$core$Basics_ops['++'], '$', _p9.price)),
+															A2(_elm_lang$core$Basics_ops['++'], '$', _p10.price)),
 														_1: {ctor: '[]'}
 													}),
 												_1: {ctor: '[]'}
@@ -13708,29 +13734,54 @@
 						_0: _user$project$Gallery$galleryHeader(model),
 						_1: {
 							ctor: '::',
-							_0: model.listView ? _user$project$Gallery$galleryListView(model) : A2(
-								_elm_lang$html$Html$div,
-								{
-									ctor: '::',
-									_0: _elm_lang$html$Html_Attributes$class('container'),
-									_1: {ctor: '[]'}
-								},
-								{
-									ctor: '::',
-									_0: A2(
+							_0: function () {
+								var _p16 = model.gallery;
+								if (_p16.ctor === '[]') {
+									return A2(
 										_elm_lang$html$Html$div,
 										{
 											ctor: '::',
-											_0: _elm_lang$html$Html_Attributes$class('table-responsive'),
+											_0: _elm_lang$html$Html_Attributes$class('container empty-gallery-message'),
 											_1: {ctor: '[]'}
 										},
 										{
 											ctor: '::',
-											_0: _user$project$Gallery$galleryTableView(model),
+											_0: A2(
+												_elm_lang$html$Html$h2,
+												{ctor: '[]'},
+												{
+													ctor: '::',
+													_0: _elm_lang$html$Html$text('Your gallery is empty. Add artwork to start using Houseable!'),
+													_1: {ctor: '[]'}
+												}),
 											_1: {ctor: '[]'}
-										}),
-									_1: {ctor: '[]'}
-								}),
+										});
+								} else {
+									return model.listView ? _user$project$Gallery$galleryListView(model) : A2(
+										_elm_lang$html$Html$div,
+										{
+											ctor: '::',
+											_0: _elm_lang$html$Html_Attributes$class('container'),
+											_1: {ctor: '[]'}
+										},
+										{
+											ctor: '::',
+											_0: A2(
+												_elm_lang$html$Html$div,
+												{
+													ctor: '::',
+													_0: _elm_lang$html$Html_Attributes$class('table-responsive'),
+													_1: {ctor: '[]'}
+												},
+												{
+													ctor: '::',
+													_0: _user$project$Gallery$galleryTableView(model),
+													_1: {ctor: '[]'}
+												}),
+											_1: {ctor: '[]'}
+										});
+								}
+							}(),
 							_1: {ctor: '[]'}
 						}
 					}
@@ -17495,12 +17546,12 @@
 	      .once('value', function (snapshot) {
 	        const fbSnapshot = snapshot.val()
 	        const artworkIdToDelete =
-	          Object.keys(fbSnapshot)
-	            .filter(function (arrayOfKeys) {
-	              console.log(arrayOfKeys)
-	              console.log(artworkId)
-	              return fbSnapshot[arrayOfKeys] === artworkId
-	            })
+	        Object.keys(fbSnapshot)
+	          .filter(function (arrayOfKeys) {
+	            console.log(arrayOfKeys)
+	            console.log(artworkId)
+	            return fbSnapshot[arrayOfKeys] === artworkId
+	          })
 	        return database.ref('/userGalleries/' + userId + '/' + artworkIdToDelete[0]).remove()
 	      })
 	  } // end deleteArtworkFromUserGallery()
