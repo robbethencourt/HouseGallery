@@ -186,39 +186,56 @@ function getUserAndGallery (uid, searchId = uid) {
   firebaseHelper.getUsersGallery(uid)
     .then(function (fbGalleryResponse) {
       const fbGalleryObject = fbGalleryResponse.val()
-      const arrayOfArtworkIds =
-      Object.keys(fbGalleryObject)
-        .map(key => fbGalleryObject[key])
 
-      // array of db calls to pass to Promise.all and then pass to Elm
-      const arrayOfArtworkObjects =
-      arrayOfArtworkIds
-        .map(artwork => {
-          return firebaseHelper.getArtwork(artwork)
-            .then(function (fbArtworkObjResponse) {
-              return {
-                artworkId: artwork,
-                artworkObj: fbArtworkObjResponse.val()
-              }
+      // sending a fake gallery item back to elm. Needs to be a better way to hanlde this, but for now...
+      if (fbGalleryObject === undefined || fbGalleryObject === null) {
+        app.ports.usersGallery.send(JSON.stringify({
+          artworkId: '0',
+          artist: '0',
+          title: '0',
+          medium: '0',
+          year: '0',
+          dimensions: '0',
+          price: '0',
+          artworkImageFile: '0',
+          userId: '0',
+          searchId: '0'
+        }))
+      } else {
+        const arrayOfArtworkIds =
+        Object.keys(fbGalleryObject)
+          .map(key => fbGalleryObject[key])
+
+        // array of db calls to pass to Promise.all and then pass to Elm
+        const arrayOfArtworkObjects =
+        arrayOfArtworkIds
+          .map(artwork => {
+            return firebaseHelper.getArtwork(artwork)
+              .then(function (fbArtworkObjResponse) {
+                return {
+                  artworkId: artwork,
+                  artworkObj: fbArtworkObjResponse.val()
+                }
+              })
+          })
+        Promise.all(arrayOfArtworkObjects).then(gallery => {
+          gallery
+            .forEach(artwork => {
+              app.ports.usersGallery.send(JSON.stringify({
+                artworkId: artwork.artworkId,
+                artist: artwork.artworkObj.artist,
+                title: artwork.artworkObj.title,
+                medium: artwork.artworkObj.medium,
+                year: artwork.artworkObj.year,
+                dimensions: artwork.artworkObj.dimensions,
+                price: artwork.artworkObj.price,
+                artworkImageFile: artwork.artworkObj.artworkImageFile,
+                userId: clearGalleryIds.userId,
+                searchId: clearGalleryIds.searchId
+              }))
             })
         })
-      Promise.all(arrayOfArtworkObjects).then(gallery => {
-        gallery
-          .forEach(artwork => {
-            app.ports.usersGallery.send(JSON.stringify({
-              artworkId: artwork.artworkId,
-              artist: artwork.artworkObj.artist,
-              title: artwork.artworkObj.title,
-              medium: artwork.artworkObj.medium,
-              year: artwork.artworkObj.year,
-              dimensions: artwork.artworkObj.dimensions,
-              price: artwork.artworkObj.price,
-              artworkImageFile: artwork.artworkObj.artworkImageFile,
-              userId: clearGalleryIds.userId,
-              searchId: clearGalleryIds.searchId
-            }))
-          })
-      })
+      }
     })
 }
 
